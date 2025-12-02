@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
-import { Search, ShieldCheck, MessageSquare, Stethoscope, Menu, X, ArrowRight, Star, UserCheck, CheckCircle } from 'lucide-react';
+import { Search, ShieldCheck, MessageSquare, Stethoscope, Menu, X, ArrowRight, Star, UserCheck, CheckCircle, Briefcase, FileText, User, Home } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import Team from './components/team';
+import { NavBar } from './components/ui/tubelight-navbar';
 
 // --- MAIN LANDING PAGE COMPONENT ---
 const LandingPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Defined Nav Items for the Tubelight Navbar
+  const navItems = [
+    { name: 'Home', url: '#', icon: Home },
+    { name: 'Services', url: '#services', icon: Briefcase },
+    { name: 'How it Works', url: '#how-it-works', icon: FileText },
+    { name: 'Reviews', url: '#reviews', icon: Star }
+  ];
 
   return (
     // Changed main background to a very subtle mint-grey for harmony
@@ -18,27 +27,49 @@ const LandingPage = () => {
         <WarpBackground />
 
         {/* Navigation */}
-        <header className="flex items-center justify-between mb-16 md:mb-24 relative z-20">
-          <div className="flex items-center gap-3">
+        <header className="flex flex-col md:flex-row items-center justify-between mb-16 md:mb-24 relative z-20 gap-4 md:gap-0">
+          
+          {/* Logo */}
+          <div className="flex items-center gap-3 self-start md:self-auto">
             <div className="bg-white p-2.5 rounded-xl">
               <Stethoscope className="w-5 h-5 text-teal-500" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white">ProDoc</span>
+            
+            {/* Mobile Menu Toggle */}
+            <button className="md:hidden ml-auto text-white absolute right-0 top-1" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-white/90">
-             <a href="#features" className="hover:text-white transition-colors">Features</a>
-             <a href="#how-it-works" className="hover:text-white transition-colors">How it Works</a>
-             <a href="#reviews" className="hover:text-white transition-colors">Reviews</a>
-             <button className="bg-white/20 backdrop-blur-md border border-white/30 text-white px-6 py-2.5 rounded-full hover:bg-white/30 transition-colors">
-                Doctor Login
-             </button>
-          </nav>
+          {/* Desktop Tubelight Navigation */}
+          <div className="hidden md:block">
+             <NavBar items={navItems} />
+          </div>
 
-          <button className="md:hidden p-2 text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Login Buttons */}
+          <div className="hidden md:flex items-center gap-3">
+            <button className="bg-white/10 backdrop-blur-md border border-white/30 text-white px-5 py-2.5 rounded-full hover:bg-white/20 transition-colors text-sm font-semibold">
+                Doctor Login
+            </button>
+            <button className="bg-white text-teal-600 px-5 py-2.5 rounded-full hover:bg-teal-50 transition-colors shadow-lg shadow-teal-900/10 text-sm font-bold">
+                Patient Login
+            </button>
+          </div>
         </header>
+
+        {/* Mobile Menu Dropdown */}
+        {isMenuOpen && (
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 z-50 flex flex-col gap-4 text-center shadow-2xl md:hidden animate-in fade-in slide-in-from-top-4 mb-8">
+            <a href="#" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">Home</a>
+            <a href="#services" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">Services</a>
+            <a href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">How it Works</a>
+            <a href="#reviews" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">Reviews</a>
+            <hr className="border-slate-200" />
+            <button className="bg-slate-100 text-slate-900 py-3 rounded-xl font-bold">Doctor Login</button>
+            <button className="bg-teal-600 text-white py-3 rounded-xl font-bold">Patient Login</button>
+          </div>
+        )}
 
         {/* Hero Content Grid */}
         <div className="grid lg:grid-cols-12 gap-12 items-center relative z-10">
@@ -117,8 +148,9 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* --- SECTION 3: FEATURES (Bento Grid) --- */}
-      <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* --- SECTION 3: SERVICES (Previously Features) --- */}
+      {/* Updated ID to match nav link */}
+      <div id="services" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
          
          {/* Large Feature Card 1 */}
          <div className="bg-white rounded-[2.5rem] p-10 col-span-1 md:col-span-2 group">
