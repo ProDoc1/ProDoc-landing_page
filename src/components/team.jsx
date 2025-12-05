@@ -1,7 +1,7 @@
 import React from "react";
 import { Linkedin, Github, ArrowUpRight } from "lucide-react";
 
-function TeamMember({ imgSrc, name, title }) {
+function TeamMember({ imgSrc, name, title,linkedIn,git }) {
   return (
     <div className="group relative overflow-hidden rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-xl h-[400px]">
       {/* Background Image */}
@@ -31,10 +31,10 @@ function TeamMember({ imgSrc, name, title }) {
 
         {/* Bottom Row: Socials */}
         <div className="flex gap-3">
-          <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300">
+          <a href={linkedIn} className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300">
             <Linkedin size={16} />
           </a>
-          <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300">
+          <a href={git} className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300">
             <Github size={16} />
           </a>
         </div>
@@ -46,34 +46,46 @@ function TeamMember({ imgSrc, name, title }) {
 function Team() {
   const teamMembers = [
     {
-      imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/191cd4946c126fb603bd2d235c4bc8a50a15ec56b5b874a6d432d90205f4f936?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
+      imgSrc: "https://media.licdn.com/dms/image/v2/D5603AQFwS3YWc67BVg/profile-displayphoto-crop_800_800/B56ZmRhPuOJ8AI-/0/1759083038032?e=1766620800&v=beta&t=b4409XdNlVrIU9T-ICjl6F8oPUHtzKQhpG5LYLGNIoc",
       name: "Jayith",
       title: "Team Leader",
+      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
+      git:"https://github.com/Jayith",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/1aa484b096efd982c17829a912d74329ab81001c4ad1da0197618eb5ae4719c7?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
       name: "Kushan Anutthara",
       title: "Manager",
+      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
+      git:"https://github.com/Jayith",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/a526d51b880f5455948aec3ff5cb0fca1f4b09c016232f7e8057df97104641dd?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
       name: "Nethmin Gomez",
       title: "Secretary",
+      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
+      git:"https://github.com/Jayith",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/0ba683f74943142ccaf0fc039abf04fa47637ba466b6819719847d5b3f76f6c6?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
       name: "Geenadi Dhanayake",
       title: "Creative Director",
+      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
+      git:"https://github.com/Jayith",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/1bdd6ebeb5bb2d2cbccb01e077f6b83d945305173ef38c2045c16da7de4088cc?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
       name: "Uvindu Perera",
       title: "Lead Programmer",
+      linkedIn: "https://www.linkedin.com/in/uvindu-perera",
+      git:"https://github.com/Uluduwade",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/4257f727112b2bed686495d55fbe6dcf22640f332af711cf27fe525cb69f914f?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
       name: "Agitha Perera",
       title: "UX Designer",
+      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
+      git:"https://github.com/Jayith",
     },
   ];
 

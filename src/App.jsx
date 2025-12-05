@@ -211,23 +211,23 @@ const LandingPage = () => {
             <div className="relative group">
                {/* Updated to teal-500 */}
                <div className="w-12 h-12 bg-teal-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 group-hover:scale-110 transition-transform">1</div>
-               <h3 className="text-xl font-bold mb-3 text-slate-900">Search or Chat</h3>
+               <h3 className="text-xl font-bold mb-3 text-slate-900">Scan</h3>
                <p className="text-slate-500 text-sm leading-relaxed">
-                  Search by name/hospital or tell our AI chatbot your symptoms to get matched with the right specialist type.
+                  Take a photo of your prescription.
                </p>
             </div>
             <div className="relative group">
                <div className="w-12 h-12 bg-teal-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 group-hover:scale-110 transition-transform">2</div>
-               <h3 className="text-xl font-bold mb-3 text-slate-900">Compare Verified Profiles</h3>
+               <h3 className="text-xl font-bold mb-3 text-slate-900">Translate</h3>
                <p className="text-slate-500 text-sm leading-relaxed">
-                  View qualifications, surgical history, and real patient feedback side-by-side to make an informed choice.
+                  Read the instructions in your native language.
                </p>
             </div>
             <div className="relative group">
                <div className="w-12 h-12 bg-teal-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 group-hover:scale-110 transition-transform">3</div>
-               <h3 className="text-xl font-bold mb-3 text-slate-900">Book with Confidence</h3>
+               <h3 className="text-xl font-bold mb-3 text-slate-900">Compare</h3>
                <p className="text-slate-500 text-sm leading-relaxed">
-                  Choose the best doctor for your specific needs and book your appointment directly through the platform.
+                  See generic substitutes and find the lowest price nearby
                </p>
             </div>
          </div>
