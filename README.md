@@ -42,15 +42,16 @@ Follow these steps to set up the project locally.
 - Git  
 
 ### Installation
-1. Clone the repository:  
-```bash
+
 git clone https://github.com/your-username/prodoc-landing.git
 cd prodoc-landing
 npm install
 npm run dev
 
+## 👥 Meet the Team (Group SE-06)
+
 | Role              | Name               | ID       |
-| ----------------- | ------------------ | -------- |
+|------------------|------------------|----------|
 | Team Leader       | Jayith Wijethunge  | 2023339  |
 | Manager           | Kushan Anutthara   | 20240047 |
 | Lead Programmer   | Uvindu Perera      | 20231320 |
@@ -58,4 +59,5 @@ npm run dev
 | UX Designer       | Agitha Perera      | 20240713 |
 | Secretary         | Nethmin Gomes      | 20230123 |
 
-Made by Team ProDoc
+
+### Made by Team ProDoc
