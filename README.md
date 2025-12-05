@@ -30,8 +30,6 @@ Lucide React (Icons)
 
 @paper-design/shaders-react (Visual Effects)
 
-Backend & Database (Planned):
-
 🚀 Getting Started
 
 Follow these steps to set up the project locally.
@@ -130,5 +128,5 @@ Nethmin Gomes
 This project is created for the Software Development Group Project (5COSC021C) module. All rights reserved.
 
 <p align="center">
-Made by Team ProDoc
+Made with ❤️ by Team ProDoc
 </p>
