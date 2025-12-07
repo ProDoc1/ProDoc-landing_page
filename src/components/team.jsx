@@ -3,7 +3,7 @@ import { Linkedin, Github, ArrowUpRight } from "lucide-react";
 
 function TeamMember({ imgSrc, name, title,linkedIn,git }) {
   return (
-    <div className="group relative overflow-hidden rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-xl h-[400px]">
+    <div className="group relative overflow-clip rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-xl h-[400px] ">
       {/* Background Image */}
       <img
         loading="lazy"
@@ -13,12 +13,12 @@ function TeamMember({ imgSrc, name, title,linkedIn,git }) {
       />
       
       {/* Glassmorphism Overlay Card */}
-      <div className="absolute bottom-4 left-4 right-4 p-5 bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 text-white transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+      <div className="absolute bottom-4 left-4 right-4 p-5 bg-black/10 backdrop-blur-sm rounded-2xl border border-white/10 text-white transition-all duration-300 translate-y-2 group-hover:translate-y-0">
         
         {/* Top Row: Name & Arrow */}
         <div className="flex justify-between items-start mb-1">
           <div>
-            <h3 className="text-lg font-bold tracking-tight text-white">{name}</h3>
+            <h3 className="text-lg font-bold tracking-tight text-white ">{name}</h3>
             <p className="text-sm font-medium text-teal-200">{title}</p>
           </div>
           <div className="p-2 bg-white/10 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -27,7 +27,7 @@ function TeamMember({ imgSrc, name, title,linkedIn,git }) {
         </div>
 
         {/* Divider */}
-        <div className="h-px w-full bg-white/20 my-3" />
+        {/* <div className="h-px w-full bg-white/20 my-3" /> */}
 
         {/* Bottom Row: Socials */}
         <div className="flex gap-3">
@@ -57,21 +57,21 @@ function Team() {
       name: "Kushan Anutthara",
       title: "Manager",
       linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/Jayith",
+      git:"https://github.com/kushanaw",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/a526d51b880f5455948aec3ff5cb0fca1f4b09c016232f7e8057df97104641dd?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
       name: "Nethmin Gomez",
       title: "Secretary",
       linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/Jayith",
+      git:"https://github.com/njxbeast10-ai",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/0ba683f74943142ccaf0fc039abf04fa47637ba466b6819719847d5b3f76f6c6?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
       name: "Geenadi Dhanayake",
       title: "Creative Director",
       linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/Jayith",
+      git:"https://github.com/Geenadi",
     },
     {
       imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/1bdd6ebeb5bb2d2cbccb01e077f6b83d945305173ef38c2045c16da7de4088cc?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
@@ -85,7 +85,7 @@ function Team() {
       name: "Agitha Perera",
       title: "UX Designer",
       linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/Jayith",
+      git:"https://github.com/AgithaPerera",
     },
   ];
 
