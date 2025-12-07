@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShieldCheck, MessageSquare, Stethoscope, Menu, X, ArrowRight, Star, UserCheck, CheckCircle, Briefcase, FileText, User, Home } from 'lucide-react';
+import { Search, ShieldCheck, MessageSquare, Stethoscope, Menu, X, ArrowRight, Star, UserCheck, CheckCircle, Briefcase, FileText, User, Home, Group } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import Team from './components/team';
 import { NavBar } from './components/ui/tubelight-navbar';
@@ -13,7 +13,8 @@ const LandingPage = () => {
     { name: 'Home', url: '#', icon: Home },
     { name: 'Services', url: '#services', icon: Briefcase },
     { name: 'How it Works', url: '#how-it-works', icon: FileText },
-    { name: 'Reviews', url: '#reviews', icon: Star }
+    { name: 'Reviews', url: '#reviews', icon: Star },
+    { name: 'Team', url: '#team', icon: Group }
   ];
 
   return (
@@ -65,6 +66,7 @@ const LandingPage = () => {
             <a href="#services" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">Services</a>
             <a href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">How it Works</a>
             <a href="#reviews" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">Reviews</a>
+            <a href="#team" onClick={() => setIsMenuOpen(false)} className="text-slate-800 font-bold py-2">Team</a>
             <hr className="border-slate-200" />
             <button className="bg-slate-100 text-slate-900 py-3 rounded-xl font-bold">Doctor Login</button>
             <button className="bg-teal-600 text-white py-3 rounded-xl font-bold">Patient Login</button>
@@ -232,8 +234,12 @@ const LandingPage = () => {
             </div>
          </div>
       </div>
+      <div id="team"q>
+         <Team />
 
-      <Team/>
+      </div>
+
+      
       
       {/* --- SECTION 5: FOOTER (CTA Card) --- */}
       <div className="bg-white rounded-[2.5rem] md:rounded-[3.5rem] p-12 md:p-24 text-center relative overflow-hidden shadow-sm">
