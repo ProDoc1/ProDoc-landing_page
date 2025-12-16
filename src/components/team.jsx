@@ -81,14 +81,14 @@ function Team() {
     },
     {
       imgSrc: nethminImg,
-      name: "Nethmin Gomez",
+      name: "Nethmin Gomes",
       title: "Documentation Lead",
       linkedinUrl: "https://www.linkedin.com/in/nethmin-gomes-924b51291/",
       githubUrl: "https://github.com/njxbeast10-ai"
     },
     {
       imgSrc: geenadiImg,
-      name: "Geenadi Dhanayake",
+      name: "Geenadi Dahanayake",
       title: "Creative Director",
       linkedinUrl: "https://www.linkedin.com/in/geenadi-dahanayake-22a7b5179/",
       githubUrl: "https://github.com/Geenadi"
