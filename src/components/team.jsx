@@ -75,20 +75,20 @@ function Team() {
     {
       imgSrc: kushanImg,
       name: "Kushan Anutthara",
-      title: "Manager",
+      title: "Project Coordinator",
       linkedinUrl: "https://www.linkedin.com/in/kushan-wickramaarachchi-471635359/",
       githubUrl: "https://github.com/kushanaw"
     },
     {
       imgSrc: nethminImg,
-      name: "Nethmin Gomes",
-      title: "Secretary",
+      name: "Nethmin Gomez",
+      title: "Documentation Lead",
       linkedinUrl: "https://www.linkedin.com/in/nethmin-gomes-924b51291/",
       githubUrl: "https://github.com/njxbeast10-ai"
     },
     {
       imgSrc: geenadiImg,
-      name: "Geenadi Dahanayake",
+      name: "Geenadi Dhanayake",
       title: "Creative Director",
       linkedinUrl: "https://www.linkedin.com/in/geenadi-dahanayake-22a7b5179/",
       githubUrl: "https://github.com/Geenadi"
