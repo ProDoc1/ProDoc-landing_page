@@ -1,9 +1,18 @@
 import React from "react";
 import { Linkedin, Github, ArrowUpRight } from "lucide-react";
 
-function TeamMember({ imgSrc, name, title,linkedIn,git }) {
+// Import Team Photos from the assets folder
+// Make sure you have saved your images in src/assets/ with these names
+import jayithImg from "../assets/jayith.jpg";
+import kushanImg from "../assets/kushan.jpg";
+import nethminImg from "../assets/nethmin.jpg";
+import geenadiImg from "../assets/geenadi.jpg";
+import uvinduImg from "../assets/uvindu.jpg";
+import agithaImg from "../assets/agitha.jpg";
+
+function TeamMember({ imgSrc, name, title, linkedinUrl, githubUrl }) {
   return (
-    <div className="group relative overflow-clip rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-xl h-[400px] ">
+    <div className="group relative overflow-hidden rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-xl h-[400px]">
       {/* Background Image */}
       <img
         loading="lazy"
@@ -13,12 +22,12 @@ function TeamMember({ imgSrc, name, title,linkedIn,git }) {
       />
       
       {/* Glassmorphism Overlay Card */}
-      <div className="absolute bottom-4 left-4 right-4 p-5 bg-black/10 backdrop-blur-sm rounded-2xl border border-white/10 text-white transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+      <div className="absolute bottom-4 left-4 right-4 p-5 bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 text-white transition-all duration-300 translate-y-2 group-hover:translate-y-0">
         
         {/* Top Row: Name & Arrow */}
         <div className="flex justify-between items-start mb-1">
           <div>
-            <h3 className="text-lg font-bold tracking-tight text-white ">{name}</h3>
+            <h3 className="text-lg font-bold tracking-tight text-white">{name}</h3>
             <p className="text-sm font-medium text-teal-200">{title}</p>
           </div>
           <div className="p-2 bg-white/10 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -27,14 +36,24 @@ function TeamMember({ imgSrc, name, title,linkedIn,git }) {
         </div>
 
         {/* Divider */}
-        {/* <div className="h-px w-full bg-white/20 my-3" /> */}
+        <div className="h-px w-full bg-white/20 my-3" />
 
         {/* Bottom Row: Socials */}
         <div className="flex gap-3">
-          <a href={linkedIn} className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300">
+          <a 
+            href={linkedinUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300"
+          >
             <Linkedin size={16} />
           </a>
-          <a href={git} className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300">
+          <a 
+            href={githubUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="p-2 bg-white/10 rounded-full hover:bg-teal-500 hover:text-white transition-colors duration-300"
+          >
             <Github size={16} />
           </a>
         </div>
@@ -46,46 +65,46 @@ function TeamMember({ imgSrc, name, title,linkedIn,git }) {
 function Team() {
   const teamMembers = [
     {
-      imgSrc: "https://media.licdn.com/dms/image/v2/D5603AQFwS3YWc67BVg/profile-displayphoto-crop_800_800/B56ZmRhPuOJ8AI-/0/1759083038032?e=1766620800&v=beta&t=b4409XdNlVrIU9T-ICjl6F8oPUHtzKQhpG5LYLGNIoc",
+      imgSrc: jayithImg,
       name: "Jayith",
       title: "Team Leader",
-      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/Jayith",
+      linkedinUrl: "https://www.linkedin.com/in/jayith-wijethunge/",
+      githubUrl: "https://github.com/Jayith"
     },
     {
-      imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/1aa484b096efd982c17829a912d74329ab81001c4ad1da0197618eb5ae4719c7?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
+      imgSrc: kushanImg,
       name: "Kushan Anutthara",
       title: "Manager",
-      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/kushanaw",
+      linkedinUrl: "https://www.linkedin.com/in/kushan-wickramaarachchi-471635359/",
+      githubUrl: "https://github.com/kushanaw"
     },
     {
-      imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/a526d51b880f5455948aec3ff5cb0fca1f4b09c016232f7e8057df97104641dd?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
+      imgSrc: nethminImg,
       name: "Nethmin Gomez",
       title: "Secretary",
-      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/njxbeast10-ai",
+      linkedinUrl: "https://www.linkedin.com/in/nethmin-gomes-924b51291/",
+      githubUrl: "https://github.com/njxbeast10-ai"
     },
     {
-      imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/0ba683f74943142ccaf0fc039abf04fa47637ba466b6819719847d5b3f76f6c6?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
+      imgSrc: geenadiImg,
       name: "Geenadi Dhanayake",
       title: "Creative Director",
-      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/Geenadi",
+      linkedinUrl: "https://www.linkedin.com/in/geenadi-dahanayake-22a7b5179/",
+      githubUrl: "https://github.com/Geenadi"
     },
     {
-      imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/1bdd6ebeb5bb2d2cbccb01e077f6b83d945305173ef38c2045c16da7de4088cc?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
+      imgSrc: uvinduImg,
       name: "Uvindu Perera",
       title: "Lead Programmer",
-      linkedIn: "https://www.linkedin.com/in/uvindu-perera",
-      git:"https://github.com/Uluduwade",
+      linkedinUrl: "https://www.linkedin.com/in/uvindu-perera/",
+      githubUrl: "https://github.com/Uluduwade"
     },
     {
-      imgSrc: "https://cdn.builder.io/api/v1/image/assets/TEMP/4257f727112b2bed686495d55fbe6dcf22640f332af711cf27fe525cb69f914f?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&",
+      imgSrc: agithaImg,
       name: "Agitha Perera",
       title: "UX Designer",
-      linkedIn: "https://www.linkedin.com/in/jayith-wijethunge/",
-      git:"https://github.com/AgithaPerera",
+      linkedinUrl: "https://www.linkedin.com/in/agithaperera/",
+      githubUrl: "https://github.com/AgithaPerera"
     },
   ];
 
