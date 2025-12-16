@@ -33,9 +33,9 @@ const LandingPage = () => {
         {/* THE SHADER BACKGROUND */}
         <WarpBackground />
         
-        {/* Gradient Mask Overlay for better text readability - ADJUSTED HERE */}
-        <div className="absolute inset-0 bg-gradient-to-r from-teal-950/90 via-teal-900/50 to-teal-900/10 z-0 pointer-events-none mix-blend-multiply"></div>
-        <div className="absolute inset-0 bg-black/20 z-0 pointer-events-none"></div>
+        {/* Gradient Mask Overlay for better text readability - ADJUSTED HERE: Reduced opacity */}
+        <div className="absolute inset-0 bg-gradient-to-r from-teal-950/70 via-teal-900/30 to-teal-900/5 z-0 pointer-events-none mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-black/10 z-0 pointer-events-none"></div>
 
         {/* Navigation */}
         <header className="flex flex-col md:flex-row items-center justify-between mb-16 md:mb-24 relative z-20 gap-4 md:gap-0">
