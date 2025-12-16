@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShieldCheck, MessageSquare, Stethoscope, Menu, X, ArrowRight, Star, UserCheck, CheckCircle, Briefcase, FileText, User, Bell, BrainCircuit, ScanLine, Users } from 'lucide-react';
+import { Search, ShieldCheck, MessageSquare, Stethoscope, Menu, X, ArrowRight, Star, UserCheck, CheckCircle, Briefcase, FileText, User, Bell, BrainCircuit, ScanLine, Users, Mail, Phone, MapPin, Twitter, Facebook, Instagram, Linkedin } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import Team from './components/team';
 import { NavBar } from './components/ui/tubelight-navbar';
@@ -271,42 +271,81 @@ const LandingPage = () => {
         <Team/>
       </div>
       
-      {/* --- SECTION 5: FOOTER (CTA Card) --- */}
-      <div className="bg-white rounded-[2.5rem] md:rounded-[3.5rem] p-12 md:p-24 text-center relative overflow-hidden shadow-sm">
-        <div className="relative z-10">
-          <div className="w-20 h-20 bg-teal-50 rounded-3xl mx-auto flex items-center justify-center mb-8 rotate-3 transition-transform hover:rotate-12 duration-500 hover:shadow-xl hover:shadow-teal-500/20 cursor-default">
-             <Stethoscope className="w-10 h-10 text-teal-500" />
-          </div>
+      {/* --- SECTION 5: DETAILED FOOTER --- */}
+      <div className="bg-white rounded-[2.5rem] md:rounded-[3.5rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-sm">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
           
-          <h2 className="text-4xl md:text-6xl font-bold mb-8 max-w-3xl mx-auto tracking-tight leading-[1.1] text-slate-900">
-            Ready to make informed <br/> healthcare decisions?
-          </h2>
-
-          <p className="text-lg text-slate-500 mb-12">Join thousands of Sri Lankans using ProDoc today.</p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-             {/* Changed CTA button to teal-500 */}
-             <button className="bg-teal-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-teal-600 transition-all duration-300 w-full sm:w-auto shadow-lg shadow-teal-200/50 hover:shadow-teal-200/80 hover:-translate-y-1 active:translate-y-0 active:scale-95">
-               Get Started Now
-             </button>
-             <button className="bg-white border border-slate-200 text-slate-900 px-10 py-4 rounded-full font-bold text-lg hover:bg-slate-50 transition-all duration-300 w-full sm:w-auto hover:border-slate-300 active:scale-95">
-               Doctor Login
-             </button>
+          {/* Brand Column */}
+          <div className="md:col-span-4 flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <div className="bg-teal-50 p-2 rounded-xl">
+                <Stethoscope className="w-6 h-6 text-teal-600" />
+              </div>
+              <span className="text-2xl font-bold tracking-tight text-slate-900">ProDoc</span>
+            </div>
+            <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
+              ProDoc is Sri Lanka's first centralized platform for transparent healthcare. We verify doctor qualifications and validate patient reviews to help you make informed decisions.
+            </p>
+            <div className="flex gap-3 mt-2">
+              <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+              <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
+              <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
+            </div>
           </div>
 
-          <div className="mt-24 flex flex-col md:flex-row justify-between items-center text-sm font-semibold text-slate-400 border-t border-slate-100 pt-10">
-             <div className="flex items-center gap-2 mb-4 md:mb-0 group cursor-default">
-                <span className="w-2 h-2 rounded-full bg-teal-500 group-hover:animate-ping"></span>
-                <span className="w-2 h-2 rounded-full bg-teal-500 absolute"></span>
-                <span className="ml-2 group-hover:text-teal-600 transition-colors">System Operational</span>
-             </div>
-             <div className="flex gap-8">
-               <a href="#" className="hover:text-teal-900 transition-colors hover:underline underline-offset-4">Privacy Policy</a>
-               <a href="#" className="hover:text-teal-900 transition-colors hover:underline underline-offset-4">Terms of Service</a>
-               <a href="#" className="hover:text-teal-900 transition-colors hover:underline underline-offset-4">Contact</a>
-             </div>
-             <p className="mt-4 md:mt-0">© {new Date().getFullYear()} ProDoc Group Project</p>
+          {/* Links Column 1 */}
+          <div className="md:col-span-2">
+            <h4 className="font-bold text-slate-900 mb-4">Platform</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:text-teal-600 transition-colors">Find a Doctor</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition-colors">How it Works</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition-colors">Our Team</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition-colors">Reviews</a></li>
+            </ul>
           </div>
+
+          {/* Links Column 2 */}
+          <div className="md:col-span-2">
+            <h4 className="font-bold text-slate-900 mb-4">Company</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:text-teal-600 transition-colors">About Us</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition-colors">Careers</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition-colors">Terms of Service</a></li>
+            </ul>
+          </div>
+
+          {/* Contact Column */}
+          <div className="md:col-span-4">
+            <h4 className="font-bold text-slate-900 mb-4">Contact</h4>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-center gap-3">
+                <Mail size={16} className="text-teal-500" />
+                <span>support@prodoc.lk</span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone size={16} className="text-teal-500" />
+                <span>+94 11 234 5678</span>
+              </li>
+            </ul>
+            
+            {/* CTA Box */}
+            <div className="mt-6 bg-teal-50 p-4 rounded-2xl border border-teal-100">
+              <p className="text-xs font-semibold text-teal-800 mb-2">Are you a doctor?</p>
+              <button className="text-xs bg-teal-600 text-white px-3 py-2 rounded-lg font-bold hover:bg-teal-700 transition-colors w-full">
+                Join ProDoc Network
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
+           <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+              <span>All Systems Operational</span>
+           </div>
+           <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
         </div>
       </div>
 
