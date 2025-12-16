@@ -67,7 +67,7 @@ function Team() {
   const teamMembers = [
     {
       imgSrc: jayithImg,
-      name: "Jayith",
+      name: "Jayith Wijethunge",
       title: "Team Leader",
       linkedinUrl: "https://www.linkedin.com/in/jayith-wijethunge/",
       githubUrl: "https://github.com/Jayith"
