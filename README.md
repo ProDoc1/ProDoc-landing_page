@@ -43,10 +43,14 @@ Follow these steps to set up the project locally.
 
 ### Installation
 
-git clone https://github.com/your-username/prodoc-landing.git
-cd prodoc-landing
-npm install
-npm run dev
+git clone https://github.com/ProDoc1/ProDoc-landing_page.git
+
+cd ProDoc-landing_page 
+
+npm install 
+
+npm run dev
+
 
 ## 👥 Meet the Team (Group SE-06)
 
