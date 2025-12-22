@@ -13,7 +13,7 @@ import agithaImg from "../assets/agitha.jpg";
 function TeamMember({ imgSrc, name, title, linkedinUrl, githubUrl }) {
   return (
     // Reduced height from h-[400px] to h-[300px]
-    <div className="group relative overflow-hidden rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-xl h-[300px]">
+    <div className="group relative overflow-hidden rounded-[2rem] shadow-lg transition-all duration-300 hover:shadow-xl h-[400px]">
       {/* Background Image */}
       <img
         loading="lazy"
@@ -23,7 +23,7 @@ function TeamMember({ imgSrc, name, title, linkedinUrl, githubUrl }) {
       />
       
       {/* Glassmorphism Overlay Card */}
-      <div className="absolute bottom-4 left-4 right-4 p-4 bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 text-white transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+      <div className="absolute bottom-4 left-4 right-4 p-4 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 text-white transition-all duration-300 translate-y-2 group-hover:translate-y-0">
         
         {/* Top Row: Name & Arrow */}
         <div className="flex justify-between items-start mb-1">
