@@ -297,9 +297,9 @@ const LandingPage = () => {
           <div className="md:col-span-2">
             <h4 className="font-bold text-slate-900 mb-4">Platform</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Find a Doctor</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">How it Works</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Our Team</a></li>
+              <li><a href="#services" className="hover:text-teal-600 transition-colors">Find a Doctor</a></li>
+              <li><a href="#how-it-works" className="hover:text-teal-600 transition-colors">How it Works</a></li>
+              <li><a href="#team" className="hover:text-teal-600 transition-colors">Our Team</a></li>
               <li><a href="#" className="hover:text-teal-600 transition-colors">Reviews</a></li>
             </ul>
           </div>
@@ -308,7 +308,7 @@ const LandingPage = () => {
           <div className="md:col-span-2">
             <h4 className="font-bold text-slate-900 mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-teal-600 transition-colors">About Us</a></li>
+              <li><a href="#team" className="hover:text-teal-600 transition-colors">About Us</a></li>
               <li><a href="#" className="hover:text-teal-600 transition-colors">Careers</a></li>
               <li><a href="#" className="hover:text-teal-600 transition-colors">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-teal-600 transition-colors">Terms of Service</a></li>
