@@ -1,0 +1,3 @@
+Change: navbar logo size decreased to h-12 md:h-16 lg:h-20
+File: src/components/Navbar.jsx
+Timestamp: 2026-01-07  
