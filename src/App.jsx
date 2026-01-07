@@ -236,7 +236,7 @@ const LandingPage = () => {
             </p>
             <div className="flex gap-3 mt-2">
               <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
-              <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
+              <a href="https://www.instagram.com/prodoclk/" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
               <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
             </div>
           </div>
@@ -269,11 +269,11 @@ const LandingPage = () => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-3">
                 <Mail size={16} className="text-teal-500" />
-                <span>support@prodoc.lk</span>
+                <span>prdoc2025se06@gmail.com</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={16} className="text-teal-500" />
-                <span>+94 11 234 5678</span>
+                <span>+94 76 793 7055</span>
               </li>
             </ul>
             
