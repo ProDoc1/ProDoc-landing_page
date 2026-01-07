@@ -1,3 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Page animations */
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.animate-fadeInUp {
+	animation: fadeInUp 640ms cubic-bezier(.22,.9,.37,1) both;
+}
+.animate-fadeIn {
+	animation: fadeIn 640ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.animate-fadeInUp,
+	.animate-fadeIn {
+		animation: none;
+		opacity: 1;
+		transform: none;
+	}
+}
