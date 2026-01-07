@@ -310,6 +310,14 @@ export default function App() {
     setCurrentPage(page);
   };
 
+  const navigateToSection = (sectionId) => {
+    setCurrentPage('home');
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
   return (
     <main className="relative min-h-screen">
       {/* Navbar sits outside the page components so it persists. */}
@@ -317,6 +325,9 @@ export default function App() {
         currentPage={currentPage} 
         onNavigateHome={() => navigateTo('home')}
         onNavigateAbout={() => navigateTo('about')}
+        onNavigateServices={() => navigateToSection('services')}
+        onNavigateHowitWorks={() => navigateToSection('how-it-works')}
+        onNavigateTeam={() => navigateToSection('team')}
       />
 
       {currentPage === 'home' ? (
