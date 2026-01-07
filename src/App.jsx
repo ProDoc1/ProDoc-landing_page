@@ -222,80 +222,85 @@ const LandingPage = () => {
         <Team/>
       </div>
       
-      {/* --- SECTION 5: DETAILED FOOTER --- */}
-      <div className="bg-white rounded-[2.5rem] md:rounded-[3.5rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-sm">
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
+         {/* --- SECTION 5: FOOTER (About page footer reused) --- */}
+         <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-cyan-400"></div>
+        
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
           
-          {/* Brand Column */}
-               <div className="md:col-span-4 flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
+               <div className="md:col-span-4 space-y-6">
+                  <div className="flex items-center gap-3">
                      <img src={LogoWithWords} alt="ProDoc" className="h-10 md:h-12 w-auto" />
                   </div>
-            <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
-              ProDoc is Sri Lanka's first centralized platform for transparent healthcare. We verify doctor qualifications and validate patient reviews to help you make informed decisions.
-            </p>
-            <div className="flex gap-3 mt-2">
-              <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
-              <a href="https://www.instagram.com/prodoclk/" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
-              <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
-            </div>
-          </div>
+                  <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
+                     ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
+                  </p>
+                  <div className="flex gap-4">
+                     {[Facebook, Instagram, Linkedin].map((Icon, i) => (
+                        <a key={i} href="#" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-all hover:scale-110">
+                           <Icon size={18} />
+                        </a>
+                     ))}
+                  </div>
+               </div>
 
-          {/* Links Column 1 */}
-          <div className="md:col-span-2">
-            <h4 className="font-bold text-slate-900 mb-4">Platform</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#services" className="hover:text-teal-600 transition-colors">Find a Doctor</a></li>
-              <li><a href="#how-it-works" className="hover:text-teal-600 transition-colors">How it Works</a></li>
-              <li><a href="#team" className="hover:text-teal-600 transition-colors">Our Team</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Reviews</a></li>
-            </ul>
-          </div>
+               <div className="md:col-span-2">
+                  <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
+                  <ul className="space-y-4 text-sm">
+                     {['Find a Doctor', 'How it Works', 'Our Team', 'Reviews'].map((item) => (
+                        <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                           <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                           {item}
+                        </a></li>
+                     ))}
+                  </ul>
+               </div>
 
-          {/* Links Column 2 */}
-          <div className="md:col-span-2">
-            <h4 className="font-bold text-slate-900 mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#team" className="hover:text-teal-600 transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Terms of Service</a></li>
-            </ul>
-          </div>
+               <div className="md:col-span-2">
+                  <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
+                  <ul className="space-y-4 text-sm">
+                     {['About Us', 'Careers', 'Privacy Policy', 'Terms of Service'].map((item) => (
+                        <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                           <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                           {item}
+                        </a></li>
+                     ))}
+                  </ul>
+               </div>
 
-          {/* Contact Column */}
-          <div className="md:col-span-4">
-            <h4 className="font-bold text-slate-900 mb-4">Contact</h4>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-3">
-                <Mail size={16} className="text-teal-500" />
-                <span>prdoc2025se06@gmail.com</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone size={16} className="text-teal-500" />
-                <span>+94 76 793 7055</span>
-              </li>
-            </ul>
+               <div className="md:col-span-4">
+                  <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
+                  <ul className="space-y-4 text-sm mb-8">
+                     <li className="flex items-center gap-3 text-slate-600">
+                        <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Mail size={18} /></div>
+                        <span>prdoc2025se06@gmail.com</span>
+                     </li>
+                     <li className="flex items-center gap-3 text-slate-600">
+                        <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Phone size={18} /></div>
+                        <span>+94 76 793 7055</span>
+                     </li>
+                  </ul>
             
-            {/* CTA Box */}
-            <div className="mt-6 bg-teal-50 p-4 rounded-2xl border border-teal-100">
-              <p className="text-xs font-semibold text-teal-800 mb-2">Are you a doctor?</p>
-              <button className="text-xs bg-teal-600 text-white px-3 py-2 rounded-lg font-bold hover:bg-teal-700 transition-colors w-full">
-                Join ProDoc Network
-              </button>
+                  <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
+                     <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
+                     <button className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                        Join ProDoc Network
+                     </button>
+                  </div>
+               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
-            <div className="flex items-center gap-2">
-               <span className="w-2 h-2 rounded-full bg-green-500"></span>
-               <span>All Systems Operational</span>
+            <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
+               <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  <span>All Systems Operational</span>
+               </div>
+               <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
             </div>
-            <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
-        </div>
-      </div>
+         </footer>
 
     </div>
   );
