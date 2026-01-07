@@ -12,7 +12,7 @@ import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
 import LogoWhite from '../assets/logo_with_words_white.png';
 
-const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
+const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateServices, onNavigateHowitWorks, onNavigateTeam }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -60,10 +60,10 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
 
   const navItems = [
     { name: 'Home', url: '#', icon: Stethoscope, onClick: onNavigateHome },
-    { name: 'Services', url: '#services', icon: Briefcase },
+    { name: 'Services', url: '#services', icon: Briefcase, onClick: onNavigateServices },
     { name: 'About', url: '#', icon: User, onClick: onNavigateAbout },
-    { name: 'How it Works', url: '#how-it-works', icon: FileText },
-    { name: 'Team', url: '#team', icon: Users },
+    { name: 'How it Works', url: '#how-it-works', icon: FileText, onClick: onNavigateHowitWorks },
+    { name: 'Team', url: '#team', icon: Users, onClick: onNavigateTeam },
   ];
 
   return (
