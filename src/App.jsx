@@ -5,6 +5,7 @@ import LogoWithWords from './assets/Logo_with_words.png';
 import Team from './components/team';
 import AboutPage from './About';
 import Navbar from './components/Navbar';
+import LoginPage from './patientLogin';
 
 // --- MAIN LANDING PAGE COMPONENT ---
 const LandingPage = () => {
@@ -325,7 +326,11 @@ export default function App() {
 
   return (
     <main className="relative min-h-screen">
+      {/* 2. EDITED NAVBAR RENDERING 👇 */}
       {/* Navbar sits outside the page components so it persists. */}
+      {/* We hide this global navbar when on 'login' because LoginPage has its own navbar */}
+      {currentPage !== 'login' && (
+      
       <Navbar 
         currentPage={currentPage} 
         onNavigateHome={() => navigateTo('home')}
@@ -333,12 +338,21 @@ export default function App() {
         onNavigateServices={() => navigateToSection('services')}
         onNavigateHowitWorks={() => navigateToSection('how-it-works')}
         onNavigateTeam={() => navigateToSection('team')}
+        onNavigateLogin={() => navigateTo('login')}
       />
-
-      {currentPage === 'home' ? (
+      )}
+      {/* 3. EDITED PAGE SWITCHING LOGIC 👇 */}
+      {currentPage === 'home' && (
         <LandingPage />
-      ) : (
+      )}
+      
+      {currentPage === 'about' && (
         <AboutPage onBack={() => navigateTo('home')} />
+      )}
+
+      {/* Added Logic for Login Page */}
+      {currentPage === 'login' && (
+        <LoginPage onBack={() => navigateTo('home')} />
       )}
     </main>
   );
