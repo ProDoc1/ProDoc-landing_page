@@ -20,7 +20,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-// --- ANIMATION COMPONENTS (Unchanged) ---
+// --- ANIMATION COMPONENTS ---
 
 const Reveal = ({ children, delay = 0, className = "" }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -181,8 +181,8 @@ const AboutPage = () => {
             
             <div className="grid grid-cols-1 gap-4 h-full">
               <Reveal delay={200}>
-                <div className="bg-[#5EEAD4] border border-[#5EEAD4] rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
-                  <div className="bg-white p-3 rounded-xl text-[#5EEAD4] shrink-0">
+                <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
+                  <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
@@ -193,8 +193,8 @@ const AboutPage = () => {
               </Reveal>
 
               <Reveal delay={300}>
-                <div className="bg-[#3AD0C2] border border-[#3AD0C2] rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
-                  <div className="bg-white p-3 rounded-xl text-[#5EEAD4] shrink-0">
+                <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
+                  <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
@@ -205,8 +205,8 @@ const AboutPage = () => {
               </Reveal>
 
               <Reveal delay={400}>
-                <div className="bg-[#13A89E] border border-[#13A89E] rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
-                  <div className="bg-white p-3 rounded-xl text-[#5EEAD4] shrink-0">
+                <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
+                  <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
@@ -349,6 +349,69 @@ const AboutPage = () => {
           </div>
         </div>
 
+        {/* Get in Touch */}
+        <div className="grid md:grid-cols-12 gap-8 mb-20">
+          <Reveal delay={100} className="md:col-span-12">
+            {/* ADDED 'group' class to the container div */}
+            <div className="group bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl relative overflow-hidden">
+              {/* Decorative Background Blob inside the card */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-teal-50/50 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+
+
+              <div className="grid md:grid-cols-2 gap-12 relative z-10">
+                {/* Left Side: Content */}
+                <div className="space-y-6 flex flex-col justify-start">
+                  <div>
+                    <h2 className="text-4xl font-bold text-slate-900 mb-4">Get in Touch</h2>
+                    <p className="text-lg text-slate-600 leading-relaxed">
+                      Have questions about ProDoc or need help getting started? Our team is here to assist you on your journey to better healthcare management.
+                    </p>
+                  </div>
+
+                  {/* Mail Icon */}
+                  <div className="flex justify-center md:justify-start mt-4">
+                    <Mail className="w-64 h-64 md:h-56 md:translate-x-32  translate-y-8 md:translate-y-12 text-teal-500/10 transition-all duration-1000 ease-out group-hover:scale-150 group-hover:rotate-12 group-hover:text-teal-500/20 cursor-pointer" />
+                  </div>
+                </div>
+
+                {/* Right Side: Form */}
+                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">First Name</label>
+                      <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">Last Name</label>
+                      <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Email Address</label>
+                    <input type="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Subject</label>
+                    <input type="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Message</label>
+                    <textarea rows="4" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all resize-none"></textarea>
+                  </div>
+
+                  <button className="w-full bg-[#14B8A6] text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-500/20 hover:bg-[#0f968c] hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group">
+                    Send Message
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </form>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+
         {/* Footer  */}
         <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
@@ -362,12 +425,10 @@ const AboutPage = () => {
               <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
                 ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
               </p>
-              <div className="flex gap-4">
-                {[Facebook, Instagram, Linkedin].map((Icon, i) => (
-                  <a key={i} href="#" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-all hover:scale-110">
-                    <Icon size={18} />
-                  </a>
-                ))}
+              <div className="flex gap-3 mt-2">
+                  <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+                  <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
+                  <a href="https://www.linkedin.com/in/pro-doc-19629b3a5/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
               </div>
             </div>
 
