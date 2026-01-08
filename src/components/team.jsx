@@ -3,12 +3,12 @@ import { Linkedin, Github, ArrowUpRight } from "lucide-react";
 
 // Import Team Photos from the assets folder
 // Make sure you have saved your images in src/assets/ with these names
-import jayithImg from "../assets/jayith.jpg";
-import kushanImg from "../assets/kushan.jpg";
-import nethminImg from "../assets/nethmin.jpg";
-import geenadiImg from "../assets/geenadi.jpg";
-import uvinduImg from "../assets/uvindu.jpg";
-import agithaImg from "../assets/agitha.jpg";
+import jayithImg from "../assets/jayith.png";
+import kushanImg from "../assets/kushan.png";
+import nethminImg from "../assets/nethmin.png";
+import geenadiImg from "../assets/geenadi.png";
+import uvinduImg from "../assets/uvindu.png";
+import agithaImg from "../assets/agitha.png";
 
 function TeamMember({ imgSrc, name, title, linkedinUrl, githubUrl }) {
   return (
