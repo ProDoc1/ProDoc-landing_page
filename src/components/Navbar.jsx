@@ -12,7 +12,8 @@ import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
 import LogoWhite from '../assets/logo_with_words_white.png';
 
-const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
+// 1. ADDED 'onNavigateLogin' TO PROPS HERE 👇
+const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -23,17 +24,11 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Shared wrapper classes for the floating island look
-  // fixed: keeps it on screen
-  // top-6: moves it down (the "little below" you requested)
-  // left-1/2 -translate-x-1/2: centers it perfectly
-  // w-[95%] max-w-7xl: ensures it doesn't touch the edges
   const baseWrapper = "fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 rounded-2xl transition-all duration-300 border";
 
   // Configuration for Page Themes
   const theme = {
     home: {
-      // Dark/Transparent Mode
       wrapper: `${baseWrapper} ${scrolled ? "bg-black/20 backdrop-blur-xl border-white/10 shadow-lg" : "bg-transparent border-transparent"}`,
       text: "text-white",
       logoIcon: "#14b8a5ff",
@@ -44,8 +39,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
       
     },
     about: {
-      // Light/Green Mode
-    wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-teal-100 shadow-lg" : "bg-[#E4F0F1]/20 backdrop-blur-sm border-transparent"}`,
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-teal-100 shadow-lg" : "bg-[#E4F0F1]/20 backdrop-blur-sm border-transparent"}`,
       text: "text-teal-600",
       logoIcon: "#14B8A6",
       logoBg: "bg-white",
@@ -55,8 +49,6 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
       tubelightBg: "#E4F0F1",
     }
   };
-
-
 
   const currentStyle = theme[currentPage] || theme.home;
 
@@ -74,13 +66,6 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
         
         {/* Logo Section */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={onNavigateHome}>
-          {/*
-            If we're on the dark 'home' theme, don't render a white bg wrapper
-            so transparent PNG logos remain transparent. For light pages keep
-            a small padded background for contrast.
-          */}
-          {/* Render logo without a white padded background so transparent PNGs remain transparent.
-              Keep a subtle hover scale for affordance. */}
           <div className="p-0 group-hover:scale-105 transition-transform">
             <img
               src={currentPage === 'home' ? LogoWhite : LogoColor}
@@ -105,7 +90,12 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
           <button className={`${currentStyle.btnSecondary} px-5 py-2 rounded-full text-sm font-semibold transition-all`}>
             Doctor Login
           </button>
-          <button className={`${currentStyle.btnPrimary} px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md`}>
+          
+          {/* 2. ATTACHED CLICK HANDLER TO DESKTOP BUTTON HERE 👇 */}
+          <button 
+            onClick={onNavigateLogin}
+            className={`${currentStyle.btnPrimary} px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md`}
+          >
             Patient Login
           </button>
         </div>
@@ -139,7 +129,15 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
               <button className="w-full py-3 rounded-xl font-bold bg-slate-50 text-slate-700 hover:bg-slate-100">
                 Doctor Login
               </button>
-              <button className="w-full py-3 rounded-xl font-bold bg-[#14B8A6] text-white hover:bg-[#0f968c]">
+              
+              {/* 3. ATTACHED CLICK HANDLER TO MOBILE BUTTON HERE 👇 */}
+              <button 
+                onClick={() => {
+                  onNavigateLogin();
+                  setIsMenuOpen(false); // Close menu after clicking
+                }}
+                className="w-full py-3 rounded-xl font-bold bg-[#14B8A6] text-white hover:bg-[#0f968c]"
+              >
                 Patient Login
               </button>
             </div>
