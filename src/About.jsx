@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import professionalDoc from './assets/professionaldoc.png';
 import LogoWithWords from './assets/Logo_with_words.png';
+import Aurora from "./components/Aurora";
 import {
   ShieldCheck,
   Target,
@@ -138,10 +139,10 @@ const AboutPage = () => {
             <Reveal delay={400}>
               <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-teal-900/10 ring-8 ring-white/50">
                  <TiltImage 
-                   src={professionalDoc} 
-                   alt="Professional Doctor" 
-                   className="w-full h-full"
-                 />
+            src={professionalDoc} 
+            alt="Professional Doctor" 
+            className="w-full h-full rounded-3xl overflow-hidden"
+          />
                  {/* Floating Badge Box */}
                  <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white flex items-center gap-3 animate-float">
                     <div className="bg-green-100 p-2 rounded-full">
@@ -193,7 +194,7 @@ const AboutPage = () => {
 
               <Reveal delay={300}>
                 <div className="bg-[#3AD0C2] border border-[#3AD0C2] rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
-                  <div className="bg-white p-3 rounded-xl text-[#3AD0C2] shrink-0">
+                  <div className="bg-white p-3 rounded-xl text-[#5EEAD4] shrink-0">
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
@@ -205,7 +206,7 @@ const AboutPage = () => {
 
               <Reveal delay={400}>
                 <div className="bg-[#13A89E] border border-[#13A89E] rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
-                  <div className="bg-white p-3 rounded-xl text-[#13A89E] shrink-0">
+                  <div className="bg-white p-3 rounded-xl text-[#5EEAD4] shrink-0">
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
@@ -217,6 +218,7 @@ const AboutPage = () => {
             </div>
           </div>
         </div>
+    
 
         {/* Section 2: Solutions - Grid of Feature Boxes */}
         <div className="mb-16">
@@ -260,12 +262,12 @@ const AboutPage = () => {
           </Reveal>
 
           <Reveal delay={200}>
-            <div className="bg-white rounded-3xl p-10 shadow-lg border-t-4 border-cyan-500 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+            <div className="bg-white rounded-3xl p-10 shadow-lg border-t-4 border-teal-500 relative overflow-hidden group hover:-translate-y-1 transition-transform">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <HeartPulse className="w-32 h-32 text-cyan-600" />
+                <HeartPulse className="w-32 h-32 text-teal-600" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                <HeartPulse className="w-8 h-8 text-cyan-600" /> Vision
+                <HeartPulse className="w-8 h-8 text-teal-600" /> Vision
               </h3>
               <p className="text-slate-600 leading-relaxed text-lg">
                 To be the most trusted digital healthcare companion, seamlessly connecting patients with technology to create a healthier global community.
@@ -276,23 +278,46 @@ const AboutPage = () => {
 
         {/* Section 4: Technology & Audience */}
         <div className="grid md:grid-cols-2 gap-8 mb-20">
-          {/* Tech Box */}
           <Reveal delay={100}>
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 w-40 h-40 bg-teal-500 rounded-full blur-[80px] opacity-20"></div>
-              <div>
-                <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md">
-                  <Cpu className="w-6 h-6 text-teal-400" />
+  {/* Ensure the parent has 'relative' and 'overflow-hidden' */}
+  <div className="bg-teal-500 rounded-3xl p-8 text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden">
+    
+    {/* 1. Add the Aurora component here */}
+    <div className="absolute inset-0 z-0">
+    <Aurora
+      /* Color 1: Primary Teal, Color 2: Light Teal, Color 3: Deep Slate (Replaces Blue) */
+      colorStops={["#0D9488", "#14B8A6", "#2e786b"]} 
+      blend={0.8}
+      amplitude={2.0}
+      speed={0.5}
+    />
+    </div>
+
+    {/* 2. Add this tint layer to make the text readable */}
+    <div className="absolute inset-0 bg-slate-900/40 z-[1]"></div>
+
+    {/* 3. Wrap your existing content in a div with 'relative z-10' */}
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                  <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md">
+                    <Cpu className="w-6 h-6 text-teal-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">Technology With Responsibility</h3>
+                  <p className="text-slate-200 leading-relaxed">
+                    ProDoc utilizes cutting-edge AI to interpret medical data for clarity. 
+                    We strictly adhere to the principle that technology assists, but never 
+                    replaces, the human element of professional care.
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Technology With Responsibility</h3>
-                <p className="text-slate-300 leading-relaxed">
-                  ProDoc utilizes cutting-edge AI to interpret medical data for clarity. We strictly adhere to the principle that technology assists, but never replaces, the human element of professional care.
-                </p>
-              </div>
-              <div className="mt-8 flex gap-3">
-                <button className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-colors w-full text-center">
+                
+                <div className="mt-8 flex gap-3">
+                <button 
+                  onClick={() => window.open('https://newsroom.heart.org/news/new-guidance-offered-for-responsible-ai-use-in-health-care', '_blank')}
+                  className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all w-full text-center shadow-lg active:scale-95"
+                >
                   Read Documentation
                 </button>
+                </div>
               </div>
             </div>
           </Reveal>
@@ -304,9 +329,9 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-slate-900 mb-6">Who Is ProDoc For?</h3>
                 <div className="grid grid-cols-1 gap-4">
                   {[
-                    { icon: Users, label: "Patients", color: "bg-blue-50 text-blue-600", desc: "Seeking trusted care." },
-                    { icon: Building2, label: "Clinics", color: "bg-purple-50 text-purple-600", desc: "Managing visibility." },
-                    { icon: HeartPulse, label: "Providers", color: "bg-rose-50 text-rose-600", desc: "Showcasing expertise." },
+                    { icon: Users, label: "Patients", color: "bg-teal-500 text-white-600", desc: "Seeking trusted care." },
+                    { icon: Building2, label: "Clinics", color: "bg-teal-500 text-white-600", desc: "Managing visibility." },
+                    { icon: HeartPulse, label: "Providers", color: "bg-teal-500 text-white-600", desc: "Showcasing expertise." },
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors cursor-default group">
                       <div className={`p-3 rounded-xl ${item.color} group-hover:scale-110 transition-transform`}>
@@ -326,7 +351,7 @@ const AboutPage = () => {
 
         {/* Footer  */}
         <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-cyan-400"></div>
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
           
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
             
