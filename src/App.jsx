@@ -236,12 +236,10 @@ const LandingPage = () => {
                   <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
                      ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
                   </p>
-                  <div className="flex gap-4">
-                     {[Facebook, Instagram, Linkedin].map((Icon, i) => (
-                        <a key={i} href="#" className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-teal-50 hover:text-teal-600 transition-all hover:scale-110">
-                           <Icon size={18} />
-                        </a>
-                     ))}
+                  <div className="flex gap-3 mt-2">
+                     <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+                     <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
+                     <a href="https://www.linkedin.com/in/pro-doc-19629b3a5/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
                   </div>
                </div>
 
