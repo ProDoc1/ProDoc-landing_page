@@ -224,7 +224,7 @@ const LandingPage = () => {
       
          {/* --- SECTION 5: FOOTER (About page footer reused) --- */}
          <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-cyan-400"></div>
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
         
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
           

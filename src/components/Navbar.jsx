@@ -12,7 +12,7 @@ import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
 import LogoWhite from '../assets/logo_with_words_white.png';
 
-const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateServices, onNavigateHowitWorks, onNavigateTeam }) => {
+const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -46,7 +46,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateServic
     about: {
       // Light/Green Mode
     wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-teal-100 shadow-lg" : "bg-[#E4F0F1]/20 backdrop-blur-sm border-transparent"}`,
-      text: "text-slate-800",
+      text: "text-teal-600",
       logoIcon: "#14B8A6",
       logoBg: "bg-white",
       btnSecondary: "bg-white text-[#14B8A6] hover:bg-teal-50 border border-transparent shadow-sm",
@@ -56,14 +56,16 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateServic
     }
   };
 
+
+
   const currentStyle = theme[currentPage] || theme.home;
 
   const navItems = [
     { name: 'Home', url: '#', icon: Stethoscope, onClick: onNavigateHome },
-    { name: 'Services', url: '#services', icon: Briefcase, onClick: onNavigateServices },
+    { name: 'Services', url: '#services', icon: Briefcase },
     { name: 'About', url: '#', icon: User, onClick: onNavigateAbout },
-    { name: 'How it Works', url: '#how-it-works', icon: FileText, onClick: onNavigateHowitWorks },
-    { name: 'Team', url: '#team', icon: Users, onClick: onNavigateTeam },
+    { name: 'How it Works', url: '#how-it-works', icon: FileText },
+    { name: 'Team', url: '#team', icon: Users },
   ];
 
   return (
