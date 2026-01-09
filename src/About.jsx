@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import professionalDoc from './assets/professionaldoc.png';
 import LogoWithWords from './assets/Logo_with_words.png';
 import Aurora from "./components/Aurora";
+import Carousel from './components/Carousel';
 import {
   ShieldCheck,
   Target,
@@ -108,8 +109,6 @@ const AboutPage = () => {
         {/* Hero Section */}
         <div className="grid lg:grid-cols-12 gap-12 items-center mb-20">
           <div className="lg:col-span-7 space-y-6">
-            
-            
             <Reveal delay={100}>
               <h1 className="font-bold text-slate-900 leading-tight">
                 <span className="block text-base md:text-lg lg:text-3xl text-slate-700">About</span>
@@ -157,29 +156,31 @@ const AboutPage = () => {
             </Reveal>
           </div>
         </div>
-
-        {/* Section 1: Identity & Problem - Boxed Structure */}
-        <div className="grid lg:grid-cols-12 gap-8 mb-16">
-          {/* Left: Who We Are (Big Box) */}
+          {/* Section 1: Carousel & Problems - Side by Side Layout */}
+        <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-16">
+          {/* Left: Carousel */}
           <Reveal delay={100} className="lg:col-span-5">
-            <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100 h-full flex flex-col">
-              <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 text-teal-600">
-                <ShieldCheck className="w-8 h-8" />
+            <div className="flex justify-start h-full">
+              <div style={{ height: '500px', position: 'relative', width: '100%' }}>
+                <Carousel
+                  baseWidth={380}
+                  autoplay={true}
+                  autoplayDelay={4000}
+                  pauseOnHover={true}
+                  loop={true}
+                  round={false}
+                />
               </div>
-              <h3 className="text-3xl font-bold text-slate-900 mb-4">Who We Are</h3>
-              <p className="text-slate-600 leading-relaxed text-lg">
-                We are the guardians of healthcare transparency. By building a digital bridge between patients and medical professionals, we ensure that every profile is verified, every review is validated, and every decision is supported by data.
-              </p>
             </div>
           </Reveal>
 
-          {/* Right: The Problem (Stacked Alert Boxes) */}
+          {/* Right: The Problems We Solve */}
           <div className="lg:col-span-7 flex flex-col gap-4">
             <Reveal delay={200}>
               <h3 className="text-2xl font-bold text-slate-900 mb-2 px-2">The Problems We Solve</h3>
             </Reveal>
             
-            <div className="grid grid-cols-1 gap-4 h-full">
+            <div className="grid grid-cols-1 gap-5 ">
               <Reveal delay={200}>
                 <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
                   <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
@@ -218,7 +219,6 @@ const AboutPage = () => {
             </div>
           </div>
         </div>
-    
 
         {/* Section 2: Solutions - Grid of Feature Boxes */}
         <div className="mb-16">
@@ -279,24 +279,24 @@ const AboutPage = () => {
         {/* Section 4: Technology & Audience */}
         <div className="grid md:grid-cols-2 gap-8 mb-20">
           <Reveal delay={100}>
-  {/* Ensure the parent has 'relative' and 'overflow-hidden' */}
-  <div className="bg-teal-500 rounded-3xl p-8 text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden">
-    
-    {/* 1. Add the Aurora component here */}
-    <div className="absolute inset-0 z-0">
-    <Aurora
-      /* Color 1: Primary Teal, Color 2: Light Teal, Color 3: Deep Slate (Replaces Blue) */
-      colorStops={["#0D9488", "#14B8A6", "#2e786b"]} 
-      blend={0.8}
-      amplitude={2.0}
-      speed={0.5}
-    />
-    </div>
+            {/* Ensure the parent has 'relative' and 'overflow-hidden' */}
+            <div className="bg-teal-500 rounded-3xl p-8 text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden">
+              
+              {/* 1. Add the Aurora component here */}
+              <div className="absolute inset-0 z-0">
+                <Aurora
+                  /* Color 1: Primary Teal, Color 2: Light Teal, Color 3: Deep Slate (Replaces Blue) */
+                  colorStops={["#0D9488", "#14B8A6", "#2e786b"]} 
+                  blend={0.8}
+                  amplitude={2.0}
+                  speed={0.5}
+                />
+              </div>
 
-    {/* 2. Add this tint layer to make the text readable */}
-    <div className="absolute inset-0 bg-slate-900/40 z-[1]"></div>
+              {/* 2. Add this tint layer to make the text readable */}
+              <div className="absolute inset-0 bg-slate-900/40 z-[1]"></div>
 
-    {/* 3. Wrap your existing content in a div with 'relative z-10' */}
+              {/* 3. Wrap your existing content in a div with 'relative z-10' */}
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md">
@@ -311,12 +311,12 @@ const AboutPage = () => {
                 </div>
                 
                 <div className="mt-8 flex gap-3">
-                <button 
-                  onClick={() => window.open('https://newsroom.heart.org/news/new-guidance-offered-for-responsible-ai-use-in-health-care', '_blank')}
-                  className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all w-full text-center shadow-lg active:scale-95"
-                >
-                  Read Documentation
-                </button>
+                  <button 
+                    onClick={() => window.open('https://newsroom.heart.org/news/new-guidance-offered-for-responsible-ai-use-in-health-care', '_blank')}
+                    className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all w-full text-center shadow-lg active:scale-95"
+                  >
+                    Read Documentation
+                  </button>
                 </div>
               </div>
             </div>
@@ -356,7 +356,6 @@ const AboutPage = () => {
             <div className="group bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl relative overflow-hidden">
               {/* Decorative Background Blob inside the card */}
               <div className="absolute top-0 right-0 w-96 h-96 bg-teal-50/50 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-
 
               <div className="grid md:grid-cols-2 gap-12 relative z-10">
                 {/* Left Side: Content */}
