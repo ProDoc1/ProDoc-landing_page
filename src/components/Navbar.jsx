@@ -39,12 +39,12 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
       
     },
     about: {
-    wrapper: `${baseWrapper} ${scrolled ? "bg- backdrop-blur-xl backdrop-blur-9xl shadow-lg" : "bg- backdrop-blur-xl "}`,
+    wrapper: `${baseWrapper} ${scrolled ? "backdrop-blur-xl backdrop-blur-9xl shadow-lg" : "bg- backdrop-blur-xl "}`,
     text: "text-white",
     logoIcon: "#ffffff",
     logoBg: "bg-white", 
-    btnSecondary: "bg-white/20 hover:bg-white/10 text-white border border-white/20",
-    btnPrimary: "bg-white text-teal-600   hover:bg-teal-100 hover:text-teal-700",
+    btnSecondary: "bg-teal-500 hover:bg-teal-600 text-white boader border-white/20",
+    btnPrimary: "bg-white text-teal-600",
     mobileToggle: "text-white hover:bg-white/10",
     tubelightBg: "#14B8A6",
     },
@@ -90,7 +90,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
         <div className="hidden md:flex flex-1 justify-center">
           <NavBar 
             items={navItems} 
-            accentColor="#14B8A6" 
+            accentColor="#0ee9cf3b" 
             bgColor={currentStyle.tubelightBg}
           />
         </div>
