@@ -7,6 +7,7 @@
   padding: 16px;
   background: white;
   box-shadow: 0 10px 25px rgba(20, 184, 166, 0.1);
+  
 }
 
 .carousel-track {
@@ -27,6 +28,7 @@
   cursor: grab;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+
 }
 
 .carousel-item:hover {
@@ -41,6 +43,7 @@
 .carousel-item-header {
   margin-bottom: 16px;
   padding: 24px 24px 0 24px;
+  
 }
 
 .carousel-icon-container {
@@ -52,6 +55,8 @@
   border-radius: 16px;
   background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
   box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+  
+  
 }
 
 .carousel-icon {
@@ -61,11 +66,12 @@
 }
 
 .carousel-item-content {
-  padding: 0 24px 24px 24px;
+  padding: 0 40px 40px 40px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  
 }
 
 .carousel-item-title {
@@ -80,6 +86,7 @@
   font-size: 15px;
   color: #64748b;
   line-height: 1.6;
+  
 }
 
 .carousel-indicators-container {
@@ -87,6 +94,7 @@
   width: 100%;
   justify-content: center;
   margin-top: 20px;
+  
 }
 
 .carousel-indicators {
