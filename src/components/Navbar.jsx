@@ -12,7 +12,7 @@ import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
 import LogoWhite from '../assets/logo_with_words_white.png';
 
-// 1. ADDED 'onNavigateLogin' TO PROPS HERE 👇
+
 const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -39,7 +39,17 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
       
     },
     about: {
-      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-teal-100 shadow-lg" : "bg-[#E4F0F1]/20 backdrop-blur-sm border-transparent"}`,
+    wrapper: `${baseWrapper} ${scrolled ? "bg- backdrop-blur-xl backdrop-blur-9xl shadow-lg" : "bg- backdrop-blur-xl "}`,
+    text: "text-white",
+    logoIcon: "#ffffff",
+    logoBg: "bg-white", 
+    btnSecondary: "bg-white/20 hover:bg-white/10 text-white border border-white/20",
+    btnPrimary: "bg-white text-teal-600   hover:bg-teal-100 hover:text-teal-700",
+    mobileToggle: "text-white hover:bg-white/10",
+    tubelightBg: "#14B8A6",
+    },
+    login: {
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/90 backdrop-blur-xl border-teal-100 shadow-lg" : "bg-white/80 backdrop-blur-sm border-transparent"}`,
       text: "text-teal-600",
       logoIcon: "#14B8A6",
       logoBg: "bg-white",
@@ -130,7 +140,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
                 Doctor Login
               </button>
               
-              {/* 3. ATTACHED CLICK HANDLER TO MOBILE BUTTON HERE 👇 */}
+             
               <button 
                 onClick={() => {
                   onNavigateLogin();

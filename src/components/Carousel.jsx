@@ -6,20 +6,20 @@ import './Carousel.css';
 
 const ITEMS = [
   {
-    title: 'Who We Are',
-    description: 'We are the guardians of healthcare transparency. By building a digital bridge between patients and medical professionals, we ensure that every profile is verified, every review is validated, and every decision is supported by data.',
+    title: 'Verified Expertise',
+    description: "We act as the digital bridge between you and medical professionals, ensuring every doctor's profile is 100% verified for your safety",
     id: 1,
     icon: <ShieldCheck className="carousel-icon" />
   },
   {
-    title: 'Our Mission',
-    description: 'To empower patients with transparent, reliable healthcare information accessible anytime, anywhere, ensuring no decision is made in the dark.',
+    title: 'Validated Trust',
+    description: 'Transparency is our priority; every patient review is rigorously validated to ensure you get the honest truth before every appointment',
     id: 2,
     icon: <ShieldCheck className="carousel-icon" />
   },
   {
-    title: 'Verified Profiles',
-    description: 'Every profile is thoroughly verified with accurate credentials and background checks.',
+    title: 'Responsible Innovation',
+    description: "At ProDoc, we don't just innovate—we protect the integrity of healthcare through transparency and accountability",
     id: 3,
     icon: <CheckCircle className="carousel-icon" />
   },

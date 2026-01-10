@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Added useState here
+import React, { useState, useEffect } from 'react';
 import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
@@ -282,7 +282,7 @@ const LandingPage = () => {
             
                   <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
                      <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
-                     <button className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                     <button className="w-full bg-teal-500 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-500/50 transition-all transform active:scale-95">
                         Join ProDoc Network
                      </button>
                   </div>
@@ -324,9 +324,7 @@ export default function App() {
 
   return (
     <main className="relative min-h-screen">
-      {/* 2. EDITED NAVBAR RENDERING 👇 */}
-      {/* Navbar sits outside the page components so it persists. */}
-      {/* We hide this global navbar when on 'login' because LoginPage has its own navbar */}
+
       {currentPage !== 'login' && (
       
       <Navbar 

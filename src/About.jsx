@@ -160,7 +160,7 @@ const AboutPage = () => {
         <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-16">
           {/* Left: Carousel */}
           <Reveal delay={100} className="lg:col-span-5">
-            <div className="flex justify-start h-full">
+            <div className="flex justify-start h-full px-4 pt-12"> {/* Add pt-8 for top padding only */}
               <div style={{ height: '500px', position: 'relative', width: '100%' }}>
                 <Carousel
                   baseWidth={380}
@@ -329,9 +329,9 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-slate-900 mb-6">Who Is ProDoc For?</h3>
                 <div className="grid grid-cols-1 gap-4">
                   {[
-                    { icon: Users, label: "Patients", color: "bg-teal-500 text-white-600", desc: "Seeking trusted care." },
-                    { icon: Building2, label: "Clinics", color: "bg-teal-500 text-white-600", desc: "Managing visibility." },
-                    { icon: HeartPulse, label: "Providers", color: "bg-teal-500 text-white-600", desc: "Showcasing expertise." },
+                    { icon: Users, label: "Patients", color: "bg-teal-500 text-white", desc: "Seeking trusted care." },
+                    { icon: Building2, label: "Clinics", color: "bg-teal-500 text-white", desc: "Managing visibility." },
+                    { icon: HeartPulse, label: "Providers", color: "bg-teal-500 text-white", desc: "Showcasing expertise." },
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors cursor-default group">
                       <div className={`p-3 rounded-xl ${item.color} group-hover:scale-110 transition-transform`}>
@@ -470,7 +470,7 @@ const AboutPage = () => {
               
               <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
                 <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
-                <button className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                <button className="w-full bg-teal-500 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-500/50 transition-all transform active:scale-95">
                   Join ProDoc Network
                 </button>
               </div>
