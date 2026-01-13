@@ -19,6 +19,14 @@ import {
   Phone,
   ArrowRight,
   AlertCircle,
+  TrendingUp,
+  Award,
+  Calendar,
+  Zap,
+  Clock,
+  UserCheck,
+  Star,
+  ChevronRight,
 } from 'lucide-react';
 
 // --- ANIMATION COMPONENTS ---
@@ -92,18 +100,171 @@ const TiltImage = ({ src, alt, className }) => {
   );
 };
 
+// Counter Animation Component
+const Counter = ({ end, duration = 2000, suffix = "", className = "" }) => {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (countRef.current) {
+      observer.observe(countRef.current);
+    }
+
+    return () => {
+      if (countRef.current) {
+        observer.unobserve(countRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    
+    let startTime;
+    let endTime;
+    let animationFrameId;
+    
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * end));
+      
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      } else {
+        setIsVisible(false);
+      }
+    };
+    
+    animationFrameId = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isVisible, end, duration]);
+
+  return (
+    <div ref={countRef} className={`text-3xl md:text-4xl font-bold text-teal-600 ${className}`}>
+      {count.toLocaleString()}{suffix}
+    </div>
+  );
+};
+
+
+
+// Testimonial Carousel Component
+const TestimonialCarousel = ({ testimonials }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const nextTestimonial = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
+  };
+  
+  const prevTestimonial = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length);
+  };
+  
+  useEffect(() => {
+    const interval = setInterval(nextTestimonial, 5000);
+    return () => clearInterval(interval);
+  }, [testimonials.length]);
+  
+  return (
+    <div className="relative">
+      <div className="flex items-center justify-between mb-4">
+        <button 
+          onClick={prevTestimonial}
+          className="p-2 rounded-full bg-white/80 backdrop-blur-sm text-teal-600 hover:bg-white transition-colors"
+        >
+          <ChevronRight className="w-5 h-5 rotate-180" />
+        </button>
+        <button 
+          onClick={nextTestimonial}
+          className="p-2 rounded-full bg-white/80 backdrop-blur-sm text-teal-600 hover:bg-white transition-colors"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+      
+      <div className="overflow-hidden">
+        <div 
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {testimonials.map((testimonial, index) => (
+            <div key={index} className="w-full flex-shrink-0 px-4">
+              <div className="bg-white rounded-2xl p-6 shadow-md">
+                <div className="flex items-center mb-4">
+                  <div className="flex-shrink-0">
+                    <img 
+                      src={`https://picsum.photos/seed/user${index}/40/40.jpg?random=${index}`} 
+                      alt={testimonial.name} 
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="ml-4">
+                    <h4 className="font-bold text-slate-900">{testimonial.name}</h4>
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-slate-600 italic">"{testimonial.text}"</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
 // --- MAIN PAGE COMPONENT ---
 
 const AboutPage = () => {
+  const testimonials = [
+    {
+
+      text: "It’s needed cause some people are struggling to find the right doctor for their disease so I think platform like this would be very helpful.",
+    },
+    {
+      
+      text: "Nowadays, Medical industry is very high expensive industry where the treatments are subjectively technical and cannot argue. So information to choose the right doctor is highly useful effective for quick recovery and its a social responsibility to have transparency within the industry.",
+    },
+    {
+      
+      text: "Patients often choose doctors randomly or based on word of mouth. A platform helps them find doctors who specialize in their exact condition",
+    }
+  ];
+  
+  
+
   return (
     <div className="min-h-screen bg-[#E4F0F1] relative overflow-hidden selection:bg-teal-200">
       
       {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-teal-300/30 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-[10%] right-[-5%] w-[500px] h-[500px] bg-blue-200/20 rounded-full blur-[120px] animate-blob"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-teal-300/40 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-teal-00/30 rounded-full blur-[100px] animate-pulse"></div>
       </div>
 
+      
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 pt-32 md:pt-40 lg:pt-48 pb-12 md:pb-16">
         
         {/* Hero Section */}
@@ -156,11 +317,17 @@ const AboutPage = () => {
             </Reveal>
           </div>
         </div>
-          {/* Section 1: Carousel & Problems - Side by Side Layout */}
-        <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-16">
+        
+        
+       
+
+
+        
+        {/* Section 1: Carousel & Problems - Side by Side Layout */}
+        <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-">
           {/* Left: Carousel */}
           <Reveal delay={100} className="lg:col-span-5">
-            <div className="flex justify-start h-full px-4 pt-12"> {/* Add pt-8 for top padding only */}
+            <div className="flex justify-start h-full px-4 pt-12">
               <div style={{ height: '500px', position: 'relative', width: '100%' }}>
                 <Carousel
                   baseWidth={380}
@@ -180,7 +347,7 @@ const AboutPage = () => {
               <h3 className="text-2xl font-bold text-slate-900 mb-2 px-2">The Problems We Solve</h3>
             </Reveal>
             
-            <div className="grid grid-cols-1 gap-5 ">
+            <div className="grid grid-cols-1 gap-5">
               <Reveal delay={200}>
                 <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
                   <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
@@ -220,9 +387,20 @@ const AboutPage = () => {
           </div>
         </div>
 
+        {/* Testimonials Section */}
+        <Reveal delay={100}>
+          <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">What Our Users Say</h2>
+        </Reveal>
+        <Reveal delay={200}>
+          <div className="bg-white rounded-3xl p-8 shadow-lg mb-16">
+            <TestimonialCarousel testimonials={testimonials} />
+          </div>
+        </Reveal>
+
         {/* Section 2: Solutions - Grid of Feature Boxes */}
         <div className="mb-16">
           <Reveal delay={100}>
+          
             <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Our Solution</h2>
           </Reveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -312,7 +490,7 @@ const AboutPage = () => {
                 
                 <div className="mt-8 flex gap-3">
                   <button 
-                    onClick={() => window.open('https://newsroom.heart.org/news/new-guidance-offered-for-responsible-ai-use-in-health-care', '_blank')}
+                    onClick={() => window.open('https://www.unesco.org/en/artificial-intelligence/recommendation-ethics', '_blank')}
                     className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all w-full text-center shadow-lg active:scale-95"
                   >
                     Read Documentation
