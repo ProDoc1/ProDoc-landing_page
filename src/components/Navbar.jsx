@@ -39,7 +39,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
       
     },
     about: {
-    wrapper: `${baseWrapper} ${scrolled ? "backdrop-blur-xl backdrop-blur-9xl shadow-lg" : "bg- backdrop-blur-xl "}`,
+    wrapper: `${baseWrapper} ${scrolled ? "backdrop-blur-xl shadow-lg" : " backdrop-blur-xl "}`,
     text: "text-white",
     logoIcon: "#ffffff",
     logoBg: "bg-white", 
