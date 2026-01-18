@@ -233,6 +233,135 @@ const TestimonialCarousel = ({ testimonials }) => {
   );
 };
 
+// --- ANIMATED TIMELINE COMPONENT ---
+
+const Timeline = ({ events }) => {
+  const containerRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [progress, setProgress] = useState(0); // 0 to 1
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const containerTop = rect.top + window.scrollY;
+      const containerHeight = rect.height;
+      
+      // Calculate scroll position relative to the container
+      // We start progress when the container hits the bottom of the viewport
+      const windowHeight = window.innerHeight;
+      const startScroll = containerTop - windowHeight + (windowHeight * 0.2);
+      const endScroll = containerTop + containerHeight - (windowHeight * 0.8);
+
+      let currentScroll = window.scrollY;
+      
+      // Clamp the scroll value
+      let percentage = (currentScroll - startScroll) / (endScroll - startScroll);
+      percentage = Math.max(0, Math.min(1, percentage));
+
+      setProgress(percentage);
+
+      // Determine which item is active based on progress
+      // Map 0-1 progress to 0-(events.length-1) index
+      const rawIndex = percentage * (events.length - 1);
+      setActiveIndex(Math.round(rawIndex));
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [events.length]);
+
+  return (
+    <div ref={containerRef} className="relative py-12">
+      {/* Center Line (Static Base) */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-teal-100 rounded-full"></div>
+
+      {/* Progress Line (Glowing Animated) */}
+      <div 
+        className="absolute left-1/2 transform -translate-x-1/2 top-0 w-1 bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 rounded-full shadow-[0_0_20px_rgba(13,148,136,0.8)] transition-all duration-100 ease-out origin-top"
+        style={{ height: `${Math.max(0, progress * 100)}%` }}
+      ></div>
+
+      {/* Glowing Pulse at the bottom of the progress line */}
+      <div 
+        className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-teal-300 rounded-full blur-md -z-10 transition-all duration-100 ease-out"
+        style={{ top: `${Math.max(0, progress * 100)}%`, marginTop: '-12px' }}
+      ></div>
+
+      <div className="space-y-12 relative">
+        {events.map((event, index) => {
+          const isActive = index === activeIndex;
+          return (
+            <div
+              key={index}
+              className={`flex items-start gap-8 transition-all duration-700 ease-out ${
+                index % 2 === 0 ? "flex-row-reverse" : ""
+              }`}
+            >
+              {/* Content Card */}
+              <div 
+                className={`w-1/2 transition-all duration-500 ease-out ${
+                  isActive 
+                    ? 'opacity-100 scale-105 translate-y-[-10px] z-20' 
+                    : 'opacity-60 scale-100 translate-y-0'
+                }`}
+              >
+                <div 
+                  className={`
+                    rounded-2xl p-6 shadow-md transition-all duration-500 border-2
+                    ${isActive 
+                      ? 'bg-white border-teal-500 shadow-[0_10px_40px_-10px_rgba(13,148,136,0.4)]' 
+                      : 'bg-white/80 border-transparent shadow-sm hover:shadow-md'
+                    }
+                  `}
+                >
+                  <div className={`mb-1 text-sm font-bold uppercase tracking-wider transition-colors duration-500 ${isActive ? 'text-teal-600' : 'text-slate-400'}`}>
+                    Year {event.year}
+                  </div>
+                  <h3 className={`text-xl font-bold mb-2 transition-colors duration-500 ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                    {event.title}
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed">{event.description}</p>
+                </div>
+              </div>
+
+              {/* Center Node (Year Dot) */}
+              <div 
+                className={`
+                  relative z-10 flex items-center justify-center transition-all duration-500 ease-out
+                  ${isActive ? 'scale-125' : 'scale-100 grayscale opacity-50 hover:grayscale-0 hover:opacity-100'}
+                `}
+              >
+                {/* Glow Effect behind active dot */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-teal-400 rounded-full blur-xl animate-pulse"></div>
+                )}
+                
+                <div 
+                  className={`
+                    w-14 h-14 rounded-full flex items-center justify-center font-bold shadow-lg transition-all duration-500 border-4 border-white relative z-10
+                    ${isActive 
+                      ? 'bg-teal-600 text-white scale-110 shadow-[0_0_25px_rgba(13,148,136,0.6)]' 
+                      : 'bg-white text-slate-500'
+                    }
+                  `}
+                >
+                  {event.year.substring(2)}
+                </div>
+              </div>
+
+              {/* Spacer */}
+              <div className="w-1/2"></div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 
 
 // --- MAIN PAGE COMPONENT ---
@@ -240,18 +369,48 @@ const TestimonialCarousel = ({ testimonials }) => {
 const AboutPage = () => {
   const testimonials = [
     {
-
+      name: "Sarah J.", // Added names for consistency
       text: "It’s needed cause some people are struggling to find the right doctor for their disease so I think platform like this would be very helpful.",
     },
     {
-      
+      name: "Mark D.",
       text: "Nowadays, Medical industry is very high expensive industry where the treatments are subjectively technical and cannot argue. So information to choose the right doctor is highly useful effective for quick recovery and its a social responsibility to have transparency within the industry.",
     },
     {
-      
+      name: "Emily R.",
       text: "Patients often choose doctors randomly or based on word of mouth. A platform helps them find doctors who specialize in their exact condition",
     }
   ];
+
+  const timelineEvents = [
+  {
+    year: "2025",
+    title: "ProDoc Founded",
+    description:
+      "Started with a mission to bring transparency to healthcare in Sri Lanka",
+  },
+  {
+    year: "2026",
+    title: "1,000+ Users",
+    description:
+      "Reached a major milestone with thousands of patients trusting our platform",
+  },
+  {
+    year: "2026",
+    title: "AI Integration",
+    description:
+      "Introduced AI-powered medical decision support to help patients understand their health better",
+  },
+  {
+    year: "2027",
+    title: "National Expansion (To be Continued)",
+    description:
+      "Expanding services across the entire country, connecting patients with verified healthcare professionals",
+  },
+];
+
+
+
   
   
 
@@ -261,7 +420,7 @@ const AboutPage = () => {
       {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-teal-300/40 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-teal-00/30 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/30 rounded-full blur-[100px] animate-pulse"></div>
       </div>
 
       
@@ -319,12 +478,47 @@ const AboutPage = () => {
         </div>
         
         
-       
+       {/* Statistics Section */}
+        <div className="bg-white rounded-3xl p-8 mb-16 shadow-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="space-y-2">
+              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-2">
+                <Users className="w-8 h-8 text-teal-600" />
+              </div>
+              <Counter end={1000} suffix="+" className="text-2xl md:text-3xl font-bold text-teal-600" />
+              <p className="text-slate-600">Happy Patients</p>
+            </div>
+            <div className="space-y-2">
+              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-2">
+                <ShieldCheck className="w-8 h-8 text-teal-600" />
+              </div>
+              <Counter end={200} suffix="+" className="text-2xl md:text-3xl font-bold text-teal-600" />
+              <p className="text-slate-600">Verified Doctors</p>
+            </div>
+            <div className="space-y-2">
+              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-2">
+                <Building2 className="w-8 h-8 text-teal-600" />
+              </div>
+              <Counter end={50} suffix="+" className="text-2xl md:text-3xl font-bold text-teal-600" />
+              <p className="text-slate-600">Partner Clinics</p>
+            </div>
+            <div className="space-y-2">
+              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-2">
+                <Star className="w-8 h-8 text-teal-600" />
+              </div>
+              <Counter end={4.8} suffix=" / 5" className="text-2xl md:text-3xl font-bold text-teal-600" />
+              <p className="text-slate-600">Average Rating</p>
+            </div>
+          </div>
+        </div>
+
+        
+
 
 
         
         {/* Section 1: Carousel & Problems - Side by Side Layout */}
-        <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-">
+        <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-12">
           {/* Left: Carousel */}
           <Reveal delay={100} className="lg:col-span-5">
             <div className="flex justify-start h-full px-4 pt-12">
@@ -344,7 +538,7 @@ const AboutPage = () => {
           {/* Right: The Problems We Solve */}
           <div className="lg:col-span-7 flex flex-col gap-4">
             <Reveal delay={200}>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2 px-2">The Problems We Solve</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4 px-2 pt-10">The Problems We Solve</h3>
             </Reveal>
             
             <div className="grid grid-cols-1 gap-5">
@@ -354,8 +548,8 @@ const AboutPage = () => {
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 mb-1">Trust Issues</h4>
-                    <p className="text-slate-600 text-sm">Finding a doctor you can truly trust is difficult in an unregulated market.</p>
+                    <h4 className="font-bold text-white mb-1">Trust Issues</h4>
+                    <p className="text-teal-50 text-sm">Finding a doctor you can truly trust is difficult in an unregulated market.</p>
                   </div>
                 </div>
               </Reveal>
@@ -366,8 +560,8 @@ const AboutPage = () => {
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 mb-1">Information Overload</h4>
-                    <p className="text-slate-600 text-sm">Fragmented and unreliable medical information confuses patients.</p>
+                    <h4 className="font-bold text-white mb-1">Information Overload</h4>
+                    <p className="text-teal-50 text-sm">Fragmented and unreliable medical information confuses patients.</p>
                   </div>
                 </div>
               </Reveal>
@@ -378,8 +572,8 @@ const AboutPage = () => {
                     <AlertCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 mb-1">Lack of Transparency</h4>
-                    <p className="text-slate-600 text-sm">Hidden costs and unknown credentials make healthcare choices risky.</p>
+                    <h4 className="font-bold text-white mb-1">Lack of Transparency</h4>
+                    <p className="text-teal-50 text-sm">Hidden costs and unknown credentials make healthcare choices risky.</p>
                   </div>
                 </div>
               </Reveal>
@@ -397,11 +591,26 @@ const AboutPage = () => {
           </div>
         </Reveal>
 
+        {/* Timeline Section */}
+        <div className="mb-20">
+           <Reveal delay={100}>
+           <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">
+                Our Journey
+           </h2>
+           </Reveal>
+
+           <Reveal delay={200}>
+               <div className="bg-white rounded-3xl p-8 shadow-lg">
+                  <Timeline events={timelineEvents} />
+               </div>
+           </Reveal>
+        </div>
+
         {/* Section 2: Solutions - Grid of Feature Boxes */}
         <div className="mb-16">
           <Reveal delay={100}>
           
-            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Our Solution</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Our Solutions</h2>
           </Reveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
@@ -571,7 +780,7 @@ const AboutPage = () => {
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Subject</label>
-                    <input type="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                    <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
                   </div>
 
                   <div className="space-y-2">
@@ -605,7 +814,7 @@ const AboutPage = () => {
               <div className="flex gap-3 mt-2">
                   <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
                   <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
-                  <a href="https://www.linkedin.com/in/pro-doc-19629b3a5/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
+                  <a href="https://www.linkedin.com/in/pro-doc-69964a3a6/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
               </div>
             </div>
 
