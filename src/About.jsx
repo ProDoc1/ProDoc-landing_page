@@ -247,7 +247,7 @@ const Timeline = ({ events }) => {
       const rect = containerRef.current.getBoundingClientRect();
       const containerTop = rect.top + window.scrollY;
       const containerHeight = rect.height;
-      
+
       // Calculate scroll position relative to the container
       // We start progress when the container hits the bottom of the viewport
       const windowHeight = window.innerHeight;
@@ -255,7 +255,7 @@ const Timeline = ({ events }) => {
       const endScroll = containerTop + containerHeight - (windowHeight * 0.8);
 
       let currentScroll = window.scrollY;
-      
+
       // Clamp the scroll value
       let percentage = (currentScroll - startScroll) / (endScroll - startScroll);
       percentage = Math.max(0, Math.min(1, percentage));
@@ -275,44 +275,44 @@ const Timeline = ({ events }) => {
 
   return (
     <div ref={containerRef} className="relative py-12">
-      {/* Center Line (Static Base) */}
-      <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-teal-100 rounded-full"></div>
+      {/* Center Line (Static Base) - Hidden on mobile */}
+      <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-teal-100 rounded-full"></div>
 
-      {/* Progress Line (Glowing Animated) */}
-      <div 
-        className="absolute left-1/2 transform -translate-x-1/2 top-0 w-1 bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 rounded-full shadow-[0_0_20px_rgba(13,148,136,0.8)] transition-all duration-100 ease-out origin-top"
+      {/* Progress Line (Glowing Animated) - Hidden on mobile */}
+      <div
+        className="hidden md:block absolute left-1/2 transform -translate-x-1/2 top-0 w-1 bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 rounded-full shadow-[0_0_20px_rgba(13,148,136,0.8)] transition-all duration-100 ease-out origin-top"
         style={{ height: `${Math.max(0, progress * 100)}%` }}
       ></div>
 
-      {/* Glowing Pulse at the bottom of the progress line */}
-      <div 
-        className="absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-teal-300 rounded-full blur-md -z-10 transition-all duration-100 ease-out"
+      {/* Glowing Pulse at the bottom of the progress line - Hidden on mobile */}
+      <div
+        className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-teal-300 rounded-full blur-md -z-10 transition-all duration-100 ease-out"
         style={{ top: `${Math.max(0, progress * 100)}%`, marginTop: '-12px' }}
       ></div>
 
-      <div className="space-y-12 relative">
+      <div className="space-y-8 md:space-y-12 relative">
         {events.map((event, index) => {
           const isActive = index === activeIndex;
           return (
             <div
               key={index}
-              className={`flex items-start gap-8 transition-all duration-700 ease-out ${
-                index % 2 === 0 ? "flex-row-reverse" : ""
+              className={`flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-8 transition-all duration-700 ease-out ${
+                index % 2 === 0 ? "md:flex-row-reverse" : ""
               }`}
             >
               {/* Content Card */}
-              <div 
-                className={`w-1/2 transition-all duration-500 ease-out ${
-                  isActive 
-                    ? 'opacity-100 scale-105 translate-y-[-10px] z-20' 
+              <div
+                className={`w-full md:w-1/2 transition-all duration-500 ease-out ${
+                  isActive
+                    ? 'opacity-100 scale-105 translate-y-[-10px] z-20'
                     : 'opacity-60 scale-100 translate-y-0'
                 }`}
               >
-                <div 
+                <div
                   className={`
-                    rounded-2xl p-6 shadow-md transition-all duration-500 border-2
-                    ${isActive 
-                      ? 'bg-white border-teal-500 shadow-[0_10px_40px_-10px_rgba(13,148,136,0.4)]' 
+                    rounded-2xl p-4 md:p-6 shadow-md transition-all duration-500 border-2
+                    ${isActive
+                      ? 'bg-white border-teal-500 shadow-[0_10px_40px_-10px_rgba(13,148,136,0.4)]'
                       : 'bg-white/80 border-transparent shadow-sm hover:shadow-md'
                     }
                   `}
@@ -320,17 +320,17 @@ const Timeline = ({ events }) => {
                   <div className={`mb-1 text-sm font-bold uppercase tracking-wider transition-colors duration-500 ${isActive ? 'text-teal-600' : 'text-slate-400'}`}>
                     Year {event.year}
                   </div>
-                  <h3 className={`text-xl font-bold mb-2 transition-colors duration-500 ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                  <h3 className={`text-lg md:text-xl font-bold mb-2 transition-colors duration-500 ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
                     {event.title}
                   </h3>
-                  <p className="text-slate-600 leading-relaxed">{event.description}</p>
+                  <p className="text-slate-600 leading-relaxed text-sm md:text-base">{event.description}</p>
                 </div>
               </div>
 
               {/* Center Node (Year Dot) */}
-              <div 
+              <div
                 className={`
-                  relative z-10 flex items-center justify-center transition-all duration-500 ease-out
+                  relative z-10 flex items-center justify-center transition-all duration-500 ease-out order-first md:order-none
                   ${isActive ? 'scale-125' : 'scale-100 grayscale opacity-50 hover:grayscale-0 hover:opacity-100'}
                 `}
               >
@@ -338,12 +338,12 @@ const Timeline = ({ events }) => {
                 {isActive && (
                   <div className="absolute inset-0 bg-teal-400 rounded-full blur-xl animate-pulse"></div>
                 )}
-                
-                <div 
+
+                <div
                   className={`
-                    w-14 h-14 rounded-full flex items-center justify-center font-bold shadow-lg transition-all duration-500 border-4 border-white relative z-10
-                    ${isActive 
-                      ? 'bg-teal-600 text-white scale-110 shadow-[0_0_25px_rgba(13,148,136,0.6)]' 
+                    w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-bold shadow-lg transition-all duration-500 border-4 border-white relative z-10
+                    ${isActive
+                      ? 'bg-teal-600 text-white scale-110 shadow-[0_0_25px_rgba(13,148,136,0.6)]'
                       : 'bg-white text-slate-500'
                     }
                   `}
@@ -352,8 +352,8 @@ const Timeline = ({ events }) => {
                 </div>
               </div>
 
-              {/* Spacer */}
-              <div className="w-1/2"></div>
+              {/* Spacer - Hidden on mobile */}
+              <div className="hidden md:block w-1/2"></div>
             </div>
           );
         })}
@@ -524,7 +524,7 @@ const AboutPage = () => {
             <div className="flex justify-start h-full px-4 pt-12">
               <div style={{ height: '500px', position: 'relative', width: '100%' }}>
                 <Carousel
-                  baseWidth={380}
+                  baseWidth={Math.min(380, window.innerWidth - 32)}
                   autoplay={true}
                   autoplayDelay={4000}
                   pauseOnHover={true}
