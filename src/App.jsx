@@ -6,11 +6,9 @@ import Team from './components/team';
 import AboutPage from './About';
 import Navbar from './components/Navbar';
 import LoginPage from './patientLogin';
-// import DoctorsPage from './doctors.jsx'; 
 
 // --- MAIN LANDING PAGE COMPONENT ---
-// Added onFindSpecialist prop to handle button clicks
-const LandingPage = ({ onFindSpecialist }) => {
+const LandingPage = () => {
   
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
@@ -48,12 +46,8 @@ const LandingPage = ({ onFindSpecialist }) => {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                {/* FIXED: Added onClick to trigger navigation to DoctorsPage */}
-                <button 
-                  onClick={onFindSpecialist}
-                  className="flex items-center gap-2 bg-white text-teal-600 px-8 py-4 rounded-full font-bold hover:bg-teal-50 transition-all duration-300 hover:scale-105 active:scale-95 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl shadow-teal-900/10"
-                >
-                  Find a Specialist <Search size={18} />
+                <button className="flex items-center gap-2 bg-white text-teal-600 px-8 py-4 rounded-full font-bold hover:bg-teal-50 transition-all duration-300 hover:scale-105 active:scale-95 w-full sm:w-auto justify-center shadow-lg hover:shadow-xl shadow-teal-900/10">
+                  Get Started <ArrowRight size={18} />
                 </button>
                 <button className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-bold hover:bg-white/20 hover:border-white/50 transition-all duration-300 active:scale-95 w-full sm:w-auto justify-center">
                   How it works
@@ -89,7 +83,7 @@ const LandingPage = ({ onFindSpecialist }) => {
         </div>
       </div>
 
-      {/* --- SECTION 3: SERVICES (INTEGRATED AI FEATURES) --- */}
+      {/* --- SECTION 2: AI FEATURES --- */}
       <div id="services" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-[2.5rem] p-10 col-span-1 md:col-span-2 group hover:shadow-xl transition-all">
              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-teal-500 group-hover:text-white transition-colors">
@@ -177,12 +171,11 @@ export default function App() {
           onNavigateHowitWorks={() => navigateToSection('how-it-works')}
           onNavigateTeam={() => navigateToSection('team')}
           onNavigateLogin={() => navigateTo('login')}
-          onNavigateDoctors={() => navigateTo('doctors')} 
         />
       )}
 
       {currentPage === 'home' && (
-        <LandingPage onFindSpecialist={() => navigateTo('doctors')} />
+        <LandingPage />
       )}
       
       {currentPage === 'about' && (
@@ -191,11 +184,6 @@ export default function App() {
 
       {currentPage === 'login' && (
         <LoginPage onBack={() => navigateTo('home')} />
-      )}
-
-      {/* FIXED: Added rendering for the doctors page */}
-      {currentPage === 'doctors' && (
-        <DoctorsPage onBack={() => navigateTo('home')} />
       )}
     </main>
   );
