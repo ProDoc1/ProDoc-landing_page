@@ -64,10 +64,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
 
   const navItems = [
     { name: 'Home', url: '#', icon: Stethoscope, onClick: onNavigateHome },
-    { name: 'Services', url: '#services', icon: Briefcase },
-    { name: 'About', url: '#', icon: User, onClick: onNavigateAbout },
-    { name: 'How it Works', url: '#how-it-works', icon: FileText },
-    { name: 'Team', url: '#team', icon: Users },
+    { name: 'About Us', url: '#', icon: User, onClick: onNavigateAbout },
   ];
 
   return (

@@ -3,6 +3,7 @@ import professionalDoc from './assets/professionaldoc.png';
 import LogoWithWords from './assets/Logo_with_words.png';
 import Aurora from "./components/Aurora";
 import Carousel from './components/Carousel';
+import Team from './components/team';
 import {
   ShieldCheck,
   Target,
@@ -734,6 +735,13 @@ const AboutPage = () => {
               </div>
             </Reveal>
           </div>
+        </div>
+
+        {/* Team Section Integration */}
+        <div id="team" className="mb-20">
+          <Reveal delay={100}>
+            <Team />
+          </Reveal>
         </div>
 
         {/* Get in Touch */}
