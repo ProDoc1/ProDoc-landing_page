@@ -124,12 +124,14 @@ export default function Carousel({
     const startingPosition = loop ? 1 : 0;
     setPosition(startingPosition);
     x.set(-startingPosition * trackItemOffset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length, loop, trackItemOffset, x]);
 
   useEffect(() => {
     if (!loop && position > itemsForRender.length - 1) {
       setPosition(Math.max(0, itemsForRender.length - 1));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemsForRender.length, loop, position]);
 
   const effectiveTransition = isJumping ? { duration: 0 } : SPRING_OPTIONS;

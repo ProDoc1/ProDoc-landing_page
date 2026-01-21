@@ -2,20 +2,9 @@ import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { cn } from "../../lib/utils"
 
-export function NavBar({ items, className, accentColor, bgColor, textColor = '#000000ff' }) {
+export function NavBar({ items, className, accentColor, bgColor }) {
   const [activeTab, setActiveTab] = useState(items[0].name)
-  const [isMobile, setIsMobile] = useState(false)
   const [hoveredTab, setHoveredTab] = useState(null)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
 
   return (
     <div className={cn("flex items-center justify-center", className)}>
@@ -45,7 +34,6 @@ export function NavBar({ items, className, accentColor, bgColor, textColor = '#0
               )}
               style={(() => {
                 if (!accentColor) return undefined;
-                const isHovered = hoveredTab === item.name;
                 if (isActive) return { backgroundColor: accentColor, color: '#fff' };
                 return { color: '#ffffff' };
               })()}
