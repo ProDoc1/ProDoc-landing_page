@@ -94,16 +94,12 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
 
         {/* Desktop Buttons (Right) */}
         <div className="hidden md:flex items-center gap-3">
-          <button className={`${currentStyle.btnSecondary} px-5 py-2 rounded-full text-sm font-semibold transition-all`}>
-            Doctor Login
-          </button>
-          
           {/* 2. ATTACHED CLICK HANDLER TO DESKTOP BUTTON HERE 👇 */}
           <button 
             onClick={onNavigateLogin}
             className={`${currentStyle.btnPrimary} px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md`}
           >
-            Patient Login
+             Login
           </button>
         </div>
 
