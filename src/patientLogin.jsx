@@ -26,11 +26,12 @@ const LoginPage = ({ onBack }) => {
   return (
     <div className="min-h-screen w-full relative flex flex-col font-sans text-slate-700 overflow-hidden">
       
+    
       {/* 1. PLASMA BACKGROUND (Pinned to back) */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0 h-screen w-screen">
         <Plasma color="#14b8a6" speed={0.4} scale={1.6} opacity={0.8} />
-        {/* Subtle overlay to help the white card pop against the animation */}
-        <div className="absolute inset-0 bg-teal-500/20 backdrop-blur-[2px]"></div>
+        {/* Subtle overlay */}
+        <div className="absolute inset-0 bg-teal-500/10 backdrop-blur-[2px]"></div>
       </div>
 
       {/* 2. CONTENT LAYER (Above background) */}
@@ -47,8 +48,15 @@ const LoginPage = ({ onBack }) => {
             </button>
           </div>
           <div className="flex justify-center">
-            <img src={LogoColor} alt="ProDoc" className="h-10 md:h-14 object-contain" />
+          {/* The Container Box */}
+          <div className="bg-white/60 backdrop-blur-md p-3 md:p-4 rounded-[2rem] shadow-sm border border-white/20 flex items-center justify-center transition-transform hover:scale-105">
+            <img 
+              src={LogoColor} 
+              alt="ProDoc" 
+              className="h-10 md:h-16 object-contain" 
+            />
           </div>
+        </div>
           <div className="flex justify-end">
             <button className="bg-white/40 backdrop-blur-md px-4 py-2 rounded-full text-teal-900 font-medium hover:bg-white/60 transition shadow-sm border border-white/20">
               <HelpCircle size={18} />
@@ -170,16 +178,11 @@ const LoginPage = ({ onBack }) => {
             <div className="text-center text-sm text-slate-500 mb-6">
               New to ProDoc? <a href="#" className="text-teal-700 font-bold hover:underline">Create Account</a>
             </div>
-
-            <div className="flex items-center justify-center gap-1.5 py-2 px-4 bg-slate-50 rounded-full w-fit mx-auto border border-slate-100">
-              <CheckCircle size={14} className="text-teal-500 fill-teal-100" />
-              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Verified Specialists</span>
-            </div>
           </div>
         </div>
 
         <footer className="w-full text-center p-4 text-teal-900/60 text-xs">
-          Â© {new Date().getFullYear()} ProDoc Group Project
+          © {new Date().getFullYear()} ProDoc All rights reserved.
         </footer>
       </div>
     </div>
