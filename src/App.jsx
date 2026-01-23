@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'; // Added useState here
+import React, { useState, useEffect } from 'react'; 
 import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
 import AboutPage from './About';
 import Navbar from './components/Navbar';
 import LoginPage from './patientLogin';
+import SignupPage from './Signup'; // Added Import
 
 // --- MAIN LANDING PAGE COMPONENT ---
 const LandingPage = ({onNavigateHowitWorks}) => {
@@ -324,8 +325,8 @@ export default function App() {
     <main className="relative min-h-screen">
       {/* 2. EDITED NAVBAR RENDERING 👇 */}
       {/* Navbar sits outside the page components so it persists. */}
-      {/* We hide this global navbar when on 'login' because LoginPage has its own navbar */}
-      {currentPage !== 'login' && (
+      {/* We hide this global navbar when on 'login' or 'signup' because they have their own navbars */}
+      {currentPage !== 'login' && currentPage !== 'signup' && (
       
       <Navbar 
         currentPage={currentPage} 
@@ -334,6 +335,7 @@ export default function App() {
         onNavigateServices={() => navigateToSection('services')}
         onNavigateHowitWorks={() => navigateToSection('how-it-works')}
         onNavigateLogin={() => navigateTo('login')}
+        onNavigateSignupPage={() => navigateTo('signup')}
       />
       )}
       {/* 3. EDITED PAGE SWITCHING LOGIC 👇 */}
@@ -351,6 +353,10 @@ export default function App() {
       {currentPage === 'login' && (
         <LoginPage onBack={() => navigateTo('home')} />
       )}
+      {currentPage === 'signup' && (
+        <SignupPage onBack={() => navigateTo('home')} />
+      )}
+
     </main>
   );
 }

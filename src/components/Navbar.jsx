@@ -13,7 +13,7 @@ import LogoColor from '../assets/Logo_with_words.png';
 import LogoWhite from '../assets/logo_with_words_white.png';
 
 
-const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin }) => {
+const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin, onNavigateSignupPage }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -94,12 +94,20 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
 
         {/* Desktop Buttons (Right) */}
         <div className="hidden md:flex items-center gap-3">
-          {/* 2. ATTACHED CLICK HANDLER TO DESKTOP BUTTON HERE 👇 */}
+          {/* Login Button */}
           <button 
             onClick={onNavigateLogin}
             className={`${currentStyle.btnPrimary} px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md`}
           >
              Login
+          </button>
+          
+          {/* Signup Button */}
+          <button 
+            onClick={onNavigateSignupPage}
+            className={`${currentStyle.btnPrimary} px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md`}
+          >
+             Signup
           </button>
         </div>
 
@@ -133,7 +141,6 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
                 Doctor Login
               </button>
               
-             
               <button 
                 onClick={() => {
                   onNavigateLogin();
@@ -142,6 +149,16 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin 
                 className="w-full py-3 rounded-xl font-bold bg-[#14B8A6] text-white hover:bg-[#0f968c]"
               >
                 Patient Login
+              </button>
+
+              <button 
+                onClick={() => {
+                  onNavigateSignupPage();
+                  setIsMenuOpen(false); // Close menu after clicking
+                }}
+                className="w-full py-3 rounded-xl font-bold bg-[#14B8A6] text-white hover:bg-[#0f968c]"
+              >
+                Sign Up
               </button>
             </div>
           </div>
