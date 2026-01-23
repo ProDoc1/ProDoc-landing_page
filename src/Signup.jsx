@@ -13,7 +13,7 @@ import {
 import LogoColor from './assets/Logo_with_words.png'; 
 import Plasma from './components/Plasma'; 
 
-const SignupPage = ({ onBack }) => {
+const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({ 
@@ -67,7 +67,7 @@ const SignupPage = ({ onBack }) => {
   return (
     <div className="min-h-screen w-full relative flex flex-col font-sans text-slate-700 overflow-hidden">
       <div className="fixed inset-0 z-0 h-screen w-screen">
-        <Plasma color="#14b8a6" speed={0.4} scale={1.6} opacity={0.8} />
+        <Plasma color="#14b8a6" speed={0.4} scale={2.0} opacity={0.8} />
         <div className="absolute inset-0 bg-teal-500/10 backdrop-blur-[2px]"></div>
       </div>
 
@@ -85,7 +85,7 @@ const SignupPage = ({ onBack }) => {
           </div>
           <div className="flex justify-end">
             <button className="bg-white/40 backdrop-blur-md px-4 py-2 rounded-full text-teal-900 font-medium hover:bg-white/60 transition shadow-sm border border-white/20">
-              <HelpCircle size={18} />
+              <HelpCircle size={20} />
             </button>
           </div>
         </nav>
@@ -177,7 +177,8 @@ const SignupPage = ({ onBack }) => {
             </div>
 
             <div className="text-center text-sm text-slate-500">
-              Already have an account? <a href="#" className="text-teal-700 font-bold hover:underline">Log In</a>
+              {/* CONNECTED LINK HERE 👇 */}
+              Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); onNavigateLogin(); }} className="text-teal-700 font-bold hover:underline">Log In</a>
             </div>
           </div>
         </div>

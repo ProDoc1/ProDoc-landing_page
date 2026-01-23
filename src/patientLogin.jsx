@@ -14,7 +14,7 @@ import {
 import LogoColor from './assets/Logo_with_words.png'; 
 import Plasma from './components/Plasma'; 
 
-const LoginPage = ({ onBack }) => {
+const LoginPage = ({ onBack, onNavigateSignup }) => { // <-- ACCEPT PROP HERE
   const [userType, setUserType] = useState('patient'); 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -29,7 +29,7 @@ const LoginPage = ({ onBack }) => {
     
       {/* 1. PLASMA BACKGROUND (Pinned to back) */}
       <div className="fixed inset-0 z-0 h-screen w-screen">
-        <Plasma color="#14b8a6" speed={0.4} scale={1.6} opacity={0.8} />
+        <Plasma color="#14b8a6" speed={0.4} scale={2.0} opacity={0.8} />
         {/* Subtle overlay */}
         <div className="absolute inset-0 bg-teal-500/10 backdrop-blur-[2px]"></div>
       </div>
@@ -176,7 +176,8 @@ const LoginPage = ({ onBack }) => {
             </div>
 
             <div className="text-center text-sm text-slate-500 mb-6">
-              New to ProDoc? <a href="#" className="text-teal-700 font-bold hover:underline">Create Account</a>
+              {/* CONNECTED LINK HERE 👇 */}
+              New to ProDoc? <a href="#" onClick={(e) => { e.preventDefault(); onNavigateSignup(); }} className="text-teal-700 font-bold hover:underline">Create Account</a>
             </div>
           </div>
         </div>

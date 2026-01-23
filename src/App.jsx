@@ -351,10 +351,16 @@ export default function App() {
 
       {/* Added Logic for Login Page */}
       {currentPage === 'login' && (
-        <LoginPage onBack={() => navigateTo('home')} />
+        <LoginPage 
+          onBack={() => navigateTo('home')} 
+          onNavigateSignup={() => navigateTo('signup')} // <-- PASSED PROP HERE
+        />
       )}
       {currentPage === 'signup' && (
-        <SignupPage onBack={() => navigateTo('home')} />
+        <SignupPage 
+          onBack={() => navigateTo('home')}
+          onNavigateLogin={() => navigateTo('login')} // <-- PASSED PROP HERE
+        />
       )}
 
     </main>
