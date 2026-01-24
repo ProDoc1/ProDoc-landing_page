@@ -40,9 +40,48 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
     setErrors({ ...errors, [e.target.name]: '' });
   };
 
-  const handleCreateAccount = (e) => {
-    e.preventDefault();
-    let newErrors = {};
+  const handleCreateAccount = async (e) => {
+  e.preventDefault();
+
+  // 1. VALIDATION
+  if (!formData.fullName || !formData.email || !formData.password) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  if (formData.password !== formData.confirmPassword) {
+    setErrors(prev => ({ ...prev, password: 'Passwords do not match.' }));
+    return;
+  }
+
+  // 2. API CALL
+  try {
+    const response = await fetch('/api/sign-up', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password
+      }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      alert("Success! Your account is created.");
+      onBack(); // Sends you back to the landing page
+    } else {
+      alert("Signup failed: " + (result.error || "Check your terminal for database errors."));
+    }
+  } catch (err) {
+    console.error("Connection Error:", err);
+    alert("Could not connect. Ensure 'vercel dev' is running after the npm install.");
+  }
+
+
+
+    
 
     // 1. Email Validation
     if (!validateEmail(formData.email)) {
