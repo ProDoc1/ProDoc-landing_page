@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; 
-import { Search, ShieldCheck, Star, UserCheck, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
 import AboutPage from './About';
@@ -7,11 +7,11 @@ import Navbar from './components/Navbar';
 import LoginPage from './patientLogin';
 import SignupPage from './Signup'; 
 import DoctorsPage from './doctor';
-import PatientDashboard from './PatientDashboard'; 
-import DoctorDashboard from './DoctorDashboard';
+import PatientDashboard from './PatientDashboard';
 
 // --- MAIN LANDING PAGE COMPONENT ---
 const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
+  
   useEffect(() => {
     document.documentElement.style.scrollBehavior = 'smooth';
     return () => {
@@ -106,7 +106,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
         </div>
       </div>
 
-      {/* --- SERVICES SECTION --- */}
+      {/* --- SECTION 3: SERVICES --- */}
       <div id="services" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-[2.5rem] p-10 col-span-1 md:col-span-2 group hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 hover:-translate-y-1 border border-transparent hover:border-teal-100">
              <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-teal-500 group-hover:text-white transition-colors duration-300 group-hover:scale-110">
@@ -129,31 +129,158 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
                 </p>
              </div>
           </div>
+
+          <div className="bg-white rounded-[2.5rem] p-10 col-span-1 flex flex-col justify-between group hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 hover:-translate-y-1 border border-transparent hover:border-teal-100">
+             <div>
+                <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-teal-500 group-hover:text-white transition-colors duration-300 group-hover:scale-110">
+                   <CheckCircle className="w-7 h-7 text-teal-500 group-hover:text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-slate-900">Patient Dashboard</h3>
+                <p className="text-slate-500 leading-relaxed text-sm">
+                   Allows patients to upload and store medical history, lab reports, and prescriptions in one centralized place.
+                </p>
+             </div>
+          </div>
+
+          <div className="bg-white rounded-[2.5rem] p-10 col-span-1 md:col-span-2 group hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 hover:-translate-y-1 border border-transparent hover:border-teal-100">
+             <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-teal-500 group-hover:text-white transition-colors duration-300 group-hover:scale-110">
+                <BrainCircuit className="w-7 h-7 text-teal-500 group-hover:text-white" />
+             </div>
+             <h3 className="text-2xl md:text-3xl font-bold mb-4 text-slate-900">AI Medical Decision Support</h3>
+             <p className="text-slate-500 leading-relaxed max-w-lg">
+                Users can upload lab reports or diagnostic images; the AI analyzes them to provide easy-to-read summaries and identify potential risks.
+             </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-teal-800 to-slate-900 text-white rounded-[2.5rem] p-10 col-span-1 md:col-span-3 overflow-hidden relative group hover:shadow-2xl hover:shadow-teal-900/20 transition-all duration-300 hover:-translate-y-1">
+             <div className="relative z-10 max-w-2xl">
+                <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center mb-6 text-white border border-white/10 group-hover:bg-white/20 transition-colors duration-300 group-hover:scale-110">
+                   <MessageSquare className="w-7 h-7" />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">Multilingual AI Chatbot</h3>
+                <p className="text-slate-300 leading-relaxed group-hover:text-white transition-colors">
+                   Describe your symptoms in Sinhala, Tamil, or English, and our AI will guide you to the right specialist immediately.
+                </p>
+                <button className="mt-8 bg-white text-teal-900 px-6 py-3 rounded-full text-sm font-bold hover:bg-teal-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-black/20">
+                   Try Chatbot Demo
+                </button>
+             </div>
+          </div>
       </div>
 
-      {/* --- FOOTER --- */}
+      {/* --- SECTION 4: HOW IT WORKS --- */}
+      <div id="how-it-works" className="bg-white rounded-[2.5rem] p-10 md:p-16 mb-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">Simplifying your healthcare journey.</h2>
+             <p className="text-slate-500">Three simple steps to find the care you need.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 text-center md:text-left">
+             <div className="relative group cursor-default">
+                <div className="w-12 h-12 bg-teal-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-teal-500/20">
+                   <Search size={20} />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-slate-900 group-hover:text-teal-600 transition-colors">Find the Right Specialist</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                   Search for doctors by name, specialization, or hospital instantly matched with the correct specialist.
+                </p>
+             </div>
+             <div className="relative group cursor-default">
+                <div className="w-12 h-12 bg-teal-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-teal-500/20">
+                   <ScanLine size={20} />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-slate-900 group-hover:text-teal-600 transition-colors">Understand Reports</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                   Upload your diagnostic images to receive easy-to-read summaries and identified potential risks.
+                </p>
+             </div>
+             <div className="relative group cursor-default">
+                <div className="w-12 h-12 bg-teal-500 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-teal-500/20">
+                   <Star size={20} />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-slate-900 group-hover:text-teal-600 transition-colors">Share Your Experience</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                   Help others by rating your doctor on punctuality and professionalism in a safe and respectful community.
+                </p>
+             </div>
+          </div>
+      </div>
+
+      {/* --- SECTION 5: FOOTER (About page footer reused) --- */}
       <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
+      
          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
+         
             <div className="md:col-span-4 space-y-6">
-               <img src={LogoWithWords} alt="ProDoc" className="h-10 md:h-12 w-auto" />
-               <p className="text-sm text-slate-500 max-w-sm">Sri Lanka's first centralized platform for transparent healthcare.</p>
-               <div className="flex gap-3">
-                  <Facebook size={18} className="cursor-pointer hover:text-teal-600"/>
-                  <Instagram size={18} className="cursor-pointer hover:text-teal-600"/>
-                  <Linkedin size={18} className="cursor-pointer hover:text-teal-600"/>
+               <div className="flex items-center gap-3">
+                  <img src={LogoWithWords} alt="ProDoc" className="h-10 md:h-12 w-auto" />
+               </div>
+               <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
+                  ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
+               </p>
+               <div className="flex gap-3 mt-2">
+                  <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+                  <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
+                  <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
                </div>
             </div>
-            <div className="md:col-span-4">
-               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase">Contact</h4>
+
+            <div className="md:col-span-2">
+               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
                <ul className="space-y-4 text-sm">
-                  <li className="flex items-center gap-3"><Mail size={18} className="text-teal-600"/> prdoc2025se06@gmail.com</li>
-                  <li className="flex items-center gap-3"><Phone size={18} className="text-teal-600"/> +94 76 793 7055</li>
+                  {['Find a Doctor', 'How it Works', 'Our Team', 'Reviews'].map((item) => (
+                     <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                        {item}
+                     </a></li>
+                  ))}
                </ul>
             </div>
+
+            <div className="md:col-span-2">
+               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
+               <ul className="space-y-4 text-sm">
+                  {['About Us', 'Careers', 'Privacy Policy', 'Terms of Service'].map((item) => (
+                     <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                        {item}
+                     </a></li>
+                  ))}
+               </ul>
+            </div>
+
+            <div className="md:col-span-4">
+               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
+               <ul className="space-y-4 text-sm mb-8">
+                  <li className="flex items-center gap-3 text-slate-600">
+                     <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Mail size={18} /></div>
+                     <span>prdoc2025se06@gmail.com</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-slate-600">
+                     <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Phone size={18} /></div>
+                     <span>+94 76 793 7055</span>
+                  </li>
+               </ul>
+         
+               <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
+                  <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
+                  <button className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                     Join ProDoc Network
+                  </button>
+               </div>
+            </div>
          </div>
-         <div className="mt-16 pt-8 border-t text-center text-xs text-slate-400">
-            © {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.
+
+         <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
+            <div className="flex items-center gap-2">
+               <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+               </span>
+               <span>All Systems Operational</span>
+            </div>
+            <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
          </div>
       </footer>
     </div>
@@ -165,19 +292,19 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [currentUser, setCurrentUser] = useState(null);
 
-  // --- CHECK SESSION ON LOAD ---
-  useEffect(() => {
-    const savedSession = localStorage.getItem('prodoc_session');
-    if (savedSession) {
-      const user = JSON.parse(savedSession);
-      setCurrentUser(user);
-      setCurrentPage(user.userType === 'doctor' ? 'doctor_dashboard' : 'dashboard');
-    }
-  }, []);
-
   const navigateTo = (page) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentPage(page);
+  };
+
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    navigateTo('dashboard');
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    navigateTo('home');
   };
 
   const navigateToSection = (sectionId) => {
@@ -188,22 +315,10 @@ export default function App() {
     }, 100);
   };
 
-  const handleLoginSuccess = (user) => {
-    setCurrentUser(user);
-    localStorage.setItem('prodoc_session', JSON.stringify(user));
-    navigateTo(user.userType === 'doctor' ? 'doctor_dashboard' : 'dashboard');
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('prodoc_session');
-    setCurrentUser(null);
-    navigateTo('home');
-  };
-
   return (
     <main className="relative min-h-screen">
-      {/* PERSISTENT NAVBAR (Hidden on dashboards and login/signup) */}
-      {!['login', 'signup', 'dashboard', 'doctor_dashboard'].includes(currentPage) && (
+      {/* Hide Navbar for login/signup if desired, or keep global */}
+      {currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'dashboard' && (
         <Navbar 
           currentPage={currentPage} 
           onNavigateHome={() => navigateTo('home')}
@@ -215,7 +330,6 @@ export default function App() {
         />
       )}
 
-      {/* PAGE ROUTING */}
       {currentPage === 'home' && (
         <LandingPage 
           onNavigateHowitWorks={() => navigateToSection('how-it-works')}
@@ -237,8 +351,8 @@ export default function App() {
 
       {currentPage === 'signup' && (
         <SignupPage 
-          onBack={() => navigateTo('home')}
-          onNavigateLogin={() => navigateTo('login')} 
+          onBack={() => navigateTo('home')} 
+          onNavigateLogin={() => navigateTo('login')}
         />
       )}
 
@@ -248,10 +362,6 @@ export default function App() {
 
       {currentPage === 'dashboard' && (
         <PatientDashboard user={currentUser} onLogout={handleLogout} />
-      )}
-
-      {currentPage === 'doctor_dashboard' && (
-        <DoctorDashboard user={currentUser} onLogout={handleLogout} />
       )}
     </main>
   );
