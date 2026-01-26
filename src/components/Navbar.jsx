@@ -16,15 +16,38 @@ import LogoWhite from '../assets/logo_with_words_white.png';
 const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin, onNavigateSignupPage }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 20);
+
+      // Only apply hide-on-scroll for doctor page
+      if (currentPage === 'doctors') {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          // Scrolling down
+          setIsVisible(false);
+        } else {
+          // Scrolling up
+          setIsVisible(true);
+        }
+        setLastScrollY(currentScrollY);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY, currentPage]);
 
   const baseWrapper = "fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 rounded-2xl transition-all duration-300 border";
+
+  // Add hide transform for doctor page when scrolling down
+  const wrapperWithVisibility = currentPage === 'doctors' && !isVisible 
+    ? `${baseWrapper} -translate-y-32` 
+    : baseWrapper;
 
   // Configuration for Page Themes
   const theme = {
@@ -40,6 +63,16 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
     },
     about: {
     wrapper: `${baseWrapper} ${scrolled ? "backdrop-blur-xl shadow-lg" : " backdrop-blur-xl "}`,
+    text: "text-white",
+    logoIcon: "#ffffff",
+    logoBg: "bg-white", 
+    btnSecondary: "bg-teal-500 hover:bg-teal-600 text-white boader border-white/20",
+    btnPrimary: "bg-white text-teal-600",
+    mobileToggle: "text-white hover:bg-white/10",
+    tubelightBg: "#14B8A6",
+    },
+    doctors: {
+    wrapper: `${wrapperWithVisibility} ${scrolled ? "backdrop-blur-xl shadow-lg" : " backdrop-blur-xl "}`,
     text: "text-white",
     logoIcon: "#ffffff",
     logoBg: "bg-white", 
