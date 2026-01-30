@@ -4,6 +4,7 @@ import LogoWithWords from './assets/Logo_with_words.png';
 import Aurora from "./components/Aurora";
 import Carousel from './components/Carousel';
 import Team from './components/team';
+import emailjs from '@emailjs/browser';
 import {
   ShieldCheck,
   Target,
@@ -20,12 +21,6 @@ import {
   Phone,
   ArrowRight,
   AlertCircle,
-  TrendingUp,
-  Award,
-  Calendar,
-  Zap,
-  Clock,
-  UserCheck,
   Star,
   ChevronRight,
 } from 'lucide-react';
@@ -132,7 +127,6 @@ const Counter = ({ end, duration = 2000, suffix = "", className = "" }) => {
     if (!isVisible) return;
     
     let startTime;
-    let endTime;
     let animationFrameId;
     
     const animate = (timestamp) => {
@@ -142,8 +136,6 @@ const Counter = ({ end, duration = 2000, suffix = "", className = "" }) => {
       
       if (progress < 1) {
         animationFrameId = requestAnimationFrame(animate);
-      } else {
-        setIsVisible(false);
       }
     };
     
@@ -162,8 +154,6 @@ const Counter = ({ end, duration = 2000, suffix = "", className = "" }) => {
     </div>
   );
 };
-
-
 
 // Testimonial Carousel Component
 const TestimonialCarousel = ({ testimonials }) => {
@@ -239,7 +229,7 @@ const TestimonialCarousel = ({ testimonials }) => {
 const Timeline = ({ events }) => {
   const containerRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [progress, setProgress] = useState(0); // 0 to 1
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -249,43 +239,35 @@ const Timeline = ({ events }) => {
       const containerTop = rect.top + window.scrollY;
       const containerHeight = rect.height;
 
-      // Calculate scroll position relative to the container
-      // We start progress when the container hits the bottom of the viewport
       const windowHeight = window.innerHeight;
       const startScroll = containerTop - windowHeight + (windowHeight * 0.2);
       const endScroll = containerTop + containerHeight - (windowHeight * 0.8);
 
       let currentScroll = window.scrollY;
 
-      // Clamp the scroll value
       let percentage = (currentScroll - startScroll) / (endScroll - startScroll);
       percentage = Math.max(0, Math.min(1, percentage));
 
       setProgress(percentage);
 
-      // Determine which item is active based on progress
-      // Map 0-1 progress to 0-(events.length-1) index
       const rawIndex = percentage * (events.length - 1);
       setActiveIndex(Math.round(rawIndex));
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [events.length]);
 
   return (
     <div ref={containerRef} className="relative py-12">
-      {/* Center Line (Static Base) - Hidden on mobile */}
       <div className="hidden md:block absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-1 bg-teal-100 rounded-full"></div>
 
-      {/* Progress Line (Glowing Animated) - Hidden on mobile */}
       <div
         className="hidden md:block absolute left-1/2 transform -translate-x-1/2 top-0 w-1 bg-gradient-to-b from-teal-400 via-teal-500 to-teal-600 rounded-full shadow-[0_0_20px_rgba(13,148,136,0.8)] transition-all duration-100 ease-out origin-top"
         style={{ height: `${Math.max(0, progress * 100)}%` }}
       ></div>
 
-      {/* Glowing Pulse at the bottom of the progress line - Hidden on mobile */}
       <div
         className="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 h-6 bg-teal-300 rounded-full blur-md -z-10 transition-all duration-100 ease-out"
         style={{ top: `${Math.max(0, progress * 100)}%`, marginTop: '-12px' }}
@@ -301,7 +283,6 @@ const Timeline = ({ events }) => {
                 index % 2 === 0 ? "md:flex-row-reverse" : ""
               }`}
             >
-              {/* Content Card */}
               <div
                 className={`w-full md:w-1/2 transition-all duration-500 ease-out ${
                   isActive
@@ -328,14 +309,12 @@ const Timeline = ({ events }) => {
                 </div>
               </div>
 
-              {/* Center Node (Year Dot) */}
               <div
                 className={`
                   relative z-10 flex items-center justify-center transition-all duration-500 ease-out order-first md:order-none
                   ${isActive ? 'scale-125' : 'scale-100 grayscale opacity-50 hover:grayscale-0 hover:opacity-100'}
                 `}
               >
-                {/* Glow Effect behind active dot */}
                 {isActive && (
                   <div className="absolute inset-0 bg-teal-400 rounded-full blur-xl animate-pulse"></div>
                 )}
@@ -353,7 +332,6 @@ const Timeline = ({ events }) => {
                 </div>
               </div>
 
-              {/* Spacer - Hidden on mobile */}
               <div className="hidden md:block w-1/2"></div>
             </div>
           );
@@ -363,15 +341,79 @@ const Timeline = ({ events }) => {
   );
 };
 
-
-
 // --- MAIN PAGE COMPONENT ---
 
 const AboutPage = () => {
+  // EmailJS State
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const formRef = useRef(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      // Replace these with your actual EmailJS credentials
+      const serviceId = process.env.REACT_APP_EMAILJS_SERVICE_ID || 'your_service_id';
+      const templateId = process.env.REACT_APP_EMAILJS_TEMPLATE_ID || 'your_template_id';
+      const publicKey = process.env.REACT_APP_EMAILJS_PUBLIC_KEY || 'your_public_key';
+
+      await emailjs.sendForm(
+        serviceId,
+        templateId,
+        formRef.current,
+        publicKey
+      );
+
+      // Reset form on success
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+      
+      setSubmitStatus('success');
+      
+      setTimeout(() => {
+        setSubmitStatus(null);
+      }, 5000);
+
+    } catch (error) {
+      console.error('Email sending failed:', error);
+      setSubmitStatus('error');
+      
+      setTimeout(() => {
+        setSubmitStatus(null);
+      }, 5000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const testimonials = [
     {
-      name: "Sarah J.", // Added names for consistency
-      text: "It’s needed cause some people are struggling to find the right doctor for their disease so I think platform like this would be very helpful.",
+      name: "Sarah J.",
+      text: "It's needed cause some people are struggling to find the right doctor for their disease so I think platform like this would be very helpful.",
     },
     {
       name: "Mark D.",
@@ -384,49 +426,37 @@ const AboutPage = () => {
   ];
 
   const timelineEvents = [
-  {
-    year: "2025",
-    title: "ProDoc Founded",
-    description:
-      "Started with a mission to bring transparency to healthcare in Sri Lanka",
-  },
-  {
-    year: "2026",
-    title: "1,000+ Users",
-    description:
-      "Reached a major milestone with thousands of patients trusting our platform",
-  },
-  {
-    year: "2026",
-    title: "AI Integration",
-    description:
-      "Introduced AI-powered medical decision support to help patients understand their health better",
-  },
-  {
-    year: "2027",
-    title: "National Expansion (To be Continued)",
-    description:
-      "Expanding services across the entire country, connecting patients with verified healthcare professionals",
-  },
-];
-
-
-
-  
-  
+    {
+      year: "2025",
+      title: "ProDoc Founded",
+      description: "Started with a mission to bring transparency to healthcare in Sri Lanka",
+    },
+    {
+      year: "2026",
+      title: "1,000+ Users",
+      description: "Reached a major milestone with thousands of patients trusting our platform",
+    },
+    {
+      year: "2026",
+      title: "AI Integration",
+      description: "Introduced AI-powered medical decision support to help patients understand their health better",
+    },
+    {
+      year: "2027",
+      title: "National Expansion (To be Continued)",
+      description: "Expanding services across the entire country, connecting patients with verified healthcare professionals",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#E4F0F1] relative overflow-hidden selection:bg-teal-200">
-      
       {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-teal-300/40 rounded-full blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/30 rounded-full blur-[100px] animate-pulse"></div>
       </div>
 
-      
       <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 pt-32 md:pt-40 lg:pt-48 pb-12 md:pb-16">
-        
         {/* Hero Section */}
         <div className="grid lg:grid-cols-12 gap-12 items-center mb-20">
           <div className="lg:col-span-7 space-y-6">
@@ -458,28 +488,26 @@ const AboutPage = () => {
           <div className="lg:col-span-5 flex justify-center lg:justify-end pt-8 lg:pt-0">
             <Reveal delay={400}>
               <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-teal-900/10 ring-8 ring-white/50">
-                 <TiltImage 
-            src={professionalDoc} 
-            alt="Professional Doctor" 
-            className="w-full h-full rounded-3xl overflow-hidden"
-          />
-                 {/* Floating Badge Box */}
-                 <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white flex items-center gap-3 animate-float">
-                    <div className="bg-green-100 p-2 rounded-full">
-                      <CheckCircle className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500 font-bold uppercase">Status</p>
-                      <p className="text-slate-800 font-bold text-sm">100% Verified</p>
-                    </div>
-                 </div>
+                <TiltImage 
+                  src={professionalDoc} 
+                  alt="Professional Doctor" 
+                  className="w-full h-full rounded-3xl overflow-hidden"
+                />
+                <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white flex items-center gap-3 animate-float">
+                  <div className="bg-green-100 p-2 rounded-full">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-bold uppercase">Status</p>
+                    <p className="text-slate-800 font-bold text-sm">100% Verified</p>
+                  </div>
+                </div>
               </div>
             </Reveal>
           </div>
         </div>
         
-        
-       {/* Statistics Section */}
+        {/* Statistics Section */}
         <div className="bg-white rounded-3xl p-8 mb-16 shadow-lg">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
@@ -513,14 +541,8 @@ const AboutPage = () => {
           </div>
         </div>
 
-        
-
-
-
-        
-        {/* Section 1: Carousel & Problems - Side by Side Layout */}
+        {/* Section 1: Carousel & Problems */}
         <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-12">
-          {/* Left: Carousel */}
           <Reveal delay={100} className="lg:col-span-5">
             <div className="flex justify-start h-full px-4 pt-12">
               <div style={{ height: '500px', position: 'relative', width: '100%' }}>
@@ -536,7 +558,6 @@ const AboutPage = () => {
             </div>
           </Reveal>
 
-          {/* Right: The Problems We Solve */}
           <div className="lg:col-span-7 flex flex-col gap-4">
             <Reveal delay={200}>
               <h3 className="text-2xl font-bold text-slate-900 mb-4 px-2 pt-10">The Problems We Solve</h3>
@@ -594,23 +615,19 @@ const AboutPage = () => {
 
         {/* Timeline Section */}
         <div className="mb-20">
-           <Reveal delay={100}>
-           <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">
-                Our Journey
-           </h2>
-           </Reveal>
-
-           <Reveal delay={200}>
-               <div className="bg-white rounded-3xl p-8 shadow-lg">
-                  <Timeline events={timelineEvents} />
-               </div>
-           </Reveal>
+          <Reveal delay={100}>
+            <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Our Journey</h2>
+          </Reveal>
+          <Reveal delay={200}>
+            <div className="bg-white rounded-3xl p-8 shadow-lg">
+              <Timeline events={timelineEvents} />
+            </div>
+          </Reveal>
         </div>
 
-        {/* Section 2: Solutions - Grid of Feature Boxes */}
+        {/* Solutions Section */}
         <div className="mb-16">
           <Reveal delay={100}>
-          
             <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center">Our Solutions</h2>
           </Reveal>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -633,7 +650,7 @@ const AboutPage = () => {
           </div>
         </div>
 
-        {/* Section 3: Mission & Vision - Two Separate Large Boxes */}
+        {/* Mission & Vision Section */}
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <Reveal delay={100}>
             <div className="bg-white rounded-3xl p-10 shadow-lg border-t-4 border-teal-500 relative overflow-hidden group hover:-translate-y-1 transition-transform">
@@ -664,27 +681,19 @@ const AboutPage = () => {
           </Reveal>
         </div>
 
-        {/* Section 4: Technology & Audience */}
+        {/* Technology & Audience Section */}
         <div className="grid md:grid-cols-2 gap-8 mb-20">
           <Reveal delay={100}>
-            {/* Ensure the parent has 'relative' and 'overflow-hidden' */}
             <div className="bg-teal-500 rounded-3xl p-8 text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden">
-              
-              {/* 1. Add the Aurora component here */}
               <div className="absolute inset-0 z-0">
                 <Aurora
-                  /* Color 1: Primary Teal, Color 2: Light Teal, Color 3: Deep Slate (Replaces Blue) */
                   colorStops={["#0D9488", "#14B8A6", "#2e786b"]} 
                   blend={0.8}
                   amplitude={2.0}
                   speed={0.5}
                 />
               </div>
-
-              {/* 2. Add this tint layer to make the text readable */}
               <div className="absolute inset-0 bg-slate-900/40 z-[1]"></div>
-
-              {/* 3. Wrap your existing content in a div with 'relative z-10' */}
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div>
                   <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md">
@@ -697,7 +706,6 @@ const AboutPage = () => {
                     replaces, the human element of professional care.
                   </p>
                 </div>
-                
                 <div className="mt-8 flex gap-3">
                   <button 
                     onClick={() => window.open('https://www.unesco.org/en/artificial-intelligence/recommendation-ethics', '_blank')}
@@ -710,7 +718,6 @@ const AboutPage = () => {
             </div>
           </Reveal>
 
-          {/* Audience Box Grid */}
           <div className="flex flex-col gap-4">
             <Reveal delay={200}>
               <div className="bg-white rounded-3xl p-8 shadow-md border border-slate-100 h-full">
@@ -737,19 +744,17 @@ const AboutPage = () => {
           </div>
         </div>
 
-        {/* Team Section Integration */}
+        {/* Team Section */}
         <div id="team" className="mb-20">
           <Reveal delay={100}>
             <Team />
           </Reveal>
         </div>
 
-        {/* Get in Touch */}
+        {/* Contact Form Section */}
         <div className="grid md:grid-cols-12 gap-8 mb-20">
           <Reveal delay={100} className="md:col-span-12">
-            {/* ADDED 'group' class to the container div */}
             <div className="group bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl relative overflow-hidden">
-              {/* Decorative Background Blob inside the card */}
               <div className="absolute top-0 right-0 w-96 h-96 bg-teal-50/50 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
 
               <div className="grid md:grid-cols-2 gap-12 relative z-10">
@@ -760,45 +765,107 @@ const AboutPage = () => {
                     <p className="text-lg text-slate-600 leading-relaxed">
                       Have questions about ProDoc or need help getting started? Our team is here to assist you on your journey to better healthcare management.
                     </p>
-                  </div>
-
-                  {/* Mail Icon */}
+                  </div>q
                   <div className="flex justify-center md:justify-start mt-4">
-                    <Mail className="w-64 h-64 md:h-56 md:translate-x-32  translate-y-8 md:translate-y-12 text-teal-500/10 transition-all duration-1000 ease-out group-hover:scale-150 group-hover:rotate-12 group-hover:text-teal-500/20 cursor-pointer" />
+                    <Mail className="w-64 h-64 md:h-56 md:translate-x-32 translate-y-8 md:translate-y-12 text-teal-500/10 transition-all duration-1000 ease-out group-hover:scale-150 group-hover:rotate-12 group-hover:text-teal-500/20 cursor-pointer" />
                   </div>
                 </div>
 
                 {/* Right Side: Form */}
-                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
+                  {/* Status Messages */}
+                  {submitStatus === 'success' && (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                      <p className="text-green-700 font-medium">Message sent successfully! We'll get back to you soon.</p>
+                    </div>
+                  )}
+                  
+                  {submitStatus === 'error' && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                      <p className="text-red-700 font-medium">Failed to send message. Please try again or contact us directly.</p>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700">First Name</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                      <input 
+                        type="text" 
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" 
+                      />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700">Last Name</label>
-                      <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                      <input 
+                        type="text" 
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" 
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Email Address</label>
-                    <input type="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                    <input 
+                      type="email" 
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" 
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Subject</label>
-                    <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" />
+                    <input 
+                      type="text" 
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all" 
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Message</label>
-                    <textarea rows="4" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all resize-none"></textarea>
+                    <textarea 
+                      rows="4" 
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all resize-none"
+                    ></textarea>
                   </div>
 
-                  <button className="w-full bg-[#14B8A6] text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-500/20 hover:bg-[#0f968c] hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group">
-                    Send Message
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full ${isSubmitting ? 'bg-teal-400' : 'bg-[#14B8A6]'} text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-teal-500/20 hover:bg-[#0f968c] hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0`}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        Send Message
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
                 </form>
               </div>
@@ -806,12 +873,11 @@ const AboutPage = () => {
           </Reveal>
         </div>
 
-        {/* Footer  */}
+        {/* Footer */}
         <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
           
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
-            
             <div className="md:col-span-4 space-y-6">
               <div className="flex items-center gap-3">
                 <img src={LogoWithWords} alt="ProDoc" className="h-10 md:h-12 w-auto" />
@@ -820,9 +886,9 @@ const AboutPage = () => {
                 ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
               </p>
               <div className="flex gap-3 mt-2">
-                  <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
-                  <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
-                  <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
+                <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+                <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
+                <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
               </div>
             </div>
 
