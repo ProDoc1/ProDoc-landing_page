@@ -41,7 +41,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password,//hash
+          password: formData.password,
           userType: userType 
         }),
       });

@@ -37,6 +37,12 @@ const DoctorsPage = ({ onBack }) => {
     const fetchDoctors = async () => {
       try {
         const response = await fetch('/api/get-doctors');
+        if (!response.ok) {
+          console.error('Failed to load doctors: status', response.status, await response.text());
+          setDoctors([]);
+          setLoading(false);
+          return; 
+        }
         const data = await response.json();
         setDoctors(data);
         setLoading(false);
