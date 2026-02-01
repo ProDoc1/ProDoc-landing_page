@@ -11,7 +11,7 @@ import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
 import LogoWhite from '../assets/logo_with_words_white.png';
 
-const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin, onNavigateSignupPage }) => {
+const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin, onNavigateSignupPage, onNavigateDoctors }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -22,7 +22,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
       const currentScrollY = window.scrollY;
       setScrolled(currentScrollY > 20);
 
-      if (currentPage === 'doctors') {
+      if (currentPage === 'doctor') {
         if (currentScrollY > lastScrollY && currentScrollY > 100) {
           setIsVisible(false);
         } else {
@@ -38,7 +38,8 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
 
   const baseWrapper = "fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 rounded-2xl transition-all duration-300 border";
 
-  const wrapperWithVisibility = currentPage === 'doctors' && !isVisible 
+  // Logic to hide/show navbar on doctor page scroll
+  const wrapperWithVisibility = currentPage === 'doctor' && !isVisible 
     ? `${baseWrapper} -translate-y-32` 
     : baseWrapper;
 
@@ -56,12 +57,16 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
       mobileToggle: "text-white hover:bg-white/10",
       tubelightBg: "#14B8A6",
     },
-    doctors: {
-      wrapper: `${wrapperWithVisibility} ${scrolled ? "backdrop-blur-xl shadow-lg" : " backdrop-blur-xl "}`,
+    doctor: {
+      // Matches the "About" page style: fixed background with backdrop blur
+      wrapper: `${wrapperWithVisibility} ${scrolled ? "backdrop-blur-xl shadow-lg bg-[#14B8A6]/90" : "bg-[#14B8A6] backdrop-blur-xl"}`,
       text: "text-white",
+      logoIcon: "#ffffff",
+      logoBg: "bg-white", 
+      btnSecondary: "bg-teal-500 hover:bg-teal-600 text-white border border-white/20",
       btnPrimary: "bg-white text-teal-600",
       mobileToggle: "text-white hover:bg-white/10",
-      tubelightBg: "#14B8A6",
+      tubelightBg: "#ffffff", // Changed to white to create that bright glow effect seen in your image
     },
     login: {
       wrapper: `${baseWrapper} ${scrolled ? "bg-white/90 backdrop-blur-xl border-teal-100 shadow-lg" : "bg-white/80 backdrop-blur-sm border-transparent"}`,
@@ -77,6 +82,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
   const navItems = [
     { name: 'Home', url: '#', icon: Home, onClick: onNavigateHome },
     { name: 'About Us', url: '#', icon: Users, onClick: onNavigateAbout },
+    { name: 'Doctors', url: '#', icon: Stethoscope, onClick: onNavigateDoctors },
   ];
 
   return (
@@ -85,9 +91,9 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
         
         {/* Logo Section */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={onNavigateHome}>
-          <div className="p-0 group-hover:scale-105 transition-transform">
+          <div className={`p-0 group-hover:scale-105 transition-transform rounded-lg ${currentPage === 'doctor' ? currentStyle.logoBg : ''}`}>
             <img
-              src={currentPage === 'home' ? LogoWhite : LogoColor}
+              src={currentPage === 'home' || currentPage === 'doctor' ? LogoWhite : LogoColor}
               alt="ProDoc"
               className="h-12 md:h-16 lg:h-20 object-contain w-auto"
             />
@@ -114,7 +120,7 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
           
           <button 
             onClick={onNavigateSignupPage}
-            className={`${currentStyle.btnPrimary} px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md`}
+            className={`${currentPage === 'doctor' ? currentStyle.btnSecondary : currentStyle.btnPrimary} px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md`}
           >
              Signup
           </button>

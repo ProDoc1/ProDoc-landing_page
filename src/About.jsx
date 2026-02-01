@@ -302,13 +302,10 @@ const AboutPage = () => {
             </Reveal>
             <Reveal delay={200}>
               <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-sm max-w-xl">
-                <p className="text-lg text-slate-700">ProDoc is the centralized platform bridging the gap between patients and verified professionals.</p>
+                <p className="text-lg text-slate-700">ProDoc bridges the gap between patients and verified professionals by simplifying health reports and instantly connecting patients to the right doctor.</p>
               </div>
             </Reveal>
             <Reveal delay={300}>
-              <button className="group bg-[#14B8A6] text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-[#0f968c] transition-all flex items-center gap-2">
-                Find a Doctor <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
             </Reveal>
           </div>
           <div className="lg:col-span-5 flex justify-center pt-8">
@@ -428,35 +425,83 @@ const AboutPage = () => {
           </Reveal>
         </div>
 
-        <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 shadow-2xl border border-slate-100">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <div className="md:col-span-4 space-y-6">
-              <img src={LogoWithWords} alt="ProDoc" className="h-12" />
-              <p className="text-sm">Sri Lanka's first centralized platform for transparent healthcare.</p>
-              <div className="flex gap-3">
-                <Facebook className="hover:text-teal-600 cursor-pointer" />
-                <Instagram className="hover:text-teal-600 cursor-pointer" />
-                <Linkedin className="hover:text-teal-600 cursor-pointer" />
-              </div>
-            </div>
-            <div className="md:col-span-4 grid grid-cols-2">
-              <div>
-                <h4 className="font-bold mb-4 uppercase text-xs">Platform</h4>
-                <ul className="text-sm space-y-2"><li>Find a Doctor</li><li>How it Works</li></ul>
-              </div>
-              <div>
-                <h4 className="font-bold mb-4 uppercase text-xs">Company</h4>
-                <ul className="text-sm space-y-2"><li>About Us</li><li>Privacy Policy</li></ul>
-              </div>
-            </div>
-            <div className="md:col-span-4">
-              <h4 className="font-bold mb-4 uppercase text-xs">Contact</h4>
-              <p className="text-sm mb-2">prdoc2025se06@gmail.com</p>
-              <p className="text-sm">+94 76 793 7055</p>
-            </div>
-          </div>
-          <div className="mt-12 pt-8 border-t text-center text-xs">© {new Date().getFullYear()} ProDoc Group Project. All rights reserved.</div>
-        </footer>
+        {/* --- SECTION 5: FOOTER --- */}
+              <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
+                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
+              
+                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
+                 
+                    <div className="md:col-span-4 space-y-6">
+                       <div className="flex items-center gap-3">
+                          <img src={LogoWithWords} alt="ProDoc" className="h-10 md:h-12 w-auto" />
+                       </div>
+                       <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
+                          ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
+                       </p>
+                       <div className="flex gap-3 mt-2">
+                          <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+                          <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
+                          <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
+                       </div>
+                    </div>
+        
+                    <div className="md:col-span-2">
+                       <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
+                       <ul className="space-y-4 text-sm">
+                          {['Find a Doctor', 'How it Works', 'Our Team', 'Reviews'].map((item) => (
+                             <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                                <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                                {item}
+                             </a></li>
+                          ))}
+                       </ul>
+                    </div>
+        
+                    <div className="md:col-span-2">
+                       <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
+                       <ul className="space-y-4 text-sm">
+                          {['About Us', 'Careers', 'Privacy Policy', 'Terms of Service'].map((item) => (
+                             <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                                <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                                {item}
+                             </a></li>
+                          ))}
+                       </ul>
+                    </div>
+        
+                    <div className="md:col-span-4">
+                       <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
+                       <ul className="space-y-4 text-sm mb-8">
+                          <li className="flex items-center gap-3 text-slate-600">
+                             <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Mail size={18} /></div>
+                             <span>prdoc2025se06@gmail.com</span>
+                          </li>
+                          <li className="flex items-center gap-3 text-slate-600">
+                             <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Phone size={18} /></div>
+                             <span>+94 76 793 7055</span>
+                          </li>
+                       </ul>
+                 
+                       <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
+                          <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
+                          <button className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                             Join ProDoc Network
+                          </button>
+                       </div>
+                    </div>
+                 </div>
+        
+                 <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
+                    <div className="flex items-center gap-2">
+                       <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                       </span>
+                       <span>All Systems Operational</span>
+                    </div>
+                    <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
+                 </div>
+              </footer>
       </div>
     </div>
   );

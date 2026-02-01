@@ -323,7 +323,7 @@ export default function App() {
           currentPage={currentPage} 
           onNavigateHome={() => navigateTo('home')}
           onNavigateAbout={() => navigateTo('about')}
-          onNavigateServices={() => navigateToSection('services')}
+          onNavigateDoctors={() => navigateTo('doctors')}
           onNavigateHowitWorks={() => navigateToSection('how-it-works')}
           onNavigateLogin={() => navigateTo('login')}
           onNavigateSignupPage={() => navigateTo('signup')}
