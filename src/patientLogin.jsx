@@ -35,7 +35,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      // Note: Ensure your 'vercel dev' or backend is running for this endpoint
+      
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -57,16 +57,14 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
       mobileToggle: "text-white hover:bg-white/10",
       tubelightBg: "#14B8A6",
     },
-    doctor: {
-      // Matches the "About" page style: fixed background with backdrop blur
-      wrapper: `${wrapperWithVisibility} ${scrolled ? "backdrop-blur-xl shadow-lg bg-[#14B8A6]/90" : "bg-[#14B8A6] backdrop-blur-xl"}`,
+   doctors: {
+      // YOUR NEW STYLE: This is independent and won't affect Home or Login
+      wrapper: `${wrapperWithVisibility} ${scrolled ? "backdrop-blur-xl shadow-lg " : " backdrop-blur-xl"}`,
       text: "text-white",
-      logoIcon: "#ffffff",
       logoBg: "bg-white", 
-      btnSecondary: "bg-teal-500 hover:bg-teal-600 text-white border border-white/20",
       btnPrimary: "bg-white text-teal-600",
       mobileToggle: "text-white hover:bg-white/10",
-      tubelightBg: "#ffffff", // Changed to white to create that bright glow effect seen in your image
+      tubelightBg: "#14B8A6", 
     },
     login: {
       wrapper: `${baseWrapper} ${scrolled ? "bg-white/90 backdrop-blur-xl border-teal-100 shadow-lg" : "bg-white/80 backdrop-blur-sm border-transparent"}`,
