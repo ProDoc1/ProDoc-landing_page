@@ -23,6 +23,8 @@ import {
   AlertCircle,
   Star,
   ChevronRight,
+  UserCheck, 
+  FileLock
 } from 'lucide-react';
 
 // --- ANIMATION COMPONENTS ---
@@ -252,7 +254,7 @@ const AboutPage = () => {
     };
 
     try {
-      // Replace these placeholders with your ACTUAL keys from EmailJS
+      
       const serviceId = 'service_jajwzgf'; 
       const templateId = 'template_o75vnnp'; 
       const publicKey = 'LUysmcNbwO0ok5GAV'; 
@@ -301,12 +303,57 @@ const AboutPage = () => {
               </h1>
             </Reveal>
             <Reveal delay={200}>
-              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-sm max-w-xl">
+              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-sm max-w-3xl">
                 <p className="text-lg text-slate-700">ProDoc bridges the gap between patients and verified professionals by simplifying health reports and instantly connecting patients to the right doctor.</p>
               </div>
             </Reveal>
+
             <Reveal delay={300}>
+              <div className="flex flex-wrap gap-12 pt-6">
+                <div className="group flex flex-col items-start gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/60 shadow-sm hover:bg-teal-50/80 hover:shadow-lg hover:-translate-y-1
+                                hover:ring-1 hover:ring-teal-300/40 transition-all duration-300">               
+                  <div className="flex items-center gap-3">
+                      <ShieldCheck className="w-5 h-5 text-teal-600" />
+                      <span className="font-bold text-slate-700 text-sm">Secure Data</span>
+                  </div>
+
+                  <p className="text-slate-500 text-xs leading-snug">
+                     HIPAA-compliant data 
+                     <br/>protection for 
+                     your privacy.
+                  </p>
+                </div>
+
+                <div className="group flex flex-col items-start gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/60 shadow-sm hover:bg-teal-50/80 hover:shadow-lg hover:-translate-y-1
+                                hover:ring-1 hover:ring-teal-300/40 transition-all duration-300">               
+                  <div className="flex items-center gap-3">
+                      <UserCheck className="w-5 h-5 text-teal-600" />
+                      <span className="font-bold text-slate-700 text-sm">Verified Doctors</span>
+                  </div>
+
+                  <p className="text-slate-500 text-xs leading-snug">
+                     All doctors are verified  
+                     <br/>with official credentials. 
+                  </p>
+                </div>
+                
+
+                <div className="group flex flex-col items-start gap-2 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/60 shadow-sm hover:bg-teal-50/80 hover:shadow-lg hover:-translate-y-1
+                                hover:ring-1 hover:ring-teal-300/40 transition-all duration-300">               
+                  <div className="flex items-center gap-3">
+                      <FileLock className="w-5 h-5 text-teal-600" />
+                      <span className="font-bold text-slate-700 text-sm">Private Reports</span>
+                  </div>
+
+                  <p className="text-slate-500 text-xs leading-snug">
+                     Reports never shared   
+                     <br/>without your consent. 
+                  </p>
+                </div>
+              </div>
             </Reveal>
+
+
           </div>
           <div className="lg:col-span-5 flex justify-center pt-8">
             <Reveal delay={400}>
