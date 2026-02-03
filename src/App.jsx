@@ -69,7 +69,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
                       </div>
                     ))}
                  </div>
-                 <p className="drop-shadow-sm">Trusted by 10,000+ patients</p>
+                 <p className="drop-shadow-sm">Trusted by 1,000+ patients</p>
               </div>
           </div>
 

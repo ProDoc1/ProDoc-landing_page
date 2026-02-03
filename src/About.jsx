@@ -341,26 +341,66 @@ const AboutPage = () => {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-8 mb-12">
+         {/* Section 1: Carousel & Problems - Side by Side Layout */}
+        <div className="grid lg:grid-cols-12 gap-x-2 gap-y-8 mb-16">
+          {/* Left: Carousel */}
           <Reveal delay={100} className="lg:col-span-5">
-            <div style={{ height: '500px', width: '100%' }}>
-              <Carousel baseWidth={Math.min(380, window.innerWidth - 32)} autoplay={true} />
+            <div className="flex justify-start h-full">
+              <div style={{ height: '500px', position: 'relative', width: '100%' }}>
+                <Carousel
+                  baseWidth={380}
+                  autoplay={true}
+                  autoplayDelay={4000}
+                  pauseOnHover={true}
+                  loop={true}
+                  round={false}
+                />
+              </div>
             </div>
           </Reveal>
-          <div className="lg:col-span-7 pt-10">
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">The Problems We Solve</h3>
-            <div className="grid gap-5">
-              {["Trust Issues", "Information Overload", "Lack of Transparency"].map((prob, i) => (
-                <Reveal key={i} delay={200 + (i*100)}>
-                  <div className="bg-teal-500 rounded-2xl p-6 flex items-start gap-4 shadow-sm">
-                    <AlertCircle className="w-6 h-6 text-white shrink-0" />
-                    <div>
-                      <h4 className="font-bold text-white mb-1">{prob}</h4>
-                      <p className="text-teal-50 text-sm">Providing reliable solutions to navigate complex healthcare landscapes.</p>
-                    </div>
+
+          {/* Right: The Problems We Solve */}
+          <div className="lg:col-span-7 flex flex-col gap-4">
+            <Reveal delay={200}>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2 px-2">The Problems We Solve</h3>
+            </Reveal>
+            
+            <div className="grid grid-cols-1 gap-5 ">
+              <Reveal delay={200}>
+                <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
+                  <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
+                    <AlertCircle className="w-6 h-6" />
                   </div>
-                </Reveal>
-              ))}
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1">Trust Issues</h4>
+                    <p className="text-slate-600 text-sm">Finding a doctor you can truly trust is difficult in an unregulated market.</p>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal delay={300}>
+                <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
+                  <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1">Information Overload</h4>
+                    <p className="text-slate-600 text-sm">Fragmented and unreliable medical information confuses patients.</p>
+                  </div>
+                </div>
+              </Reveal>
+
+              <Reveal delay={400}>
+                <div className="bg-teal-500 border border-teal-500 rounded-2xl p-6 flex items-start gap-4 hover:shadow-md transition-shadow">
+                  <div className="bg-white p-3 rounded-xl text-teal-500 shrink-0">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 mb-1">Lack of Transparency</h4>
+                    <p className="text-slate-600 text-sm">Hidden costs and unknown credentials make healthcare choices risky.</p>
+                  </div>
+                </div>
+              </Reveal>
             </div>
           </div>
         </div>
@@ -377,17 +417,101 @@ const AboutPage = () => {
 
         <div className="grid md:grid-cols-2 gap-8 mb-16">
           <Reveal delay={100}>
-            <div className="bg-white rounded-3xl p-10 shadow-lg border-t-4 border-teal-500 hover:-translate-y-1 transition-all">
-              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900"><Target className="text-teal-600" /> Mission</h3>
-              <p className="text-slate-600 leading-relaxed">To empower patients with transparent, reliable healthcare information accessible anytime, anywhere.</p>
+            <div className="bg-white rounded-3xl p-10 shadow-lg border-t-4 border-teal-500 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Target className="w-32 h-32 text-teal-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                <Target className="w-8 h-8 text-teal-600" /> Mission
+              </h3>
+              <p className="text-slate-600 leading-relaxed text-lg">
+                To empower patients with transparent, reliable healthcare information accessible anytime, anywhere, ensuring no decision is made in the dark.
+              </p>
             </div>
           </Reveal>
+          
           <Reveal delay={200}>
-            <div className="bg-white rounded-3xl p-10 shadow-lg border-t-4 border-teal-500 hover:-translate-y-1 transition-all">
-              <h3 className="text-2xl font-bold mb-6 flex items-center gap-3 text-slate-900"><HeartPulse className="text-teal-600" /> Vision</h3>
-              <p className="text-slate-600 leading-relaxed">To be the most trusted digital healthcare companion, creating a healthier global community.</p>
+            <div className="bg-white rounded-3xl p-10 shadow-lg border-t-4 border-teal-500 relative overflow-hidden group hover:-translate-y-1 transition-transform">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <HeartPulse className="w-32 h-32 text-teal-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                <HeartPulse className="w-8 h-8 text-teal-600" /> Vision
+              </h3>
+              <p className="text-slate-600 leading-relaxed text-lg">
+                To be the most trusted digital healthcare companion, seamlessly connecting patients with technology to create a healthier global community.
+              </p>
             </div>
           </Reveal>
+        </div>
+
+        {/* Section 4: Technology & Audience */}
+        <div className="grid md:grid-cols-2 gap-8 mb-20">
+          <Reveal delay={100}>
+            <div className="bg-teal-500 rounded-3xl p-8 text-white h-full flex flex-col justify-between shadow-2xl relative overflow-hidden">
+              
+              {/* Add the Aurora component */}
+              <div className="absolute inset-0 z-0">
+                <Aurora
+                  colorStops={["#0D9488", "#14B8A6", "#2e786b"]} 
+                  blend={0.8}
+                  amplitude={2.0}
+                  speed={0.5}
+                />
+              </div>
+
+              <div className="absolute inset-0 bg-slate-900/40 z-[1]"></div>
+
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                  <div className="bg-white/10 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md">
+                    <Cpu className="w-6 h-6 text-teal-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">Technology With Responsibility</h3>
+                  <p className="text-slate-200 leading-relaxed">
+                    ProDoc utilizes cutting-edge AI to interpret medical data for clarity. 
+                    We strictly adhere to the principle that technology assists, but never 
+                    replaces, the human element of professional care.
+                  </p>
+                </div>
+                
+                <div className="mt-8 flex gap-3">
+                  <button 
+                    onClick={() => window.open('https://newsroom.heart.org/news/new-guidance-offered-for-responsible-ai-use-in-health-care', '_blank')}
+                    className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all w-full text-center shadow-lg active:scale-95"
+                  >
+                    Read Documentation
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Audience Box Grid */}
+          <div className="flex flex-col gap-4">
+            <Reveal delay={200}>
+              <div className="bg-white rounded-3xl p-8 shadow-md border border-slate-100 h-full">
+                <h3 className="text-2xl font-bold text-slate-900 mb-6">Who Is ProDoc For?</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {[
+                    { icon: Users, label: "Patients", color: "bg-teal-500 text-white-600", desc: "Seeking trusted care." },
+                    { icon: Building2, label: "Clinics", color: "bg-teal-500 text-white-600", desc: "Managing visibility." },
+                    { icon: HeartPulse, label: "Providers", color: "bg-teal-500 text-white-600", desc: "Showcasing expertise." },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 transition-colors cursor-default group">
+                      <div className={`p-3 rounded-xl ${item.color} group-hover:scale-110 transition-transform`}>
+                        <item.icon className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800">{item.label}</h4>
+                        <p className="text-xs text-slate-500">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
 
         <div id="team" className="mb-20"><Team /></div>
@@ -398,9 +522,9 @@ const AboutPage = () => {
               <div className="grid md:grid-cols-2 gap-12 relative z-10">
                 <div className="space-y-6">
                   <h2 className="text-4xl font-bold text-slate-900">Get in Touch</h2>
-                  <p className="text-lg text-slate-600">Have questions? Our team is here to assist you on your journey to better healthcare.</p>
-                  <div className="flex justify-center md:justify-start">
-                    <Mail className="w-56 h-56 text-teal-500/10 group-hover:scale-110 transition-transform duration-1000" />
+                  <p className="text-lg text-slate-600">Have questions about ProDoc or need help getting started? Our team is here to assist you on your journey to better healthcare management.</p>
+                  <div className="flex justify-center md:justify-start  mt-4">
+                    <Mail className="w-64 h-64 md:h-56 md:translate-x-32  translate-y-8 md:translate-y-2 text-teal-500/10 transition-all duration-1000 ease-out group-hover:scale-150 group-hover:rotate-12 group-hover:text-teal-500/20 cursor-pointer" />
                   </div>
                 </div>
 
@@ -418,6 +542,7 @@ const AboutPage = () => {
                   
                   <button type="submit" disabled={isSubmitting} className="w-full bg-[#14B8A6] text-white py-4 rounded-xl font-bold hover:bg-[#0f968c] transition-all flex items-center justify-center gap-2 disabled:opacity-50">
                     {isSubmitting ? "Sending..." : "Send Message"}
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </form>
               </div>
