@@ -326,8 +326,17 @@ const DoctorsPage = ({ onBack }) => {
 
                       <div>
                         <div className="flex gap-5 mb-6 items-start">
-                          <div className="w-20 h-20 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 shrink-0 shadow-inner">
-                            <Stethoscope size={32} strokeWidth={1.5} />
+                          <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center overflow-hidden border border-teal-100">
+                            {doc.image_url ? (
+                              <img 
+                                src={doc.image_url} 
+                                alt={doc.full_name} 
+                                className="w-full h-full object-cover"
+                                onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }} // Fallback if link breaks
+                              />
+                            ) : (
+                              <Stethoscope size={28} className="text-teal-600" />
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2 mb-1">
