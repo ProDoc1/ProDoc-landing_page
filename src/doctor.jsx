@@ -326,7 +326,7 @@ const DoctorsPage = ({ onBack }) => {
 
                       <div>
                         <div className="flex gap-5 mb-6 items-start">
-                          <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center overflow-hidden border border-teal-100">
+                          <div className="w-20 h-20 rounded-2xl bg-teal-50 flex items-center justify-center overflow-hidden border border-teal-100">
                             {doc.image_url ? (
                               <img 
                                 src={doc.image_url} 
@@ -340,15 +340,15 @@ const DoctorsPage = ({ onBack }) => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2 mb-1">
-                                <h3 className="font-bold text-lg text-slate-900 leading-tight group-hover:text-teal-700 transition-colors truncate">
+                                <h1 className="font-bold text-lg text-slate-900 leading-tight group-hover:text-teal-700 transition-colors truncate">
                                   {highlightMatch(doc.full_name, searchQuery)}
-                                </h3>
+                                </h1>
                                 <div className="flex items-center gap-1.5 shrink-0 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
                                   <Star size={12} className="fill-amber-400 text-amber-400" />
                                   <span className="text-xs font-bold text-amber-700">4.9</span>
                                 </div>
                             </div>
-                            <p className="text-teal-600 text-[11px] font-bold uppercase tracking-wider">{doc.specialty}</p>
+                            <p className="text-teal-600 text-[12px] font-bold uppercase tracking-wider">{doc.specialty}</p>
                           </div>
                         </div>
 
