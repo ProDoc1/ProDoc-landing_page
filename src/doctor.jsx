@@ -332,7 +332,7 @@ const DoctorsPage = ({ onBack }) => {
                                 src={doc.image_url} 
                                 alt={doc.full_name} 
                                 className="w-full h-full object-cover"
-                                onError={(e) => { e.target.src = 'none'; }} // Fallback if link breaks
+                                onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }} // Fallback if link breaks
                               />
                             ) : (
                               <Stethoscope size={28} className="text-teal-600" />
