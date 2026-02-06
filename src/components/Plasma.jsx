@@ -40,8 +40,8 @@ void mainImage(out vec4 o, vec2 C) {
   vec2 mouseOffset = (uMouse - center) * 0.0002;
   C += mouseOffset * length(C - center) * step(0.5, uMouseInteractive);
   
-  float i, d, z, T = iTime * uSpeed * uDirection;
-  vec3 O, p, S;
+  float i=0., d=0., z=0., T = iTime * uSpeed * uDirection;
+  vec3 O=vec3(0.), p, S;
 
   for (vec2 r = iResolution.xy, Q; ++i < 60.; O += o.w/d*o.xyz) {
     p = z*normalize(vec3(C-.5*r,r.y)); 
@@ -176,7 +176,7 @@ export const Plasma = ({
       if (mouseInteractive && containerEl) {
         containerEl.removeEventListener('mousemove', handleMouseMove);
       }
-      try { containerEl?.removeChild(canvas); } catch (e) {}
+      try { containerEl?.removeChild(canvas); } catch (e) { }
     };
   }, [color, speed, direction, scale, opacity, mouseInteractive]);
 

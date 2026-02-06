@@ -8,7 +8,9 @@ import {
   ArrowRight,
   ArrowLeft,
   Activity,
-  User
+  User,
+  AlertTriangle,
+  Phone
 } from 'lucide-react';
 
 // --- IMPORTS ---
@@ -20,6 +22,8 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [errorAlert, setErrorAlert] = useState({ show: false, message: '' });
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,7 +34,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      alert("Please enter both email and password.");
+      setErrorAlert({ show: true, message: "Please enter both email and password." });
       return;
     }
 
@@ -57,11 +61,11 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
         }
         onLoginSuccess(data.user, userType);
       } else {
-        alert(data.error || "Invalid credentials. Please try again.");
+        setErrorAlert({ show: true, message: data.error || "Invalid credentials. Please try again." });
       }
     } catch (err) {
       console.error("Login error:", err);
-      alert("Connection error. Is 'vercel dev' running?");
+      setErrorAlert({ show: true, message: "Connection error. Is 'vercel dev' running?" });
     } finally {
       setLoading(false);
     }
@@ -114,7 +118,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
             </div>
           </div>
           <div className="flex justify-end">
-            <button className="bg-white/50 backdrop-blur-md p-2 rounded-full text-slate-700 hover:bg-white hover:shadow-md transition-all duration-300 border border-slate-300/30">
+            <button onClick={() => setShowHelpModal(true)} className="bg-white/50 backdrop-blur-md p-2 rounded-full text-slate-700 hover:bg-white hover:shadow-md transition-all duration-300 border border-slate-300/30">
               <HelpCircle size={18} />
             </button>
           </div>
@@ -339,6 +343,90 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
           © {new Date().getFullYear()} ProDoc All rights reserved.
         </footer>
       </div >
+
+      {/* HELP MODAL */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setShowHelpModal(false)}></div>
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl relative z-10 animate-slide-up flex flex-col items-center text-center border border-slate-100">
+            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <HelpCircle size={24} className="text-blue-600" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">Need Help?</h3>
+            <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+              If you are having trouble logging in or accessing your account, please contact our support team.
+            </p>
+
+            <div className="w-full space-y-3 mb-6">
+              <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
+                <div className="p-2 bg-white rounded-lg text-teal-600 shadow-sm"><Mail size={18} /></div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email Us</p>
+                  <p className="text-sm font-semibold text-slate-700">prdoc2025se06@gmail.com</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
+                <div className="p-2 bg-white rounded-lg text-teal-600 shadow-sm"><Phone size={18} /></div>
+                <div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Call Us</p>
+                  <p className="text-sm font-semibold text-slate-700">+94 74 279 7484</p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-slate-900/20 transition-all transform active:scale-[0.98]"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ERROR MODAL */}
+      {errorAlert.show && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setErrorAlert({ ...errorAlert, show: false })}></div>
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl relative z-10 animate-slide-up flex flex-col items-center text-center border border-rose-100">
+            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center">
+                <AlertTriangle size={24} className="text-rose-600" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">Login Failed</h3>
+            <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+              {errorAlert.message}
+            </p>
+            <button
+              onClick={() => setErrorAlert({ ...errorAlert, show: false })}
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-rose-500/30 transition-all transform active:scale-[0.98]"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- CUSTOM ANIMATIONS --- */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.2s ease-out forwards;
+        }
+        .animate-slide-up {
+          animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
     </div >
   );
 };

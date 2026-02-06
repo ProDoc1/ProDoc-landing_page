@@ -260,7 +260,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
                      </li>
                      <li className="flex items-center gap-3 text-slate-600">
                         <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Phone size={18} /></div>
-                        <span>+94 76 793 7055</span>
+                        <span>+94 74 279 7484</span>
                      </li>
                   </ul>
 

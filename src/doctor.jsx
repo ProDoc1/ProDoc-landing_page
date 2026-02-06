@@ -451,9 +451,10 @@ const DoctorsPage = ({ onBack }) => {
                         </li>
                         <li className="flex items-center gap-3 text-slate-600">
                            <div className="p-2.5 bg-teal-50 rounded-xl text-teal-600 border border-teal-100"><Phone size={18} /></div>
-                           <span className="font-medium">+94 76 793 7055</span>
+                           <span className="font-medium">+94 74 279 7484</span>
                         </li>
                      </ul>
+                    
                
                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200">
                         <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
