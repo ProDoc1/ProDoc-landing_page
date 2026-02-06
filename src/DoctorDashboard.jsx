@@ -1,9 +1,9 @@
 import React from 'react';
-import { 
-  ShieldCheck, 
-  FileText, 
-  Settings, 
-  LogOut, 
+import {
+  ShieldCheck,
+  FileText,
+  Settings,
+  LogOut,
   Activity,
   Award,
   CheckCircle,
@@ -14,6 +14,13 @@ import Plasma from './components/Plasma';
 import LogoColor from './assets/Logo_with_words.png';
 
 const DoctorDashboard = ({ user, onLogout }) => {
+  React.useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    if (role !== 'doctor') {
+      // Kick them out if they aren't a doctor
+      onLogout();
+    }
+  }, []);
   // Mock data for professional metrics
   const professionalStats = [
     { label: "Profile Views", value: "1,240", icon: <Activity className="text-blue-600" />, color: "bg-blue-50" },
@@ -33,7 +40,7 @@ const DoctorDashboard = ({ user, onLogout }) => {
         <div className="p-6">
           <img src={LogoColor} alt="ProDoc" className="h-12 object-contain" />
         </div>
-        
+
         <nav className="flex-1 px-4 space-y-2 mt-4">
           <NavItem icon={<Activity size={20} />} label="Performance" active />
           <NavItem icon={<ShieldCheck size={20} />} label="Credential Vault" />
@@ -88,14 +95,14 @@ const DoctorDashboard = ({ user, onLogout }) => {
 
           {/* Action Card */}
           <div className="bg-slate-800 rounded-[2rem] p-8 shadow-xl text-white flex flex-col justify-between relative overflow-hidden">
-             <div className="relative z-10">
-                <h3 className="text-2xl font-bold mb-2">Update Surgical Records</h3>
-                <p className="text-slate-300 mb-6">Add your latest procedures to your public-facing verified history.</p>
-                <button className="bg-teal-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-600 transition-all flex items-center gap-2 w-fit">
-                  Manage Records <ChevronRight size={18} />
-                </button>
-             </div>
-             <div className="absolute -bottom-10 -right-10 h-40 w-40 bg-teal-500/10 rounded-full blur-3xl"></div>
+            <div className="relative z-10">
+              <h3 className="text-2xl font-bold mb-2">Update Surgical Records</h3>
+              <p className="text-slate-300 mb-6">Add your latest procedures to your public-facing verified history.</p>
+              <button className="bg-teal-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-600 transition-all flex items-center gap-2 w-fit">
+                Manage Records <ChevronRight size={18} />
+              </button>
+            </div>
+            <div className="absolute -bottom-10 -right-10 h-40 w-40 bg-teal-500/10 rounded-full blur-3xl"></div>
           </div>
         </div>
       </main>

@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  User, 
-  Settings, 
-  LogOut, 
-  Search, 
-  ShieldCheck, 
-  Bell, 
-  ChevronRight, 
-  Heart 
+import {
+  User,
+  Settings,
+  LogOut,
+  Search,
+  ShieldCheck,
+  Bell,
+  ChevronRight,
+  Heart
 } from 'lucide-react';
 
 const PatientDashboard = ({ user, onLogout }) => {
@@ -25,14 +25,14 @@ const PatientDashboard = ({ user, onLogout }) => {
           <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">P</div>
           <span className="text-xl font-bold text-slate-800 tracking-tight">ProDoc <span className="text-teal-500">Portal</span></span>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <button className="p-2 text-slate-400 hover:text-teal-500 transition-colors relative">
             <Bell size={22} />
             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
           </button>
           <div className="h-8 w-px bg-slate-200 mx-2"></div>
-          <button 
+          <button
             onClick={onLogout}
             className="flex items-center gap-2 text-slate-500 hover:text-red-600 font-semibold text-sm transition-colors"
           >
@@ -42,7 +42,7 @@ const PatientDashboard = ({ user, onLogout }) => {
       </nav>
 
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* --- LEFT COLUMN: PROFILE & QUICK ACTIONS --- */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 text-center">
@@ -78,11 +78,11 @@ const PatientDashboard = ({ user, onLogout }) => {
               </div>
               <button className="text-teal-600 font-bold text-sm hover:underline">Manage List</button>
             </div>
-            
+
             <div className="space-y-4">
               {watchlist.map(doc => (
-                <div 
-                  key={doc.id} 
+                <div
+                  key={doc.id}
                   className="flex items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-4">

@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { 
-  HelpCircle, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-  ArrowLeft 
+import {
+  HelpCircle,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 
 // --- IMPORTS ---
-import LogoColor from './assets/Logo_with_words.png'; 
-import Plasma from './components/Plasma'; 
+import LogoColor from './assets/Logo_with_words.png';
+import Plasma from './components/Plasma';
 
 const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
-  const [userType, setUserType] = useState('patient'); 
+  const [userType, setUserType] = useState('patient');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
   // --- LOGIN LOGIC ---
   const handleLogin = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       alert("Please enter both email and password.");
       return;
@@ -35,22 +35,30 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      
-      const response = await fetch('/api/login', {
+
+      const apiEndpoint = userType === 'doctor' ? '/api/doctor-login' : '/api/login';
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          userType: userType 
+          userType: userType
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // Save doctor/patient info to localStorage so the Dashboard knows who is logged in
+        localStorage.setItem('userRole', userType);
+        if (data.user && data.user.id) {
+          localStorage.setItem(userType === 'doctor' ? 'doctorId' : 'patientId', data.user.id);
+        }
+
         // We call the prop from App.jsx to update the global state and redirect
-        onLoginSuccess(data.user);
+        // Pass userType so App.jsx knows where to route
+        onLoginSuccess(data.user, userType);
       } else {
         alert(data.error || "Invalid credentials. Please try again.");
       }
@@ -64,7 +72,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
 
   return (
     <div className="min-h-screen w-full relative flex flex-col font-sans text-slate-700 overflow-hidden">
-      
+
       {/* 1. PLASMA BACKGROUND */}
       <div className="fixed inset-0 z-0 h-screen w-screen">
         <Plasma color="#14b8a6" speed={0.4} scale={2.0} opacity={0.8} />
@@ -73,11 +81,11 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
 
       {/* 2. CONTENT LAYER */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        
+
         <nav className="w-full p-6 grid grid-cols-3 items-center">
           <div className="flex justify-start">
-            <button 
-              onClick={onBack} 
+            <button
+              onClick={onBack}
               className="flex items-center gap-2 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full text-teal-900 font-bold hover:bg-white/60 transition shadow-sm border border-white/20"
             >
               <ArrowLeft size={20} /> <span className="hidden sm:inline">Back</span>
@@ -111,17 +119,15 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
               <div className="bg-slate-100/50 p-1 rounded-full flex relative">
                 <button
                   onClick={() => setUserType('patient')}
-                  className={`flex-1 py-3 text-sm font-semibold rounded-full transition-all duration-300 ${
-                    userType === 'patient' ? 'bg-teal-500 shadow-sm text-white' : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                  className={`flex-1 py-3 text-sm font-semibold rounded-full transition-all duration-300 ${userType === 'patient' ? 'bg-teal-500 shadow-sm text-white' : 'text-slate-500 hover:text-slate-700'
+                    }`}
                 >
                   Patient Login
                 </button>
                 <button
                   onClick={() => setUserType('doctor')}
-                  className={`flex-1 py-3 text-sm font-semibold rounded-full transition-all duration-300 ${
-                    userType === 'doctor' ? 'bg-teal-500 shadow-md text-white' : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                  className={`flex-1 py-3 text-sm font-semibold rounded-full transition-all duration-300 ${userType === 'doctor' ? 'bg-teal-500 shadow-md text-white' : 'text-slate-500 hover:text-slate-700'
+                    }`}
                 >
                   Doctor Login
                 </button>
@@ -186,7 +192,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                   <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Authentication</span>
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   disabled={loading}
                   className={`w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-teal-500/30 flex items-center justify-center gap-2 transition-all transform active:scale-[0.98] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
