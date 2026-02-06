@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
-import { 
-  HelpCircle, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
+import {
+  HelpCircle,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
   ArrowLeft,
-  User 
+  User
 } from 'lucide-react';
 
-import LogoColor from './assets/Logo_with_words.png'; 
-import Plasma from './components/Plasma'; 
+import LogoColor from './assets/Logo_with_words.png';
+import Plasma from './components/Plasma';
 
 const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({ 
-    fullName: '', 
-    email: '', 
-    password: '', 
-    confirmPassword: '' 
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
 
   // Track errors for specific fields
@@ -103,7 +103,7 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        <nav className="w-full p-6 grid grid-cols-3 items-center">
+        <nav className="w-full p-4 md:p-6 grid grid-cols-3 items-center">
           <div className="flex justify-start">
             <button onClick={onBack} className="flex items-center gap-2 bg-white/40 backdrop-blur-md px-4 py-2 rounded-full text-teal-900 font-bold hover:bg-white/60 transition shadow-sm border border-white/20">
               <ArrowLeft size={20} /> <span className="hidden sm:inline">Back</span>
@@ -122,7 +122,7 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
         </nav>
 
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="bg-white/90 backdrop-blur-lg rounded-[2.5rem] shadow-2xl w-full max-w-md p-8 md:p-10 relative border border-white/40">
+          <div className="bg-white/90 backdrop-blur-lg rounded-[2rem] md:rounded-[2.5rem] shadow-2xl w-full max-w-md p-6 md:p-10 relative border border-white/40">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-slate-800 mb-2">Create Account</h2>
               <p className="text-slate-500 text-sm">Join ProDoc for better healthcare</p>
@@ -145,9 +145,9 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
                 <div className="space-y-1">
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Mail size={20} /></div>
-                    <input 
+                    <input
                       type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleInputChange}
-                      className={`w-full bg-slate-50 border ${errors.email ? 'border-red-500' : 'border-slate-100'} rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all`} 
+                      className={`w-full bg-slate-50 border ${errors.email ? 'border-red-500' : 'border-slate-100'} rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all`}
                     />
                   </div>
                   {errors.email && <p className="text-red-500 text-[10px] font-bold ml-2">{errors.email}</p>}

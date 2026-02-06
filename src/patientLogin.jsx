@@ -98,7 +98,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
       {/* 3. CONTENT LAYER */}
       <div className="relative z-10 flex flex-col min-h-screen">
 
-        <nav className="w-full p-6 grid grid-cols-3 items-center">
+        <nav className="w-full p-4 md:p-6 grid grid-cols-3 items-center">
           <div className="flex justify-start">
             <button
               onClick={onBack}
@@ -124,13 +124,28 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
           {/* 
             SPLIT-PANE CONTAINER 
           */}
-          <div className="relative bg-white rounded-[3.5rem] shadow-[0_0_40px_rgba(0,0,0,0.1)] w-full max-w-[850px] min-h-[520px] overflow-hidden flex shadow-teal-500/10 border border-slate-200">
+          <div className="relative bg-white rounded-[2rem] md:rounded-[3.5rem] shadow-[0_0_40px_rgba(0,0,0,0.1)] w-full max-w-[850px] min-h-0 md:min-h-[520px] overflow-hidden flex flex-col md:block shadow-teal-500/10 border border-slate-200">
 
+            {/* MOBILE TABS */}
+            <div className="grid grid-cols-2 md:hidden border-b border-slate-100">
+              <button
+                onClick={() => setUserType('patient')}
+                className={`py-4 text-sm font-bold transition-all ${userType === 'patient' ? 'text-teal-500 border-b-2 border-teal-500 bg-teal-50/30' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+              >
+                Patient
+              </button>
+              <button
+                onClick={() => setUserType('doctor')}
+                className={`py-4 text-sm font-bold transition-all ${userType === 'doctor' ? 'text-teal-600 border-b-2 border-teal-600 bg-teal-50/30' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+              >
+                Doctor
+              </button>
+            </div>
 
-            <div className="absolute inset-0 flex w-full h-full">
+            <div className="relative md:absolute md:inset-0 flex flex-col md:flex-row w-full h-auto md:h-full">
 
               {/* LEFT PANEL: PATIENT SIGN IN (Visible when userType === 'patient') */}
-              <div className="w-1/2 h-full p-10 flex flex-col justify-center items-center relative z-10 transition-opacity duration-500"
+              <div className={`w-full md:w-1/2 h-auto md:h-full p-6 md:p-10 flex flex-col justify-center items-center relative z-10 transition-opacity duration-500 ${userType === 'patient' ? 'flex' : 'hidden md:flex'}`}
                 style={{ opacity: userType === 'patient' ? 1 : 0, pointerEvents: userType === 'patient' ? 'auto' : 'none' }}>
 
                 <div className="w-full max-w-[320px]">
@@ -206,7 +221,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
               </div>
 
               {/* RIGHT PANEL: DOCTOR SIGN IN (Visible when userType === 'doctor') */}
-              <div className="w-1/2 h-full p-10 flex flex-col justify-center items-center relative z-10 transition-opacity duration-500"
+              <div className={`w-full md:w-1/2 h-auto md:h-full p-6 md:p-10 flex flex-col justify-center items-center relative z-10 transition-opacity duration-500 ${userType === 'doctor' ? 'flex' : 'hidden md:flex'}`}
                 style={{ opacity: userType === 'doctor' ? 1 : 0, pointerEvents: userType === 'doctor' ? 'auto' : 'none' }}>
 
                 <div className="w-full max-w-[320px]">
@@ -269,7 +284,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
             {/* 
               OVERLAY SLIDER LAYER  
             */}
-            <div className={`absolute top-0 left-0 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.3,1)] z-20 ${userType === 'patient' ? 'translate-x-full rounded-l-[4.5rem]' : 'translate-x-0 rounded-r-[4.5rem]'}`}>
+            <div className={`hidden md:block absolute top-0 left-0 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.3,1)] z-20 ${userType === 'patient' ? 'translate-x-full rounded-l-[4.5rem]' : 'translate-x-0 rounded-r-[4.5rem]'}`}>
 
               {/* GRADIENT BACKGROUND */}
               <div className={`absolute inset-0 bg-gradient-to-br from-teal-500 to-teal-600`} >
