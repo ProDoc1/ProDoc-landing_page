@@ -290,88 +290,10 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
-   const [currentPage, setCurrentPage] = useState('home');
-   const [currentUser, setCurrentUser] = useState(null);
-
-   const navigateTo = (page) => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setCurrentPage(page);
-   };
-
-   const handleLoginSuccess = (user, role = 'patient') => {
-      setCurrentUser(user);
-      if (role === 'doctor') {
-         navigateTo('doctor-dashboard');
-      } else {
-         navigateTo('dashboard');
-      }
-   };
-
-   const handleLogout = () => {
-      setCurrentUser(null);
-      navigateTo('home');
-   };
-
-   const navigateToSection = (sectionId) => {
-      setCurrentPage('home');
-      setTimeout(() => {
-         const element = document.getElementById(sectionId);
-         if (element) element.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-   };
-
+   
    return (
       <main className="relative min-h-screen">
-         {/* Hide Navbar for login/signup if desired, or keep global */}
-         {currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'dashboard' && currentPage !== 'doctor-dashboard' && (
-            <Navbar
-               currentPage={currentPage}
-               onNavigateHome={() => navigateTo('home')}
-               onNavigateAbout={() => navigateTo('about')}
-               onNavigateDoctors={() => navigateTo('doctors')}
-               onNavigateHowitWorks={() => navigateToSection('how-it-works')}
-               onNavigateLogin={() => navigateTo('login')}
-               onNavigateSignupPage={() => navigateTo('signup')}
-            />
-         )}
-
-         {currentPage === 'home' && (
-            <LandingPage
-               onNavigateHowitWorks={() => navigateToSection('how-it-works')}
-               onFindSpecialist={() => navigateTo('doctors')}
-            />
-         )}
-
-         {currentPage === 'about' && (
-            <AboutPage onBack={() => navigateTo('home')} />
-         )}
-
-         {currentPage === 'login' && (
-            <LoginPage
-               onBack={() => navigateTo('home')}
-               onNavigateSignup={() => navigateTo('signup')}
-               onLoginSuccess={handleLoginSuccess}
-            />
-         )}
-
-         {currentPage === 'signup' && (
-            <SignupPage
-               onBack={() => navigateTo('home')}
-               onNavigateLogin={() => navigateTo('login')}
-            />
-         )}
-
-         {currentPage === 'doctors' && (
-            <DoctorsPage onBack={() => navigateTo('home')} />
-         )}
-
-         {currentPage === 'dashboard' && (
-            <PatientDashboard user={currentUser} onLogout={handleLogout} />
-         )}
-
-         {currentPage === 'doctor-dashboard' && (
-            <DoctorDashboard user={currentUser} onLogout={handleLogout} />
-         )}
+         <PatientDashboard />
       </main>
    );
 }
