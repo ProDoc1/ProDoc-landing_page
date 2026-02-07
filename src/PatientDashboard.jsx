@@ -19,6 +19,7 @@ import {
   Calendar,
   Plus
 } from 'lucide-react';
+import Logo from "src\components\Logo.jsx";
 
 const PatientDashboard = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -132,8 +133,8 @@ const PatientDashboard = ({ user, onLogout }) => {
       {/* --- TOP NAVIGATION --- */}
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">P</div>
-          <span className="text-xl font-bold text-slate-800 tracking-tight">ProDoc <span className="text-teal-500">Portal</span></span>
+          <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-xl"><Logo /></div>
+          <span className="text-xl font-bold text-slate-800 tracking-tight">Pro<span className="text-teal-500">Doc</span></span>
         </div>
         
         <div className="flex items-center gap-4">
@@ -216,7 +217,7 @@ const PatientDashboard = ({ user, onLogout }) => {
             <div className="space-y-6">
               {/* Welcome Banner */}
               <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-[2rem] p-8 text-white shadow-lg">
-                <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.fullName?.split(' ')[0] || 'Patient'}! 👋</h2>
+                <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.fullName?.split(' ')[0] || 'Patient'}! </h2>
                 <p className="text-slate-300">Manage your medical records and doctor reviews in one place.</p>
               </div>
 
