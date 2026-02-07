@@ -19,7 +19,7 @@ import {
   Calendar,
   Plus
 } from 'lucide-react';
-import Logo from "src\components\Logo.jsx";
+
 
 const PatientDashboard = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -133,7 +133,7 @@ const PatientDashboard = ({ user, onLogout }) => {
       {/* --- TOP NAVIGATION --- */}
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-xl"><Logo /></div>
+          <div className="w-10 h-10 bg-teal-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">P</div>
           <span className="text-xl font-bold text-slate-800 tracking-tight">Pro<span className="text-teal-500">Doc</span></span>
         </div>
         
