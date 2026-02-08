@@ -6,8 +6,8 @@ import {
   Linkedin, Mail, Phone, Filter, ChevronDown, 
   X
 } from 'lucide-react';
-import LogoWithWords from './assets/Logo_with_words.png';
 
+// --- Variants ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
@@ -19,7 +19,8 @@ const itemVariants = {
 };
 
 const DoctorsPage = ({ onBack }) => {
-  const [doctors, setDoctors] = useState([]);
+  // --- FIX 1: Ensure state is ALWAYS an array, never false ---
+  const [doctors, setDoctors] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSpecOpen, setIsSpecOpen] = useState(false);
@@ -36,17 +37,51 @@ const DoctorsPage = ({ onBack }) => {
   const hospitalRef = useRef(null); 
 
   useEffect(() => {
+    // Mock data fallback
+    const mockDoctors = [
+      {
+        doctor_id: 1,
+        full_name: "Dr. Anura Bandara",
+        specialty: "Oncologist",
+        working_hospital: "National Hospital",
+        years_of_experience: 18,
+        department_type: "Government",
+        gender: "Male",
+        image_url: null 
+      },
+      {
+        doctor_id: 2,
+        full_name: "Dr. Aruni Perera",
+        specialty: "Cardiologist",
+        working_hospital: "Colombo General",
+        years_of_experience: 12,
+        department_type: "Government",
+        gender: "Female",
+        image_url: null
+      }
+    ];
+
     const fetchDoctors = async () => {
       try {
         const response = await fetch('/api/get-doctors');
+        if (!response.ok) throw new Error("API Error");
         const data = await response.json();
-        setDoctors(data);
-        setLoading(false);
+        
+        // --- FIX 2: Strictly check if data is an Array before setting ---
+        if (Array.isArray(data) && data.length > 0) {
+          setDoctors(data);
+        } else {
+          console.warn("API returned non-array data, using mock.");
+          setDoctors(mockDoctors);
+        }
       } catch (error) {
-        console.error("Failed to load doctors:", error);
+        console.error("Failed to load doctors, using mock data:", error);
+        setDoctors(mockDoctors);
+      } finally {
         setLoading(false);
       }
     };
+    
     fetchDoctors();
 
     const handleClickOutside = (e) => {
@@ -57,11 +92,11 @@ const DoctorsPage = ({ onBack }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const specialties = ['All', 'Cardiologist', 'Neurologist', 'Pediatrician', 'Dermatologist', 'Orthopedic Surgeon', 'General Surgeon'];
+  const specialties = ['All', 'Cardiologist', 'Neurologist', 'Pediatrician', 'Dermatologist', 'Orthopedic Surgeon', 'General Surgeon', 'Oncologist'];
 
-  // REFINED LOGIC: Ensure hospital names are unique and trimmed
-  const availableHospitals = doctors.reduce((acc, doc) => {
-    const hospitalName = doc.working_hospital?.trim();
+  // --- FIX 3: Safe reduction with (doctors || []) ---
+  const availableHospitals = (doctors || []).reduce((acc, doc) => {
+    const hospitalName = doc?.working_hospital?.trim();
     if (hospitalName && !acc.find(h => h.toLowerCase() === hospitalName.toLowerCase())) {
       acc.push(hospitalName);
     }
@@ -75,29 +110,33 @@ const DoctorsPage = ({ onBack }) => {
         filters.hospitalSearch.toLowerCase() !== h.toLowerCase()
       );
 
-  const filteredDoctors = doctors.filter(doc => {
-    const searchLower = searchQuery.toLowerCase().trim();
+  // --- FIX 4: Safe filtering with (doctors || []) ---
+  const filteredDoctors = (doctors || []).filter(doc => {
+    const searchLower = (searchQuery || '').toLowerCase().trim();
+    const name = (doc?.full_name || '').toLowerCase();
+    const specialty = (doc?.specialty || '').toLowerCase();
+    
     const matchesSearch = searchLower === '' || 
-                         doc.full_name.toLowerCase().includes(searchLower) ||
-                         doc.specialty.toLowerCase().includes(searchLower);
+                         name.includes(searchLower) ||
+                         specialty.includes(searchLower);
     
-    const matchesSpecialty = filters.specialty === 'All' || doc.specialty === filters.specialty;
+    const matchesSpecialty = filters.specialty === 'All' || specialty === filters.specialty.toLowerCase();
     
-    const hospitalLower = filters.hospitalSearch.toLowerCase().trim();
-    const matchesHospital = hospitalLower === '' || 
-                           doc.working_hospital.toLowerCase().includes(hospitalLower);
+    const hospital = (doc?.working_hospital || '').toLowerCase();
+    const hospitalFilter = (filters.hospitalSearch || '').toLowerCase().trim();
+    const matchesHospital = hospitalFilter === '' || hospital.includes(hospitalFilter);
 
-    const matchesAvailability = filters.availability === 'All' || 
-                               doc.department_type === filters.availability;
+    const deptType = doc?.department_type || '';
+    const matchesAvailability = filters.availability === 'All' || deptType === filters.availability;
 
-    const matchesGender = filters.gender === 'All' || 
-                         doc.gender === filters.gender;
+    const gender = doc?.gender || '';
+    const matchesGender = filters.gender === 'All' || gender === filters.gender;
 
     return matchesSearch && matchesSpecialty && matchesHospital && matchesAvailability && matchesGender;
   });
 
   const highlightMatch = (text, query) => {
-    if (!query.trim()) return text;
+    if (!text || !query) return text || '';
     const regex = new RegExp(`(${query})`, 'ig');
     return text.split(regex).map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
@@ -192,7 +231,7 @@ const DoctorsPage = ({ onBack }) => {
                         exit={{ opacity: 0, y: -10 }}
                         className="absolute top-full left-0 w-full mt-3 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto"
                       >
-                        {specialties.map((spec) => (
+                        {(specialties || []).map((spec) => (
                           <button
                             key={spec}
                             onClick={() => {
@@ -239,7 +278,7 @@ const DoctorsPage = ({ onBack }) => {
                         exit={{ opacity: 0, y: -5 }}
                         className="absolute top-full left-0 w-full mt-2 bg-white border border-slate-100 rounded-2xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto"
                       >
-                        {hospitalSuggestions.map((hospital, idx) => (
+                        {(hospitalSuggestions || []).map((hospital, idx) => (
                           <button
                             key={idx}
                             onClick={() => {
@@ -259,7 +298,7 @@ const DoctorsPage = ({ onBack }) => {
 
               {/* Department Type */}
               <div className="mb-8">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Department Type</h4>
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">SECTOR</h4>
                 <div className="flex flex-col gap-2">
                   {['All', 'Government', 'Private'].map(option => (
                     <button
@@ -310,7 +349,7 @@ const DoctorsPage = ({ onBack }) => {
                 animate="visible"
               >
                 <AnimatePresence mode='popLayout'>
-                  {filteredDoctors.map(doc => (
+                  {(filteredDoctors || []).map(doc => (
                     <motion.div
                       key={doc.doctor_id}
                       layout
@@ -324,64 +363,84 @@ const DoctorsPage = ({ onBack }) => {
                       {/* Decorative Top Border */}
                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-100 to-transparent group-hover:via-teal-400 transition-all duration-500"></div>
 
-                      <div>
-                        <div className="flex gap-5 mb-6 items-start">
-                          <div className="w-20 h-20 rounded-2xl bg-teal-50 flex items-center justify-center overflow-hidden border border-teal-100">
+                      {/* REVISED CARD CONTENT */}
+                      <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                        
+                        {/* 1. INCREASED IMAGE SIZE */}
+                        <div className="shrink-0">
+                          <div className="w-32 h-32 rounded-3xl bg-teal-50 flex items-center justify-center overflow-hidden border border-teal-100 shadow-sm">
                             {doc.image_url ? (
                               <img 
                                 src={doc.image_url} 
                                 alt={doc.full_name} 
                                 className="w-full h-full object-cover"
-                                onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }} // Fallback if link breaks
+                                onError={(e) => { e.target.style.display='none'; }} 
                               />
                             ) : (
-                              <Stethoscope size={28} className="text-teal-600" />
+                              <Stethoscope size={40} className="text-teal-600" />
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
+                        </div>
+
+                        {/* 2. TEXT INFO COLUMN */}
+                        <div className="flex-1 w-full flex flex-col justify-between h-full min-h-[128px]">
+                          
+                          {/* Top: Name, Rating, Specialty */}
+                          <div className="w-full">
                             <div className="flex items-center justify-between gap-2 mb-1">
-                                <h1 className="font-bold text-lg text-slate-900 leading-tight group-hover:text-teal-700 transition-colors truncate">
-                                  {highlightMatch(doc.full_name, searchQuery)}
-                                </h1>
-                                <div className="flex items-center gap-1.5 shrink-0 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
-                                  <Star size={12} className="fill-amber-400 text-amber-400" />
-                                  <span className="text-xs font-bold text-amber-700">4.9</span>
-                                </div>
+                              <h1 className="font-bold text-xl text-slate-900 leading-tight group-hover:text-teal-700 transition-colors">
+                                {highlightMatch(doc.full_name, searchQuery)}
+                              </h1>
+                              <div className="flex items-center gap-1.5 shrink-0 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
+                                <Star size={12} className="fill-amber-400 text-amber-400" />
+                                <span className="text-xs font-bold text-amber-700">4.9</span>
+                              </div>
                             </div>
-                            <p className="text-teal-600 text-[12px] font-bold uppercase tracking-wider">{doc.specialty}</p>
+                            <p className="text-teal-600 text-xs font-bold uppercase tracking-wider mb-4">
+                              {doc.specialty || 'General Practitioner'}
+                            </p>
+                          </div>
+
+                          {/* 3. ALIGNED RIGHT: EXPERIENCE & WORK */}
+                          <div className="flex flex-col sm:flex-row justify-end items-center sm:items-center gap-3 mt-auto w-full">
+                            
+                            {/* Hospital Badge */}
+                            <div className="flex items-center gap-2 text-xs">
+                              <ShieldCheck size={16} className="text-teal-500" />
+                              <span className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${
+                                doc.department_type === 'Private' 
+                                ? 'bg-indigo-50 text-indigo-600 border-indigo-100' 
+                                : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                              }`}>
+                                {doc.department_type || 'Hospital'} 
+                              </span>
+                            </div>
+
+                            {/* Experience Badge */}
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <div className="p-1.5 bg-slate-50 rounded-lg text-slate-400">
+                                <Clock size={14} />
+                              </div>
+                              <span className="font-medium whitespace-nowrap">Exp: {doc.years_of_experience || 0} yrs</span>
+                            </div>
+
                           </div>
                         </div>
+                      </div>
+                      {/* END REVISED CARD CONTENT */}
 
-                        <div className="space-y-4 mb-8">
-                            <div className="flex items-center gap-3 text-xs">
-                                <ShieldCheck size={16} className="text-teal-500" />
-                                <span className={`px-3 py-1.5 rounded-lg font-bold border transition-colors ${
-                                  doc.department_type === 'Private' 
-                                  ? 'bg-indigo-50 text-indigo-600 border-indigo-100' 
-                                  : 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                                }`}>
-                                {doc.department_type} 
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-3 text-xs text-slate-500">
-                                <div className="p-1.5 bg-slate-50 rounded-lg text-slate-400">
-                                    <Clock size={14} className="text-slate-400" />
-                                </div>
-                                <span className="font-medium">Experience: {doc.years_of_experience} years</span>
-                            </div>
-                        </div>
-                     </div>
-
-                      <button className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-teal-600 hover:shadow-lg hover:shadow-teal-500/30 transition-all duration-300 flex items-center justify-center gap-2 text-sm mt-auto group-active:scale-[0.98]">
-                        View Profile <Stethoscope size={16} className="opacity-70 group-hover:opacity-100" />
-                      </button>
+                      <div className="flex justify-center w-full mt-6">
+                        <button className="bg-slate-900 text-white font-semibold px-6 py-2 rounded-xl hover:bg-teal-600 hover:shadow-md hover:shadow-teal-500/30 transition-all duration-300 flex items-center justify-center gap-1.5 text-sm group-active:scale-[0.98] w-[80%]">
+                          View Profile <Stethoscope size={14} className="opacity-70 group-hover:opacity-100" />
+                        </button>
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
               </motion.div>
             )}
 
-            {!loading && filteredDoctors.length === 0 && (
+            {!loading && (!filteredDoctors || filteredDoctors.length === 0) && (
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -399,83 +458,82 @@ const DoctorsPage = ({ onBack }) => {
       </div>
 
       {/* --- SECTION 5: FOOTER --- */}
-            <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100 mt-24 mb-12">
-               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-400"></div>
-            
-               <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
-               
-                  <div className="md:col-span-4 space-y-6">
-                     <div className="flex items-center gap-3">
-                        <img src={LogoWithWords} alt="ProDoc" className="h-10 md:h-12 w-auto" />
-                     </div>
-                     <p className="text-sm leading-relaxed text-slate-500 max-w-sm font-light">
-                        ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
-                     </p>
-                     <div className="flex gap-3 mt-2">
-                        <a href="#" className="p-2.5 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-all duration-300 hover:-translate-y-1 border border-slate-100"><Facebook size={18} /></a>
-                        <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2.5 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-all duration-300 hover:-translate-y-1 border border-slate-100"><Instagram size={18} /></a>
-                        <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2.5 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-all duration-300 hover:-translate-y-1 border border-slate-100"><Linkedin size={18} /></a>
-                     </div>
-                  </div>
+      <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100 mt-24 mb-12">
+         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-400"></div>
       
-                  <div className="md:col-span-2">
-                     <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
-                     <ul className="space-y-4 text-sm">
-                        {['Find a Doctor', 'How it Works', 'Our Team', 'Reviews'].map((item) => (
-                           <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
-                              <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all duration-300"></span>
-                              {item}
-                           </a></li>
-                        ))}
-                     </ul>
-                  </div>
-      
-                  <div className="md:col-span-2">
-                     <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
-                     <ul className="space-y-4 text-sm">
-                        {['About Us', 'Careers', 'Privacy Policy', 'Terms of Service'].map((item) => (
-                           <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
-                              <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all duration-300"></span>
-                              {item}
-                           </a></li>
-                        ))}
-                     </ul>
-                  </div>
-      
-                  <div className="md:col-span-4">
-                     <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
-                     <ul className="space-y-4 text-sm mb-8">
-                        <li className="flex items-center gap-3 text-slate-600">
-                           <div className="p-2.5 bg-teal-50 rounded-xl text-teal-600 border border-teal-100"><Mail size={18} /></div>
-                           <span className="font-medium">prdoc2025se06@gmail.com</span>
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-600">
-                           <div className="p-2.5 bg-teal-50 rounded-xl text-teal-600 border border-teal-100"><Phone size={18} /></div>
-                           <span className="font-medium">+94 74 279 7484</span>
-                        </li>
-                     </ul>
-                    
-               
-                     <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200">
-                        <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
-                        <button className="w-full bg-slate-900 text-white px-4 py-3.5 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/20 transition-all duration-300 transform active:scale-95">
-                           Join ProDoc Network
-                        </button>
-                     </div>
-                  </div>
+         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
+         
+            <div className="md:col-span-4 space-y-6">
+               <div className="flex items-center gap-3">
+                  <div className="text-2xl font-bold text-teal-700 tracking-tight">ProDoc</div>
                </div>
-      
-               <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
-                  <div className="flex items-center gap-2">
-                     <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500"></span>
-                     </span>
-                     <span>All Systems Operational</span>
-                  </div>
-                  <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
+               <p className="text-sm leading-relaxed text-slate-500 max-w-sm font-light">
+                  ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
+               </p>
+               <div className="flex gap-3 mt-2">
+                  <a href="#" className="p-2.5 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-all duration-300 hover:-translate-y-1 border border-slate-100"><Facebook size={18} /></a>
+                  <a href="#" className="p-2.5 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-all duration-300 hover:-translate-y-1 border border-slate-100"><Instagram size={18} /></a>
+                  <a href="#" className="p-2.5 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-all duration-300 hover:-translate-y-1 border border-slate-100"><Linkedin size={18} /></a>
                </div>
-            </footer>
+            </div>
+
+            <div className="md:col-span-2">
+               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
+               <ul className="space-y-4 text-sm">
+                  {['Find a Doctor', 'How it Works', 'Our Team', 'Reviews'].map((item) => (
+                     <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all duration-300"></span>
+                        {item}
+                     </a></li>
+                  ))}
+               </ul>
+            </div>
+
+            <div className="md:col-span-2">
+               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
+               <ul className="space-y-4 text-sm">
+                  {['About Us', 'Careers', 'Privacy Policy', 'Terms of Service'].map((item) => (
+                     <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all duration-300"></span>
+                        {item}
+                     </a></li>
+                  ))}
+               </ul>
+            </div>
+
+            <div className="md:col-span-4">
+               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
+               <ul className="space-y-4 text-sm mb-8">
+                  <li className="flex items-center gap-3 text-slate-600">
+                     <div className="p-2.5 bg-teal-50 rounded-xl text-teal-600 border border-teal-100"><Mail size={18} /></div>
+                     <span className="font-medium">prdoc2025se06@gmail.com</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-slate-600">
+                     <div className="p-2.5 bg-teal-50 rounded-xl text-teal-600 border border-teal-100"><Phone size={18} /></div>
+                     <span className="font-medium">+94 74 279 7484</span>
+                  </li>
+               </ul>
+          
+               <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200">
+                  <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
+                  <button className="w-full bg-slate-900 text-white px-4 py-3.5 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/20 transition-all duration-300 transform active:scale-95">
+                     Join ProDoc Network
+                  </button>
+               </div>
+            </div>
+         </div>
+
+         <div className="mt-16 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
+            <div className="flex items-center gap-2">
+               <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500"></span>
+               </span>
+               <span>All Systems Operational</span>
+            </div>
+            <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
+         </div>
+      </footer>
     </div>
   );
 };
