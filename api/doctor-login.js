@@ -7,9 +7,9 @@ export default async function handler(req, res) {
 
     try {
         // Query matching the provided instructions but adapting to likely existing column names
-        // Aliasing matching the user's requested JSON structure
+
         const { rows } = await sql`
-      SELECT doctor_id as id, full_name as name, contact_email as email, specialty 
+      SELECT doctor_id as id, full_name as name, contact_email as email, specialty, slmc_number as "slmcNumber", image_url
       FROM doctors 
       WHERE contact_email = ${email} AND password = ${password};
     `;

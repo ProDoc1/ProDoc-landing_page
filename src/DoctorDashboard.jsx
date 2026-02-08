@@ -12,10 +12,16 @@ import {
   Star,
   Pencil,
   X,
-  Calendar
+  Calendar,
+  Verified,
+  MapPin,
+  Globe,
+  Share2,
+  Check
 } from 'lucide-react';
 import Plasma from './components/Plasma';
 import LogoColor from './assets/Logo_with_words.png';
+import DoctorImg from './assets/doctor.png';
 
 const DoctorDashboard = ({ user, onLogout }) => {
   // State for new features
@@ -23,9 +29,14 @@ const DoctorDashboard = ({ user, onLogout }) => {
   const [availability, setAvailability] = useState("Mon, Wed, Fri");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [localUser, setLocalUser] = useState({
-    fullName: user?.name || 'Dr. Alex Specialist',
-    email: user?.email || 'alex@prodoc.com',
-    bio: user?.specialty || 'Senior Cardiologist with 10 years of experience.'
+    fullName: user?.name,
+    email: user?.email,
+    specialty: user?.specialty,
+    bio: user?.bio,
+    slmcNumber: user?.slmcNumber,
+    location: 'Colombo, Sri Lanka',
+    languages: 'English, Sinhala',
+    image: user?.image_url || DoctorImg
   });
 
   // Mock Reviews Data
@@ -37,21 +48,40 @@ const DoctorDashboard = ({ user, onLogout }) => {
 
   React.useEffect(() => {
     const role = localStorage.getItem('userRole');
+    const doctorId = localStorage.getItem('doctorId');
+
     if (role !== 'doctor') {
       onLogout();
+    } else if (!user && doctorId) {
+      // Fetch doctor details if user prop is missing
+      fetch(`/api/get-doctor-profile?id=${doctorId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            setLocalUser(prev => ({
+              ...prev,
+              fullName: data.name || prev.fullName,
+              email: data.email || prev.email,
+              specialty: data.specialty || prev.specialty,
+              bio: data.bio || prev.bio,
+              slmcNumber: data.slmcNumber || prev.slmcNumber,
+              image: data.image_url || prev.image
+            }));
+          }
+        })
+        .catch(err => console.error("Error fetching doctor profile:", err));
     }
-  }, [onLogout]);
+  }, [onLogout, user]);
 
   // Mock data for professional metrics
   const professionalStats = [
-    { label: "Profile Views", value: "1,240", icon: <Activity className="text-blue-600" />, color: "bg-blue-50" },
-    { label: "Rating", value: "4.8/5", icon: <Star className="text-yellow-500" />, color: "bg-yellow-50" },
-    { label: "Endorsements", value: "84", icon: <Award className="text-purple-600" />, color: "bg-purple-50" },
+    { label: "Profile Views", value: "1,240", icon: <Activity className="text-green-600" />, color: "bg-green-100" },
+    { label: "Rating", value: "4.8/5", icon: <Star className="text-green-600" />, color: "bg-green-100" },
+    { label: "Status", value: "Verified", icon: <Verified className="text-green-600" />, color: "bg-green-100" },
   ];
 
   const handleProfileSave = (e) => {
     e.preventDefault();
-    // In a real app, you'd call an API here
     setIsEditingProfile(false);
   };
 
@@ -69,11 +99,10 @@ const DoctorDashboard = ({ user, onLogout }) => {
         </div>
 
         <nav className="flex-1 px-4 space-y-2 mt-4">
-          <NavItem icon={<Activity size={20} />} label="Dashboard" active />
-          <NavItem icon={<ShieldCheck size={20} />} label="Credential Vault" />
-          <NavItem icon={<FileText size={20} />} label="Second Opinions" badge={3} /> {/* Badge indicates messages */}
-          <NavItem icon={<Star size={20} />} label="Reviews" />
-          <NavItem icon={<Settings size={20} />} label="Account Settings" />
+          <NavItem icon={<Activity size={20} />} label="Dashboard"/>
+          <NavItem icon={<FileText size={20} />} label="Second Opinions" badge={3} /> 
+          <NavItem icon={<Star size={20} />} label="Reviews"/>
+          <NavItem icon={<ShieldCheck size={20} />} label="Credential Vault"/>
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -85,23 +114,70 @@ const DoctorDashboard = ({ user, onLogout }) => {
 
       {/* Main Content */}
       <main className="relative z-10 flex-1 overflow-y-auto p-8">
-        <header className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800">Welcome, {localUser.fullName}</h1>
-            <p className="text-slate-500">{localUser.bio}</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsEditingProfile(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm text-slate-600 font-medium"
-            >
-              <Pencil size={16} /> Edit Profile
-            </button>
-            <div className="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-white font-bold shadow-lg">
-              {localUser.fullName?.charAt(0) || 'D'}
+        {/* Profile Header Section */}
+        <div className="relative mb-10 rounded-[2.5rem] overflow-hidden shadow-xl bg-gradient-to-br from-teal-900 to-teal-600">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400 opacity-10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+
+          <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            {/* Profile Image */}
+            <div className="relative group">
+              <div className="w-40 h-40 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-slate-200">
+                <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute bottom-2 right-2 bg-emerald-500 border-4 border-teal-800 w-8 h-8 rounded-full flex items-center justify-center shadow-lg">
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+              </div>
+            </div>
+
+            {/* Profile Info */}
+            <div className="flex-1 text-center md:text-left text-white">
+
+
+              <h1 className="text-4xl md:text-5xl font-bold mb-2 tracking-tight drop-shadow-sm">
+                {localUser.fullName}
+              </h1>
+
+              <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-4">
+                <span className="bg-cyan-500/20 backdrop-blur-md border border-cyan-400/30 text-cyan-100 px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide shadow-sm">
+                  {localUser.specialty}
+                </span>
+                <span className="bg-teal-950/40 backdrop-blur-md border border-teal-700/50 text-emerald-100 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 shadow-sm">
+                  <Verified size={14} className="text-cyan-400 fill-cyan-400/20" />
+                  SLMC Reg: {localUser.slmcNumber}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm md:text-base text-teal-50/80 font-medium">
+                <div className="flex items-center gap-2.5">
+                  <MapPin size={18} className="text-cyan-300" />
+                  <span>{localUser.location}</span>
+                </div>
+                <div className="w-px h-5 bg-teal-500/30 hidden md:block"></div>
+                <div className="flex items-center gap-2.5">
+                  <Globe size={18} className="text-cyan-300" />
+                  <span>{localUser.languages}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-4 min-w-[160px]">
+              <button className="group relative px-6 py-3 bg-transparent border-2 border-white/30 text-white rounded-full overflow-hidden transition-all hover:bg-white/10 hover:border-white/50 hover:shadow-lg hover:shadow-teal-900/20 font-semibold flex items-center justify-center gap-2">
+                <Share2 size={18} className="text-cyan-200 transition-transform group-hover:scale-110" />
+                Share Profile
+              </button>
+
+              <button
+                onClick={() => setIsEditingProfile(true)}
+                className="group px-6 py-3 bg-white/10 hover:bg-white/20 text-teal-50 rounded-full transition-all text-sm font-medium flex items-center justify-center gap-2 backdrop-blur-sm">
+                <Pencil size={16} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                Edit Details
+              </button>
             </div>
           </div>
-        </header>
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -222,7 +298,7 @@ const DoctorDashboard = ({ user, onLogout }) => {
                 <X size={20} className="text-slate-500" />
               </button>
             </div>
-            <form onSubmit={handleProfileSave} className="p-6 space-y-4">
+            <form onSubmit={handleProfileSave} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
                 <input
@@ -232,15 +308,49 @@ const DoctorDashboard = ({ user, onLogout }) => {
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
                 />
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Specialty</label>
+                  <input
+                    type="text"
+                    value={localUser.specialty}
+                    onChange={(e) => setLocalUser({ ...localUser, specialty: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">SLMC Reg</label>
+                  <input
+                    type="text"
+                    value={localUser.slmcNumber}
+                    onChange={(e) => setLocalUser({ ...localUser, slmcNumber: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Bio / Specialty</label>
-                <textarea
-                  rows={3}
-                  value={localUser.bio}
-                  onChange={(e) => setLocalUser({ ...localUser, bio: e.target.value })}
+                <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
+                <input
+                  type="text"
+                  value={localUser.location}
+                  onChange={(e) => setLocalUser({ ...localUser, location: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Languages</label>
+                <input
+                  type="text"
+                  value={localUser.languages}
+                  onChange={(e) => setLocalUser({ ...localUser, languages: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all"
+                  placeholder="e.g. English, Sinhala"
+                />
+              </div>
+
               <div className="pt-2 flex gap-3">
                 <button
                   type="button"
