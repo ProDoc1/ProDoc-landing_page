@@ -227,19 +227,30 @@ const PatientDashboard = ({ user, onLogout }) => {
               </div>
 
               {/* Stats Row */}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                 <button 
+              onClick={() => setActiveTab('reviews')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
                       <Star size={24} />
+                     
                     </div>
                     <span className="text-3xl font-bold text-slate-800">{reviews.length}</span>
                   </div>
+                  
                   <h3 className="font-bold text-slate-800 mb-1">Doctor Reviews</h3>
                   <p className="text-sm text-slate-500">Reviews you've left for doctors</p>
-                </div>
+                </div></button>
                 
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <button 
+              onClick={() => setActiveTab('reports')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
                       <FileText size={24} />
@@ -249,6 +260,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                   <h3 className="font-bold text-slate-800 mb-1">Medical Records</h3>
                   <p className="text-sm text-slate-500">Stored reports and documents</p>
                 </div>
+              </button>
               </div>
 
               {/* Recent Reviews Preview */}
