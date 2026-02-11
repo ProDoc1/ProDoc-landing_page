@@ -1,0 +1,16 @@
+# name: Pipeline
+# on: [push] # Trigger: Run this every time I "push" code to GitHub
+
+# jobs:
+#   test-and-deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Run Tests
+#         run: npm test  # Or 'pytest', 'go test', etc.
+
+#       - name: Deploy to Server
+#         if: success()  # Only run this if the tests passed!
+#         run: ./deploy.sh
