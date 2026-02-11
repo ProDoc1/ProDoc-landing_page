@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
   FileText,
-  Settings,
   LogOut,
   Activity,
-  Award,
   CheckCircle,
   Clock,
-  ChevronRight,
   Star,
   Pencil,
   X,
@@ -17,9 +14,9 @@ import {
   MapPin,
   Globe,
   Share2,
-  Check,
   Lock,
-  Camera
+  Camera,
+  Menu
 } from 'lucide-react';
 import { useRef } from 'react';
 import Plasma from './components/Plasma';
@@ -29,6 +26,7 @@ import DoctorImg from './assets/doctor.png';
 const DoctorDashboard = ({ user, onLogout }) => {
   // Navigation State
   const [activeTab, setActiveTab] = useState('Dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Profile & Settings State
   const [isSecondOpinionEnabled, setIsSecondOpinionEnabled] = useState(true);
@@ -126,12 +124,6 @@ const DoctorDashboard = ({ user, onLogout }) => {
     }
   };
 
-  // Mock Reviews Data
-  const reviews = [
-    { id: 1, patient: "Verified Patient", rating: 5, date: "2 days ago", comment: "Dr. Specialist provided an incredibly detailed second opinion that helped us avoid unnecessary surgery." },
-    { id: 2, patient: "Verified Patient", rating: 4, date: "1 week ago", comment: "Very professional and quick response." },
-  ];
-
   const professionalStats = [
     { label: "Profile Views", value: "1,240", icon: <Activity className="text-green-600" />, color: "bg-green-100" },
     { label: "Rating", value: "4.8/5", icon: <Star className="text-green-600" />, color: "bg-green-100" },
@@ -139,14 +131,33 @@ const DoctorDashboard = ({ user, onLogout }) => {
   ];
 
   return (
-    <div className="min-h-screen w-full relative flex font-sans text-slate-700 overflow-hidden bg-slate-50">
+    <div className="min-h-screen w-full relative flex flex-col md:flex-row font-sans text-slate-700 overflow-hidden bg-slate-50">
       <div className="fixed inset-0 z-0 h-screen w-screen opacity-30 pointer-events-none">
         <Plasma color="#0f766e" speed={0.2} scale={1.5} opacity={0.4} />
       </div>
 
+      {/* Mobile Top Navbar */}
+      <div className="md:hidden relative z-30 flex items-center justify-between p-4 bg-white/80 backdrop-blur-xl border-b border-slate-200">
+        <img src={LogoColor} alt="ProDoc" className="h-8 object-contain" />
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="relative z-10 w-64 bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col">
-        <div className="p-6">
+      <aside className={`fixed md:relative z-50 w-64 h-full bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-6 hidden md:block">
           <img src={LogoColor} alt="ProDoc" className="h-12 object-contain" />
         </div>
 
@@ -155,15 +166,30 @@ const DoctorDashboard = ({ user, onLogout }) => {
             icon={<Activity size={20} />}
             label="Dashboard"
             active={activeTab === 'Dashboard'}
-            onClick={() => setActiveTab('Dashboard')}
+            onClick={() => {
+              setActiveTab('Dashboard');
+              setIsMobileMenuOpen(false);
+            }}
           />
-          <NavItem icon={<FileText size={20} />} label="Second Opinions" badge={3} />
-          <NavItem icon={<Star size={20} />} label="Reviews" />
+          <NavItem
+            icon={<FileText size={20} />}
+            label="Second Opinions"
+            badge={3}
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <NavItem
+            icon={<Star size={20} />}
+            label="Reviews"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
           <NavItem
             icon={<ShieldCheck size={20} />}
             label="Credential Vault"
             active={activeTab === 'Credential Vault'}
-            onClick={() => setActiveTab('Credential Vault')}
+            onClick={() => {
+              setActiveTab('Credential Vault');
+              setIsMobileMenuOpen(false);
+            }}
           />
         </nav>
 
@@ -175,20 +201,20 @@ const DoctorDashboard = ({ user, onLogout }) => {
       </aside>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-1 overflow-y-auto p-8">
+      <main className="relative z-10 flex-1 overflow-y-auto p-4 md:p-8">
         {activeTab === 'Dashboard' ? (
           <div className="animate-fadeIn">
             {/* Profile Header */}
-            <div className="relative mb-10 rounded-[2.5rem] overflow-hidden shadow-xl bg-gradient-to-br from-teal-900 to-teal-600">
-              <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            <div className="relative mb-6 md:mb-10 rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-xl bg-gradient-to-br from-teal-900 to-teal-600">
+              <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
                 <div className="relative group">
-                  <div className="w-40 h-40 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-slate-200">
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-slate-200">
                     <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover" />
                   </div>
                 </div>
                 <div className="flex-1 text-center md:text-left text-white">
-                  <h1 className="text-4xl md:text-5xl font-bold mb-2 tracking-tight">{localUser.fullName}</h1>
-                  <div className="flex flex-col items-center md:items-start gap-6 mb-4">
+                  <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight">{localUser.fullName}</h1>
+                  <div className="flex flex-col items-center md:items-start gap-4 md:gap-6 mb-4">
                     <div className="flex flex-wrap justify-center md:justify-start gap-3">
                       <span className="bg-cyan-500/20 backdrop-blur-md border border-cyan-400/30 text-cyan-100 px-4 py-1.5 rounded-full text-sm font-semibold">
                         {localUser.specialty}
@@ -212,7 +238,7 @@ const DoctorDashboard = ({ user, onLogout }) => {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3 min-w-[170px]">
+                <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[170px]">
                   <button onClick={() => setIsEditingProfile(true)} className="group px-6 py-3 bg-white hover:bg-teal-50 text-teal-900 rounded-full transition-all text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20">
                     <Pencil size={16} className="text-teal-600" /> Edit Details
                   </button>
@@ -302,7 +328,7 @@ const DoctorDashboard = ({ user, onLogout }) => {
 
           /* CREDENTIAL VAULT PAGE */
           <div className="max-w-2xl mx-auto animate-slideUp">
-            <div className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100">
+            <div className="bg-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
               <div className="flex items-center gap-4 mb-10">
                 <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
                   <ShieldCheck size={32} />
@@ -315,7 +341,7 @@ const DoctorDashboard = ({ user, onLogout }) => {
 
               <div className="space-y-8">
                 {/* Change Password Section */}
-                <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100">
+                <div className="p-6 md:p-8 bg-slate-50 rounded-3xl md:rounded-[2rem] border border-slate-100">
                   <div className="flex items-center gap-3 mb-6">
                     <Lock size={20} className="text-teal-600" />
                     <h3 className="font-bold text-slate-800">Security Settings</h3>
@@ -366,7 +392,7 @@ const DoctorDashboard = ({ user, onLogout }) => {
       {/* Edit Profile Modal */}
       {isEditingProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-slideUp">
+          <div className="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-xl font-bold text-slate-800">Edit Profile</h3>
               <button onClick={() => setIsEditingProfile(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
