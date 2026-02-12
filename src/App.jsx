@@ -293,13 +293,33 @@ export default function App() {
    const [currentPage, setCurrentPage] = useState('home');
    const [currentUser, setCurrentUser] = useState(null);
 
+   // --- EFFECT FOR PERSISTENT LOGIN ---
+   // This runs once when the component mounts to check for a saved session.
+   useEffect(() => {
+      const savedUser = localStorage.getItem('currentUser');
+      const savedPage = localStorage.getItem('currentPage');
+
+      if (savedUser) {
+         setCurrentUser(JSON.parse(savedUser));
+         // If a page was saved and is a dashboard, go back to it.
+         if (savedPage === 'dashboard' || savedPage === 'doctor-dashboard') {
+            setCurrentPage(savedPage);
+         }
+      }
+   }, []);
+
    const navigateTo = (page) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setCurrentPage(page);
+      // Save current page to local storage
+      localStorage.setItem('currentPage', page);
    };
 
    const handleLoginSuccess = (user, role = 'patient') => {
       setCurrentUser(user);
+      // Save user to local storage for persistence
+      localStorage.setItem('currentUser', JSON.stringify(user));
+
       if (role === 'doctor') {
          navigateTo('doctor-dashboard');
       } else {
@@ -309,11 +329,19 @@ export default function App() {
 
    const handleLogout = () => {
       setCurrentUser(null);
+      // Clear persistence on logout
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('currentPage');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('patientId');
+      localStorage.removeItem('doctorId');
       navigateTo('home');
    };
 
    const navigateToSection = (sectionId) => {
       setCurrentPage('home');
+      localStorage.setItem('currentPage', 'home');
       setTimeout(() => {
          const element = document.getElementById(sectionId);
          if (element) element.scrollIntoView({ behavior: 'smooth' });
@@ -322,7 +350,7 @@ export default function App() {
 
    return (
       <main className="relative min-h-screen">
-         {/* Hide Navbar for login/signup if desired, or keep global */}
+         {/* Navbar visibility logic */}
          {currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'dashboard' && currentPage !== 'doctor-dashboard' && (
             <Navbar
                currentPage={currentPage}
@@ -370,7 +398,15 @@ export default function App() {
          )}
 
          {currentPage === 'doctor-dashboard' && (
-            <DoctorDashboard user={currentUser} onLogout={handleLogout} />
+            <DoctorDashboard
+               user={currentUser}
+               onLogout={handleLogout}
+               onNavigateHome={() => navigateTo('home')}
+               onNavigateAbout={() => navigateTo('about')}
+               onNavigateDoctors={() => navigateTo('doctors')}
+               onNavigateLogin={() => navigateTo('login')}
+               onNavigateSignupPage={() => navigateTo('signup')}
+            />
          )}
       </main>
    );

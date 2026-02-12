@@ -1,4 +1,5 @@
 import { sql } from '@vercel/postgres';
+import jwt from 'jsonwebtoken';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -15,10 +16,25 @@ export default async function handler(req, res) {
     `;
 
         if (rows.length > 0) {
+            const doctor = rows[0];
+
+            // Generate Token
+            const token = jwt.sign(
+                {
+                    id: doctor.id,
+                    email: doctor.email,
+                    role: 'doctor',
+                    fullName: doctor.name
+                },
+                process.env.JWT_SECRET || 'prodoc-secure-secret-key-2024',
+                { expiresIn: '30d' }
+            );
+
             // Login successful
             return res.status(200).json({
                 success: true,
-                user: rows[0],
+                token,
+                user: doctor,
                 role: 'doctor'
             });
         } else {

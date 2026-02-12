@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShieldCheck,
   FileText,
@@ -18,12 +18,20 @@ import {
   Camera,
   Menu
 } from 'lucide-react';
-import { useRef } from 'react';
+import Navbar from './components/Navbar'; // Added Import
 import Plasma from './components/Plasma';
 import LogoColor from './assets/Logo_with_words.png';
 import DoctorImg from './assets/doctor.png';
 
-const DoctorDashboard = ({ user, onLogout }) => {
+const DoctorDashboard = ({
+  user,
+  onLogout,
+  onNavigateAbout,
+  onNavigateHome,
+  onNavigateLogin,
+  onNavigateSignupPage,
+  onNavigateDoctors
+}) => {
   // Navigation State
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -48,6 +56,22 @@ const DoctorDashboard = ({ user, onLogout }) => {
     languages: 'English, Sinhala',
     image: user?.image_url || DoctorImg
   });
+
+  useEffect(() => {
+    if (user) {
+      setLocalUser(prev => ({
+        ...prev,
+        fullName: user.name || prev.fullName,
+        email: user.email || prev.email,
+        specialty: user.specialty || prev.specialty,
+        bio: user.bio || prev.bio,
+        slmcNumber: user.slmcNumber || prev.slmcNumber,
+        location: user.location || prev.location,
+        languages: user.languages || prev.languages,
+        image: user.image_url || prev.image
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     const role = localStorage.getItem('userRole');
@@ -131,279 +155,283 @@ const DoctorDashboard = ({ user, onLogout }) => {
   ];
 
   return (
-    <div className="min-h-screen w-full relative flex flex-col md:flex-row font-sans text-slate-700 overflow-hidden bg-slate-50">
+    <div className="min-h-screen w-full relative flex flex-col font-sans text-slate-700 bg-slate-50">
+      {/* Background Effect */}
       <div className="fixed inset-0 z-0 h-screen w-screen opacity-30 pointer-events-none">
         <Plasma color="#0f766e" speed={0.2} scale={1.5} opacity={0.4} />
       </div>
 
-      {/* Mobile Top Navbar */}
-      <div className="md:hidden relative z-30 flex items-center justify-between p-4 bg-white/80 backdrop-blur-xl border-b border-slate-200">
-        <img src={LogoColor} alt="ProDoc" className="h-8 object-contain" />
+      {/* Main Shared Navbar */}
+      <Navbar
+        currentPage="doctors"
+        onNavigateAbout={onNavigateAbout}
+        onNavigateHome={onNavigateHome}
+        onNavigateLogin={onNavigateLogin}
+        onNavigateSignupPage={onNavigateSignupPage}
+        onNavigateDoctors={onNavigateDoctors}
+      />
+
+      <div className="flex flex-1 pt-24 md:pt-32 relative z-10 overflow-hidden">
+        {/* Sidebar Overlay */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Sidebar Navigation */}
+        <aside className={`fixed md:relative z-40 w-64 h-[calc(100vh-theme(spacing.32))] bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+          <div className="p-4 md:hidden">
+            {/* Mobile-only toggle trigger within sidebar if needed */}
+            <button onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 text-slate-500 font-bold mb-4">
+              <X size={20} /> Close Menu
+            </button>
+          </div>
+
+          <nav className="flex-1 px-4 space-y-2 mt-4">
+            <NavItem
+              icon={<Activity size={20} />}
+              label="Dashboard"
+              active={activeTab === 'Dashboard'}
+              onClick={() => {
+                setActiveTab('Dashboard');
+                setIsMobileMenuOpen(false);
+              }}
+            />
+            <NavItem
+              icon={<FileText size={20} />}
+              label="Second Opinions"
+              badge={3}
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <NavItem
+              icon={<Star size={20} />}
+              label="Reviews"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <NavItem
+              icon={<ShieldCheck size={20} />}
+              label="Credential Vault"
+              active={activeTab === 'Credential Vault'}
+              onClick={() => {
+                setActiveTab('Credential Vault');
+                setIsMobileMenuOpen(false);
+              }}
+            />
+          </nav>
+
+          <div className="p-4 border-t border-slate-100">
+            <button onClick={onLogout} className="flex items-center gap-3 w-full px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all font-medium">
+              <LogOut size={20} /> Logout
+            </button>
+          </div>
+        </aside>
+
+        {/* Dashbaord Mobile Control (Optional: button to open dashboard sidebar) */}
         <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="md:hidden fixed bottom-6 right-6 z-50 p-4 bg-teal-600 text-white rounded-full shadow-2xl"
         >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          <Menu size={24} />
         </button>
-      </div>
 
-      {/* Sidebar Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside className={`fixed md:relative z-50 w-64 h-full bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="p-6 hidden md:block">
-          <img src={LogoColor} alt="ProDoc" className="h-12 object-contain" />
-        </div>
-
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          <NavItem
-            icon={<Activity size={20} />}
-            label="Dashboard"
-            active={activeTab === 'Dashboard'}
-            onClick={() => {
-              setActiveTab('Dashboard');
-              setIsMobileMenuOpen(false);
-            }}
-          />
-          <NavItem
-            icon={<FileText size={20} />}
-            label="Second Opinions"
-            badge={3}
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-          <NavItem
-            icon={<Star size={20} />}
-            label="Reviews"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-          <NavItem
-            icon={<ShieldCheck size={20} />}
-            label="Credential Vault"
-            active={activeTab === 'Credential Vault'}
-            onClick={() => {
-              setActiveTab('Credential Vault');
-              setIsMobileMenuOpen(false);
-            }}
-          />
-        </nav>
-
-        <div className="p-4 border-t border-slate-100">
-          <button onClick={onLogout} className="flex items-center gap-3 w-full px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all font-medium">
-            <LogOut size={20} /> Logout
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="relative z-10 flex-1 overflow-y-auto p-4 md:p-8">
-        {activeTab === 'Dashboard' ? (
-          <div className="animate-fadeIn">
-            {/* Profile Header */}
-            <div className="relative mb-6 md:mb-10 rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-xl bg-gradient-to-br from-teal-900 to-teal-600">
-              <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
-                <div className="relative group">
-                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-slate-200">
-                    <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover" />
-                  </div>
-                </div>
-                <div className="flex-1 text-center md:text-left text-white">
-                  <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight">{localUser.fullName}</h1>
-                  <div className="flex flex-col items-center md:items-start gap-4 md:gap-6 mb-4">
-                    <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                      <span className="bg-cyan-500/20 backdrop-blur-md border border-cyan-400/30 text-cyan-100 px-4 py-1.5 rounded-full text-sm font-semibold">
-                        {localUser.specialty}
-                      </span>
-                      <span className="bg-teal-950/40 backdrop-blur-md border border-teal-700/50 text-emerald-100 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2">
-                        <Verified size={14} className="text-cyan-400" />
-                        SLMC Reg: {localUser.slmcNumber}
-                      </span>
+        {/* Main Dashboard Content */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          {activeTab === 'Dashboard' ? (
+            <div className="animate-fadeIn">
+              {/* Profile Header */}
+              <div className="relative mb-6 md:mb-10 rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-xl bg-gradient-to-br from-teal-900 to-teal-600">
+                <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
+                  <div className="relative group">
+                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-slate-200">
+                      <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover" />
                     </div>
-
-                    <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm md:text-base text-teal-50/90 font-medium">
-                      <div className="flex items-center gap-2.5">
-                        <MapPin size={22} className="text-cyan-300" />
-                        <span>{localUser.location}</span>
+                  </div>
+                  <div className="flex-1 text-center md:text-left text-white">
+                    <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight">{localUser.fullName}</h1>
+                    <div className="flex flex-col items-center md:items-start gap-4 md:gap-6 mb-4">
+                      <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                        <span className="bg-cyan-500/20 backdrop-blur-md border border-cyan-400/30 text-cyan-100 px-4 py-1.5 rounded-full text-sm font-semibold">
+                          {localUser.specialty}
+                        </span>
+                        <span className="bg-teal-950/40 backdrop-blur-md border border-teal-700/50 text-emerald-100 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2">
+                          <Verified size={14} className="text-cyan-400" />
+                          SLMC Reg: {localUser.slmcNumber}
+                        </span>
                       </div>
-                      <div className="w-px h-6 bg-teal-500/40 hidden md:block"></div>
-                      <div className="flex items-center gap-2.5">
-                        <Globe size={22} className="text-cyan-300" />
-                        <span>{localUser.languages}</span>
+
+                      <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm md:text-base text-teal-50/90 font-medium">
+                        <div className="flex items-center gap-2.5">
+                          <MapPin size={22} className="text-cyan-300" />
+                          <span>{localUser.location}</span>
+                        </div>
+                        <div className="w-px h-6 bg-teal-500/40 hidden md:block"></div>
+                        <div className="flex items-center gap-2.5">
+                          <Globe size={22} className="text-cyan-300" />
+                          <span>{localUser.languages}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[170px]">
-                  <button onClick={() => setIsEditingProfile(true)} className="group px-6 py-3 bg-white hover:bg-teal-50 text-teal-900 rounded-full transition-all text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20">
-                    <Pencil size={16} className="text-teal-600" /> Edit Details
-                  </button>
-                  <button className="group px-6 py-3 bg-white/10 hover:bg-white/20 text-teal-50 rounded-full transition-all text-sm font-medium flex items-center justify-center gap-2 backdrop-blur-sm border border-white/10">
-                    <Share2 size={16} className="text-cyan-300" /> Share Profile
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-              {professionalStats.map((stat, i) => (
-                <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
-                  <div>
-                    <p className="text-slate-500 text-sm font-medium">{stat.label}</p>
-                    <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
-                  </div>
-                  <div className={`h-12 w-12 rounded-2xl ${stat.color} flex items-center justify-center`}>{stat.icon}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Content Split */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                <h3 className="text-xl font-bold text-slate-800 mb-6">Verification Progress</h3>
-                <div className="space-y-6">
-                  <Step icon={<CheckCircle className="text-teal-500" />} title="Identity Verified" desc="National ID verified" completed />
-                  <Step icon={<CheckCircle className="text-teal-500" />} title="Medical License" desc="SLMC Registration verified" completed />
-                  <Step icon={<Clock className="text-amber-500" />} title="Surgical History" desc="Pending secondary audit" />
-                </div>
-              </div>
-
-
-              {/* Second Opinion Settings Card */}
-              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-800">Second Opinion</h3>
-                      <p className="text-sm text-slate-500 mt-1">
-                        {isSecondOpinionEnabled
-                          ? "Patients can message you for consultations."
-                          : "Currently unavailable for new opinions."}
-                      </p>
-                    </div>
-                    {/* Custom Toggle Switch */}
-                    <button
-                      onClick={() => setIsSecondOpinionEnabled(!isSecondOpinionEnabled)}
-                      className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
-                    >
-                      <div
-                        className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-6' : 'translate-x-0'}`}
-                      />
+                  <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[170px]">
+                    <button onClick={() => setIsEditingProfile(true)} className="group px-6 py-3 bg-white hover:bg-teal-50 text-teal-900 rounded-full transition-all text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20">
+                      <Pencil size={16} className="text-teal-600" /> Edit Details
+                    </button>
+                    <button className="group px-6 py-3 bg-white/10 hover:bg-white/20 text-teal-50 rounded-full transition-all text-sm font-medium flex items-center justify-center gap-2 backdrop-blur-sm border border-white/10">
+                      <Share2 size={16} className="text-cyan-300" /> Share Profile
                     </button>
                   </div>
+                </div>
+              </div>
 
-                  {isSecondOpinionEnabled && (
-                    <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                        Available Dates
-                      </label>
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <Calendar className="absolute left-3 top-3 text-slate-400" size={16} />
-                          <input
-                            type="text"
-                            value={availability}
-                            onChange={(e) => setAvailability(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-700"
-                            placeholder="e.g. Mon, Wed, Fri"
-                          />
-                        </div>
-                        <button className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors">
-                          Save
-                        </button>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-2">These are the dates patients see when booking.</p>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                {professionalStats.map((stat, i) => (
+                  <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
+                    <div>
+                      <p className="text-slate-500 text-sm font-medium">{stat.label}</p>
+                      <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-
-          /* CREDENTIAL VAULT PAGE */
-          <div className="max-w-2xl mx-auto animate-slideUp">
-            <div className="bg-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
-              <div className="flex items-center gap-4 mb-10">
-                <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
-                  <ShieldCheck size={32} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-800">Credential Vault</h2>
-                  <p className="text-slate-500 text-sm">Update your security and professional status</p>
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                {/* Change Password Section */}
-                <div className="p-6 md:p-8 bg-slate-50 rounded-3xl md:rounded-[2rem] border border-slate-100">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Lock size={20} className="text-teal-600" />
-                    <h3 className="font-bold text-slate-800">Security Settings</h3>
+                    <div className={`h-12 w-12 rounded-2xl ${stat.color} flex items-center justify-center`}>{stat.icon}</div>
                   </div>
+                ))}
+              </div>
 
-                  <form onSubmit={handlePasswordChange} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">New Password</label>
-                      <input
-                        type="password"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                        value={passwordForm.new}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Confirm New Password</label>
-                      <input
-                        type="password"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                        value={passwordForm.confirm}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                        placeholder="••••••••"
-                        required
-                      />
+              {/* Content Split */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                  <h3 className="text-xl font-bold text-slate-800 mb-6">Verification Progress</h3>
+                  <div className="space-y-6">
+                    <Step icon={<CheckCircle className="text-teal-500" />} title="Identity Verified" desc="National ID verified" completed />
+                    <Step icon={<CheckCircle className="text-teal-500" />} title="Medical License" desc="SLMC Registration verified" completed />
+                    <Step icon={<Clock className="text-amber-500" />} title="Surgical History" desc="Pending secondary audit" />
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-800">Second Opinion</h3>
+                        <p className="text-sm text-slate-500 mt-1">
+                          {isSecondOpinionEnabled
+                            ? "Patients can message you for consultations."
+                            : "Currently unavailable for new opinions."}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setIsSecondOpinionEnabled(!isSecondOpinionEnabled)}
+                        className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
+                      >
+                        <div
+                          className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-6' : 'translate-x-0'}`}
+                        />
+                      </button>
                     </div>
 
-                    {pwdStatus.message && (
-                      <div className={`p-4 rounded-xl text-sm flex items-center gap-3 ${pwdStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
-                        {pwdStatus.type === 'success' ? <CheckCircle size={18} /> : <X size={18} />}
-                        {pwdStatus.message}
+                    {isSecondOpinionEnabled && (
+                      <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                          Available Dates
+                        </label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Calendar className="absolute left-3 top-3 text-slate-400" size={16} />
+                            <input
+                              type="text"
+                              value={availability}
+                              onChange={(e) => setAvailability(e.target.value)}
+                              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-700"
+                              placeholder="e.g. Mon, Wed, Fri"
+                            />
+                          </div>
+                          <button className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            Save
+                          </button>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-2">These are the dates patients see when booking.</p>
                       </div>
                     )}
-
-                    <button type="submit" className="w-full py-4 bg-teal-700 text-white rounded-xl font-bold hover:bg-teal-800 transition-all shadow-lg shadow-teal-100">
-                      Update Password
-                    </button>
-                  </form>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </main>
+          ) : (
+            /* CREDENTIAL VAULT PAGE */
+            <div className="max-w-2xl mx-auto animate-slideUp">
+              <div className="bg-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
+                    <ShieldCheck size={32} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Credential Vault</h2>
+                    <p className="text-slate-500 text-sm">Update your security and professional status</p>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <div className="p-6 md:p-8 bg-slate-50 rounded-3xl md:rounded-[2rem] border border-slate-100">
+                    <div className="flex items-center gap-3 mb-6">
+                      <Lock size={20} className="text-teal-600" />
+                      <h3 className="font-bold text-slate-800">Security Settings</h3>
+                    </div>
+
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">New Password</label>
+                        <input
+                          type="password"
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                          value={passwordForm.new}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                          placeholder="••••••••"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">Confirm New Password</label>
+                        <input
+                          type="password"
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                          value={passwordForm.confirm}
+                          onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                          placeholder="••••••••"
+                          required
+                        />
+                      </div>
+
+                      {pwdStatus.message && (
+                        <div className={`p-4 rounded-xl text-sm flex items-center gap-3 ${pwdStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                          {pwdStatus.type === 'success' ? <CheckCircle size={18} /> : <X size={18} />}
+                          {pwdStatus.message}
+                        </div>
+                      )}
+
+                      <button type="submit" className="w-full py-4 bg-teal-700 text-white rounded-xl font-bold hover:bg-teal-800 transition-all shadow-lg shadow-teal-100">
+                        Update Password
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
 
       {/* Edit Profile Modal */}
       {isEditingProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-xl font-bold text-slate-800">Edit Profile</h3>
               <button onClick={() => setIsEditingProfile(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
             </div>
             <form onSubmit={handleProfileSave} className="p-6 space-y-4">
-              {/* Profile Image Update */}
               <div className="flex flex-col items-center mb-6">
-                <div
-                  className="relative group cursor-pointer"
-                  onClick={() => fileInputRef.current.click()}
-                >
+                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
                   <div className="w-24 h-24 rounded-full border-2 border-teal-500 overflow-hidden bg-slate-100 flex items-center justify-center">
                     <img src={localUser.image} alt="Profile Preview" className="w-full h-full object-cover" />
                   </div>
@@ -411,13 +439,7 @@ const DoctorDashboard = ({ user, onLogout }) => {
                     <Camera className="text-white" size={24} />
                   </div>
                 </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                  className="hidden"
-                  accept="image/*"
-                />
+                <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
                 <p className="text-xs text-slate-400 mt-2">Click to change photo</p>
               </div>
 
