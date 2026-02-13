@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { cn } from "../../lib/utils"
 
-export function NavBar({ items, className, accentColor, bgColor }) {
+export function NavBar({ items, className, accentColor, bgColor, textClass }) {
   const [activeTab, setActiveTab] = useState(items[0].name)
   const [hoveredTab, setHoveredTab] = useState(null)
 
   return (
     <div className={cn("flex items-center justify-center", className)}>
-      <div 
+      <div
         className="flex items-center gap-3 border border-white/20 backdrop-blur-lg py-1 px-1 rounded-full shadow-lg"
         style={bgColor ? { backgroundColor: bgColor } : { backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
         onMouseLeave={() => setHoveredTab(null)}
@@ -22,20 +22,20 @@ export function NavBar({ items, className, accentColor, bgColor }) {
               key={item.name}
               href={item.url}
               onClick={(e) => {
-                if(item.url === '#') e.preventDefault();
+                if (item.url === '#') e.preventDefault();
                 setActiveTab(item.name);
-                if(item.onClick) item.onClick();
+                if (item.onClick) item.onClick();
               }}
               onMouseEnter={() => setHoveredTab(item.name)}
               className={cn(
                 "relative cursor-pointer text-sm font-semibold px-6 py-2 rounded-full transition-colors",
-                "text-white hover:text-white",
+                textClass || "text-white hover:text-white",
                 isActive && "bg-white/10 text-white"
               )}
               style={(() => {
                 if (!accentColor) return undefined;
                 if (isActive) return { backgroundColor: accentColor, color: '#fff' };
-                return { color: '#ffffff' };
+                return textClass ? {} : { color: '#ffffff' };
               })()}
             >
               <span className="hidden md:inline">{item.name}</span>

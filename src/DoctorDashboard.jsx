@@ -161,16 +161,6 @@ const DoctorDashboard = ({
         <Plasma color="#0f766e" speed={0.2} scale={1.5} opacity={0.4} />
       </div>
 
-      {/* Main Shared Navbar */}
-      <Navbar
-        currentPage="doctors"
-        onNavigateAbout={onNavigateAbout}
-        onNavigateHome={onNavigateHome}
-        onNavigateLogin={onNavigateLogin}
-        onNavigateSignupPage={onNavigateSignupPage}
-        onNavigateDoctors={onNavigateDoctors}
-      />
-
       <div className="flex flex-1 pt-24 md:pt-32 relative z-10 overflow-hidden">
         {/* Sidebar Overlay */}
         {isMobileMenuOpen && (

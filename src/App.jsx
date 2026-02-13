@@ -296,7 +296,7 @@ export default function App() {
    // --- EFFECT FOR PERSISTENT LOGIN ---
    // This runs once when the component mounts to check for a saved session.
    useEffect(() => {
-      const savedUser = localStorage.getItem('currentUser');
+      const savedUser = localStorage.getItem('prodoc_user');
       const savedPage = localStorage.getItem('currentPage');
 
       if (savedUser) {
@@ -315,12 +315,16 @@ export default function App() {
       localStorage.setItem('currentPage', page);
    };
 
-   const handleLoginSuccess = (user, role = 'patient') => {
-      setCurrentUser(user);
+   const handleLoginSuccess = (userData, role) => {
+      setCurrentUser(userData);
+
+      const userString = JSON.stringify(userData);
       // Save user to local storage for persistence
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      localStorage.setItem('prodoc_user', userString);
+      localStorage.setItem('userRole', role);
 
       if (role === 'doctor') {
+         localStorage.setItem('doctorId', userData.id);
          navigateTo('doctor-dashboard');
       } else {
          navigateTo('dashboard');
@@ -328,14 +332,15 @@ export default function App() {
    };
 
    const handleLogout = () => {
-      setCurrentUser(null);
-      // Clear persistence on logout
-      localStorage.removeItem('currentUser');
+      // Clear all session data
+      localStorage.removeItem('prodoc_user');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('doctorId');
+      localStorage.removeItem('patientId');
       localStorage.removeItem('currentPage');
       localStorage.removeItem('authToken');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('patientId');
-      localStorage.removeItem('doctorId');
+
+      setCurrentUser(null);
       navigateTo('home');
    };
 
@@ -351,15 +356,21 @@ export default function App() {
    return (
       <main className="relative min-h-screen">
          {/* Navbar visibility logic */}
-         {currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'dashboard' && currentPage !== 'doctor-dashboard' && (
+         {currentPage !== 'login' && currentPage !== 'signup' && (
             <Navbar
                currentPage={currentPage}
+               currentUser={currentUser}
                onNavigateHome={() => navigateTo('home')}
                onNavigateAbout={() => navigateTo('about')}
                onNavigateDoctors={() => navigateTo('doctors')}
                onNavigateHowitWorks={() => navigateToSection('how-it-works')}
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
+               onLogout={handleLogout}
+               onNavigateDashboard={() => {
+                  const role = localStorage.getItem('userRole');
+                  navigateTo(role === 'doctor' ? 'doctor-dashboard' : 'dashboard');
+               }}
             />
          )}
 
