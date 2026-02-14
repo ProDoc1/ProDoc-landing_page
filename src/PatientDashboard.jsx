@@ -391,7 +391,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 };
 
 // Main Patient Dashboard Component
-const PatientDashboard = ({ user, onLogout }) => {
+const PatientDashboard = ({ user, onLogout, onNavigateDoctors }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -600,7 +600,10 @@ const PatientDashboard = ({ user, onLogout }) => {
             <div className="relative z-10">
               <h3 className="text-xl font-bold mb-2">Find Doctors</h3>
               <p className="text-teal-100 text-sm mb-6">Search verified specialists in Sri Lanka.</p>
-              <button className="bg-white text-teal-600 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all flex items-center gap-2 w-full justify-center">
+              <button
+                onClick={onNavigateDoctors}
+                className="bg-white text-teal-600 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all flex items-center gap-2 w-full justify-center"
+              >
                 <Search size={18} /> Search Directory
               </button>
             </div>
