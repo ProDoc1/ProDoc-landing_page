@@ -5,7 +5,6 @@ import {
   LogOut, 
   Search, 
   ShieldCheck, 
-  Bell, 
   ChevronRight, 
   Heart,
   FileText,
@@ -27,7 +26,7 @@ import {
   Save,
   AlertCircle
 } from 'lucide-react';
-import LogoWithWords from './assets/Logo_with_words.png';
+import Navbar from './components/Navbar';
 
 // Edit Profile Modal Component
 const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
@@ -391,7 +390,16 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 };
 
 // Main Patient Dashboard Component
-const PatientDashboard = ({ user, onLogout, onNavigateDoctors }) => {
+const PatientDashboard = ({
+  user,
+  onLogout,
+  onNavigateDoctors,
+  onNavigateHome,
+  onNavigateAbout,
+  onNavigateLogin,
+  onNavigateSignupPage,
+  onNavigateDashboard
+}) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -518,31 +526,19 @@ const PatientDashboard = ({ user, onLogout, onNavigateDoctors }) => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <img
-            src={LogoWithWords}
-            alt="ProDoc"
-            className="h-10 w-auto"
-          />
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-400 hover:text-teal-500 transition-colors relative">
-            <Bell size={22} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
-          <div className="h-8 w-px bg-slate-200 mx-2"></div>
-          <button 
-            onClick={onLogout}
-            className="flex items-center gap-2 text-slate-500 hover:text-red-600 font-semibold text-sm transition-colors"
-          >
-            <LogOut size={18} /> Logout
-          </button>
-        </div>
-      </nav>
+      <Navbar
+        currentPage="dashboard"
+        currentUser={currentUser}
+        onNavigateHome={onNavigateHome}
+        onNavigateAbout={onNavigateAbout}
+        onNavigateDoctors={onNavigateDoctors}
+        onNavigateLogin={onNavigateLogin}
+        onNavigateSignupPage={onNavigateSignupPage}
+        onLogout={onLogout}
+        onNavigateDashboard={onNavigateDashboard}
+      />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-28 md:p-8 md:pt-32 grid grid-cols-1 lg:grid-cols-4 gap-8">
         
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
@@ -566,6 +562,12 @@ const PatientDashboard = ({ user, onLogout, onNavigateDoctors }) => {
               className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
             >
               <Settings size={18} /> Edit Profile
+            </button>
+            <button 
+              onClick={onLogout}
+              className="w-full mt-3 py-3 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+            >
+              <LogOut size={18} /> Logout
             </button>
           </div>
 

@@ -72,6 +72,20 @@ const Navbar = ({ currentPage, onNavigateAbout, onNavigateHome, onNavigateLogin,
       btnPrimary: "bg-[#14B8A6] text-white hover:bg-[#0f968c]",
       mobileToggle: "text-slate-800 hover:bg-teal-500/10",
       tubelightBg: "#E4F0F1",
+    },
+    dashboard: {
+      wrapper: `fixed top-0 left-0 right-0 w-full z-50 border-b border-slate-300 bg-white/95 backdrop-blur-xl shadow-sm`,
+      text: "text-slate-800",
+      btnPrimary: "bg-[#14B8A6] text-white hover:bg-[#0f968c]",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#0F766E",
+    },
+    'doctor-dashboard': {
+      wrapper: `fixed top-0 left-0 right-0 w-full z-50 border-b border-slate-300 bg-white/95 backdrop-blur-xl shadow-sm`,
+      text: "text-slate-800",
+      btnPrimary: "bg-[#14B8A6] text-white hover:bg-[#0f968c]",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#0F766E",
     }
   };
 
