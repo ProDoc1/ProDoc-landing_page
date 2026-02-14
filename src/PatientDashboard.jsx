@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import {
-  User,
-  Settings,
-  LogOut,
-  Search,
-  ShieldCheck,
-  Bell,
-  ChevronRight,
+import { 
+  User, 
+  Settings, 
+  LogOut, 
+  Search, 
+  ShieldCheck, 
+  Bell, 
+  ChevronRight, 
   Heart,
   FileText,
   Star,
@@ -17,16 +17,397 @@ import {
   ChevronUp,
   MoreVertical,
   Calendar,
-  Plus
+  Plus,
+  Share,
+  X,
+  Mail,
+  Phone,
+  MapPin,
+  Camera,
+  Save,
+  AlertCircle
 } from 'lucide-react';
 import LogoWithWords from './assets/Logo_with_words.png';
 
+// Edit Profile Modal Component
+const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
+  const [formData, setFormData] = useState({
+    fullName: user?.fullName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    dateOfBirth: user?.dateOfBirth || '',
+    address: user?.address || '',
+    emergencyContact: user?.emergencyContact || '',
+    bloodType: user?.bloodType || '',
+    allergies: user?.allergies || '',
+    medicalConditions: user?.medicalConditions || ''
+  });
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [activeSection, setActiveSection] = useState('personal');
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number is invalid';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    try {
+      await onSave(formData);
+      onClose();
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const sections = [
+    { id: 'personal', label: 'Personal Info', icon: User },
+    { id: 'contact', label: 'Contact', icon: Phone },
+    { id: 'medical', label: 'Medical Info', icon: AlertCircle }
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+      
+      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="text-2xl font-bold">Edit Profile</h2>
+            <p className="text-teal-100 text-sm mt-1">Update your personal information</p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-64 bg-slate-50 border-r border-slate-200 p-6 space-y-2 shrink-0 hidden md:block">
+            {sections.map(section => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
+                  activeSection === section.id 
+                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-200' 
+                    : 'text-slate-600 hover:bg-white hover:shadow-sm'
+                }`}
+              >
+                <section.icon size={20} />
+                {section.label}
+              </button>
+            ))}
+            
+            <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+              <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                <AlertCircle size={14} className="inline mr-1" />
+                Your medical information is encrypted and only visible to you and your authorized doctors.
+              </p>
+            </div>
+          </div>
+
+          <div className="md:hidden px-6 pt-6 shrink-0">
+            <select 
+              value={activeSection}
+              onChange={(e) => setActiveSection(e.target.value)}
+              className="w-full p-3 rounded-xl border border-slate-200 font-medium text-slate-700 bg-white"
+            >
+              {sections.map(section => (
+                <option key={section.id} value={section.id}>{section.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              
+              {activeSection === 'personal' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <User size={20} className="text-teal-600" />
+                    Personal Information
+                  </h3>
+                  
+                  <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="relative">
+                      <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 text-3xl font-bold">
+                        {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : <User size={40} />}
+                      </div>
+                      <button 
+                        type="button"
+                        className="absolute bottom-0 right-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg"
+                      >
+                        <Camera size={16} />
+                      </button>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800">Profile Photo</h4>
+                      <p className="text-sm text-slate-500 mb-3">Upload a clear photo of yourself</p>
+                      <div className="flex gap-2">
+                        <button 
+                          type="button"
+                          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors"
+                        >
+                          Upload New
+                        </button>
+                        <button 
+                          type="button"
+                          className="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700">Full Name *</label>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 rounded-xl border ${errors.fullName ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`}
+                        placeholder="John Doe"
+                      />
+                      {errors.fullName && <p className="text-red-500 text-xs">{errors.fullName}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700">Date of Birth</label>
+                      <input
+                        type="date"
+                        name="dateOfBirth"
+                        value={formData.dateOfBirth}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Email Address *</label>
+                    <div className="relative">
+                      <Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className={`w-full pl-12 pr-4 py-3 rounded-xl border ${errors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`}
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                    {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'contact' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <Phone size={20} className="text-teal-600" />
+                    Contact Information
+                  </h3>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Phone Number</label>
+                    <div className="relative">
+                      <Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className={`w-full pl-12 pr-4 py-3 rounded-xl border ${errors.phone ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`}
+                        placeholder="+94 77 123 4567"
+                      />
+                    </div>
+                    {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Address</label>
+                    <div className="relative">
+                      <MapPin size={20} className="absolute left-4 top-4 text-slate-400" />
+                      <textarea
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        rows={3}
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none"
+                        placeholder="123 Main Street, Colombo 03"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Emergency Contact</label>
+                    <input
+                      type="text"
+                      name="emergencyContact"
+                      value={formData.emergencyContact}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                      placeholder="Name: Jane Doe, Phone: +94 77 987 6543"
+                    />
+                    <p className="text-xs text-slate-500">Include name and phone number of emergency contact</p>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === 'medical' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <AlertCircle size={20} className="text-teal-600" />
+                    Medical Information
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700">Blood Type</label>
+                      <select
+                        name="bloodType"
+                        value={formData.bloodType}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white"
+                      >
+                        <option value="">Select Blood Type</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Allergies</label>
+                    <textarea
+                      name="allergies"
+                      value={formData.allergies}
+                      onChange={handleChange}
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none"
+                      placeholder="List any allergies (medications, food, etc.)"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Existing Medical Conditions</label>
+                    <textarea
+                      name="medicalConditions"
+                      value={formData.medicalConditions}
+                      onChange={handleChange}
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none"
+                      placeholder="Diabetes, Hypertension, Asthma, etc."
+                    />
+                  </div>
+
+                  <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p className="text-sm text-blue-800">
+                      <strong>Privacy Notice:</strong> This medical information is encrypted and only accessible to healthcare providers you explicitly authorize.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 mt-8 sticky bottom-0 bg-white">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-3 border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={20} />
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main Patient Dashboard Component
 const PatientDashboard = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  
+  const [currentUser, setCurrentUser] = useState(user || {
+    fullName: 'John Doe',
+    email: 'john@example.com',
+    phone: '+94 77 123 4567',
+    dateOfBirth: '1990-05-15',
+    address: '123 Galle Road, Colombo 03',
+    emergencyContact: 'Jane Doe: +94 77 987 6543',
+    bloodType: 'O+',
+    allergies: 'Penicillin, Peanuts',
+    medicalConditions: 'Hypertension'
+  });
 
-  // Mock data - replace with actual API calls
   const [reviews, setReviews] = useState([
     {
       id: 1,
@@ -98,8 +479,14 @@ const PatientDashboard = ({ user, onLogout }) => {
     { id: 2, name: "Dr. Sunil Jayawardena", specialty: "Neurologist", status: "Pending Update", lastActive: "1 day ago" },
   ];
 
+  const handleSaveProfile = async (formData) => {
+    console.log('Saving profile:', formData);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setCurrentUser(prev => ({ ...prev, ...formData }));
+  };
+
   const getReportIcon = (type) => {
-    switch (type) {
+    switch(type) {
       case 'lab': return <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center"><FileText size={20} /></div>;
       case 'scan': return <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><Stethoscope size={20} /></div>;
       case 'prescription': return <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><FileText size={20} /></div>;
@@ -121,42 +508,75 @@ const PatientDashboard = ({ user, onLogout }) => {
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        size={16}
-        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
+      <Star 
+        key={i} 
+        size={16} 
+        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"} 
       />
     ));
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans pt-24 md:pt-32">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <img
+            src={LogoWithWords}
+            alt="ProDoc"
+            className="h-10 w-auto"
+          />
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <button className="p-2 text-slate-400 hover:text-teal-500 transition-colors relative">
+            <Bell size={22} />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+          </button>
+          <div className="h-8 w-px bg-slate-200 mx-2"></div>
+          <button 
+            onClick={onLogout}
+            className="flex items-center gap-2 text-slate-500 hover:text-red-600 font-semibold text-sm transition-colors"
+          >
+            <LogOut size={18} /> Logout
+          </button>
+        </div>
+      </nav>
 
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
-
-        {/* --- LEFT SIDEBAR --- */}
+        
         <div className="lg:col-span-1 space-y-6">
-          {/* Profile Card */}
           <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
-            <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600">
+            <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
               <User size={48} />
+              <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">{user?.fullName || 'Patient Name'}</h2>
-            <p className="text-slate-500 text-sm mb-6">{user?.email}</p>
-            <button className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
+            <h2 className="text-2xl font-bold text-slate-800">{currentUser?.fullName || 'Patient Name'}</h2>
+            <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
+            
+            {currentUser.bloodType && (
+              <div className="flex justify-center gap-2 mb-4">
+                <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
+                  Blood: {currentUser.bloodType}
+                </span>
+              </div>
+            )}
+            
+            <button 
+              onClick={() => setIsEditProfileOpen(true)}
+              className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+            >
               <Settings size={18} /> Edit Profile
             </button>
           </div>
 
-          {/* Navigation Menu */}
           <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
-            <button
+            <button 
               onClick={() => setActiveTab('overview')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               <ShieldCheck size={20} /> Overview
             </button>
-            <button
+            <button 
               onClick={() => setActiveTab('reviews')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
@@ -165,7 +585,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                 {reviews.length}
               </span>
             </button>
-            <button
+            <button 
               onClick={() => setActiveTab('reports')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
@@ -176,7 +596,6 @@ const PatientDashboard = ({ user, onLogout }) => {
             </button>
           </div>
 
-          {/* CTA Card */}
           <div className="bg-teal-600 rounded-[2rem] p-8 text-white shadow-lg shadow-teal-200/50 relative overflow-hidden">
             <div className="relative z-10">
               <h3 className="text-xl font-bold mb-2">Find Doctors</h3>
@@ -189,62 +608,54 @@ const PatientDashboard = ({ user, onLogout }) => {
           </div>
         </div>
 
-        {/* --- MAIN CONTENT AREA --- */}
         <div className="lg:col-span-3 space-y-6">
-
-          {/* OVERVIEW TAB */}
+          
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              {/* Welcome Banner */}
-              <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-[2rem] p-8 text-white shadow-lg">
-                <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.fullName?.split(' ')[0] || 'Patient'}! </h2>
+              <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg">
+                <h2 className="text-3xl font-bold mb-2">Welcome back, {currentUser?.fullName?.split(' ')[0] || 'Patient'}! </h2>
                 <p className="text-slate-300">Manage your medical records and doctor reviews in one place.</p>
               </div>
 
-              {/* Stats Row */}
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => setActiveTab('reviews')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
-                        <Star size={24} />
-
-                      </div>
-                      <span className="text-3xl font-bold text-slate-800">{reviews.length}</span>
+                 <button 
+              onClick={() => setActiveTab('reviews')}
+              className={`w-full rounded-2xl transition-all ${activeTab === 'reviews' ? 'ring-2 ring-teal-200' : ''}`}
+            >
+                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full flex flex-col items-center text-center">
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                      <Star size={24} />
                     </div>
-
-                    <h3 className="font-bold text-slate-800 mb-1">Doctor Reviews</h3>
-                    <p className="text-sm text-slate-500">Reviews you've left for doctors</p>
-                  </div></button>
-
-                <button
-                  onClick={() => setActiveTab('reports')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
-                        <FileText size={24} />
-                      </div>
-                      <span className="text-3xl font-bold text-slate-800">{reports.length}</span>
-                    </div>
-                    <h3 className="font-bold text-slate-800 mb-1">Medical Records</h3>
-                    <p className="text-sm text-slate-500">Stored reports and documents</p>
+                    <span className="text-3xl font-bold text-slate-800">{reviews.length}</span>
                   </div>
-                </button>
+                  <h3 className="font-bold text-slate-800 mb-1 text-center">Doctor Reviews</h3>
+                  <p className="text-sm text-slate-500 text-center">Reviews you've left for doctors</p>
+                </div></button>
+                
+                <button 
+              onClick={() => setActiveTab('reports')}
+              className={`w-full rounded-2xl transition-all ${activeTab === 'reports' ? 'ring-2 ring-teal-200' : ''}`}
+            >
+                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full flex flex-col items-center text-center">
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                      <FileText size={24} />
+                    </div>
+                    <span className="text-3xl font-bold text-slate-800">{reports.length}</span>
+                  </div>
+                  <h3 className="font-bold text-slate-800 mb-1 text-center">Medical Records</h3>
+                  <p className="text-sm text-slate-500 text-center">Stored reports and documents</p>
+                </div>
+              </button>
               </div>
 
-              {/* Recent Reviews Preview */}
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-slate-800">Recent Reviews</h3>
                   <button onClick={() => setActiveTab('reviews')} className="text-teal-600 font-bold text-sm hover:underline">View All</button>
                 </div>
-
+                
                 {reviews.length === 0 ? (
                   <div className="text-center py-8 text-slate-400 bg-slate-50 rounded-2xl">
                     <Star size={32} className="mx-auto mb-2 opacity-30" />
@@ -273,13 +684,12 @@ const PatientDashboard = ({ user, onLogout }) => {
                 )}
               </div>
 
-              {/* Recent Reports Preview */}
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-slate-800">Recent Medical Records</h3>
                   <button onClick={() => setActiveTab('reports')} className="text-teal-600 font-bold text-sm hover:underline">View All</button>
                 </div>
-
+                
                 <div className="space-y-3">
                   {reports.slice(0, 3).map(report => (
                     <div key={report.id} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-sm transition-all cursor-pointer">
@@ -294,7 +704,6 @@ const PatientDashboard = ({ user, onLogout }) => {
                 </div>
               </div>
 
-              {/* Watchlist */}
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-2">
@@ -303,11 +712,11 @@ const PatientDashboard = ({ user, onLogout }) => {
                   </div>
                   <button className="text-teal-600 font-bold text-sm hover:underline">Manage</button>
                 </div>
-
+                
                 <div className="space-y-3">
                   {watchlist.map(doc => (
-                    <div
-                      key={doc.id}
+                    <div 
+                      key={doc.id} 
                       className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
@@ -327,7 +736,6 @@ const PatientDashboard = ({ user, onLogout }) => {
             </div>
           )}
 
-          {/* REVIEWS TAB */}
           {activeTab === 'reviews' && (
             <div className="space-y-6">
               <div className="flex justify-between items-center">
@@ -368,11 +776,11 @@ const PatientDashboard = ({ user, onLogout }) => {
                           <span className="ml-2 font-bold text-amber-700">{review.rating}/5</span>
                         </div>
                       </div>
-
+                      
                       <div className="bg-slate-50 rounded-2xl p-6 mb-4">
                         <p className="text-slate-700 leading-relaxed text-lg">"{review.text}"</p>
                       </div>
-
+                      
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-400">Posted on {review.createdAt}</span>
                         <div className="flex gap-3">
@@ -391,10 +799,8 @@ const PatientDashboard = ({ user, onLogout }) => {
             </div>
           )}
 
-          {/* REPORTS TAB */}
           {activeTab === 'reports' && (
             <div className="space-y-6">
-              {/* Storage Summary */}
               <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
@@ -416,10 +822,9 @@ const PatientDashboard = ({ user, onLogout }) => {
                 </div>
               </div>
 
-              {/* Filters */}
               <div className="flex flex-wrap gap-2">
                 {['All', 'Lab Reports', 'Prescriptions', 'Scans', 'Vaccinations'].map((filter, idx) => (
-                  <button
+                  <button 
                     key={filter}
                     className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${idx === 0 ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   >
@@ -428,14 +833,13 @@ const PatientDashboard = ({ user, onLogout }) => {
                 ))}
               </div>
 
-              {/* Reports List */}
               <div className="space-y-3">
                 {reports.map(report => (
-                  <div
-                    key={report.id}
+                  <div 
+                    key={report.id} 
                     className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all"
                   >
-                    <div
+                    <div 
                       className="p-6 flex items-center justify-between cursor-pointer"
                       onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}
                     >
@@ -468,7 +872,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                         </button>
                       </div>
                     </div>
-
+                    
                     {expandedReport === report.id && (
                       <div className="px-6 pb-6 pt-0 bg-slate-50 border-t border-slate-100">
                         <div className="pt-4">
@@ -476,7 +880,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                             <h5 className="font-bold text-slate-700 mb-2">Description</h5>
                             <p className="text-slate-600">{report.description}</p>
                           </div>
-
+                          
                           <div className="flex flex-wrap gap-3">
                             <button className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm">
                               <Download size={18} /> Download PDF
@@ -502,6 +906,13 @@ const PatientDashboard = ({ user, onLogout }) => {
 
         </div>
       </div>
+
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        user={currentUser}
+        onSave={handleSaveProfile}
+      />
     </div>
   );
 };
