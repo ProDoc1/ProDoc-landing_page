@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  User, 
-  Settings, 
-  LogOut, 
-  Search, 
-  ShieldCheck, 
-  Bell, 
-  ChevronRight, 
+import {
+  User,
+  Settings,
+  LogOut,
+  Search,
+  ShieldCheck,
+  Bell,
+  ChevronRight,
   Heart,
   FileText,
   Star,
@@ -25,7 +25,7 @@ import LogoWithWords from './assets/Logo_with_words.png';
 const PatientDashboard = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
-  
+
   // Mock data - replace with actual API calls
   const [reviews, setReviews] = useState([
     {
@@ -99,7 +99,7 @@ const PatientDashboard = ({ user, onLogout }) => {
   ];
 
   const getReportIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'lab': return <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center"><FileText size={20} /></div>;
       case 'scan': return <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><Stethoscope size={20} /></div>;
       case 'prescription': return <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><FileText size={20} /></div>;
@@ -121,44 +121,19 @@ const PatientDashboard = ({ user, onLogout }) => {
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, i) => (
-      <Star 
-        key={i} 
-        size={16} 
-        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"} 
+      <Star
+        key={i}
+        size={16}
+        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
       />
     ));
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      {/* --- TOP NAVIGATION --- */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <img
-            src={LogoWithWords}
-            alt="ProDoc"
-            className="h-10 w-auto"
-          />
-          <span className="text-xl font-bold text-slate-800 tracking-tight">Pro<span className="text-teal-500">Doc</span></span>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-400 hover:text-teal-500 transition-colors relative">
-            <Bell size={22} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
-          <div className="h-8 w-px bg-slate-200 mx-2"></div>
-          <button 
-            onClick={onLogout}
-            className="flex items-center gap-2 text-slate-500 hover:text-red-600 font-semibold text-sm transition-colors"
-          >
-            <LogOut size={18} /> Logout
-          </button>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans pt-24 md:pt-32">
 
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
+
         {/* --- LEFT SIDEBAR --- */}
         <div className="lg:col-span-1 space-y-6">
           {/* Profile Card */}
@@ -175,13 +150,13 @@ const PatientDashboard = ({ user, onLogout }) => {
 
           {/* Navigation Menu */}
           <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
-            <button 
+            <button
               onClick={() => setActiveTab('overview')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               <ShieldCheck size={20} /> Overview
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('reviews')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
@@ -190,7 +165,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                 {reviews.length}
               </span>
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('reports')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
@@ -216,7 +191,7 @@ const PatientDashboard = ({ user, onLogout }) => {
 
         {/* --- MAIN CONTENT AREA --- */}
         <div className="lg:col-span-3 space-y-6">
-          
+
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
@@ -227,40 +202,40 @@ const PatientDashboard = ({ user, onLogout }) => {
               </div>
 
               {/* Stats Row */}
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <button 
-              onClick={() => setActiveTab('reviews')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
-                      <Star size={24} />
-                     
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                        <Star size={24} />
+
+                      </div>
+                      <span className="text-3xl font-bold text-slate-800">{reviews.length}</span>
                     </div>
-                    <span className="text-3xl font-bold text-slate-800">{reviews.length}</span>
-                  </div>
-                  
-                  <h3 className="font-bold text-slate-800 mb-1">Doctor Reviews</h3>
-                  <p className="text-sm text-slate-500">Reviews you've left for doctors</p>
-                </div></button>
-                
-                <button 
-              onClick={() => setActiveTab('reports')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
-                      <FileText size={24} />
+
+                    <h3 className="font-bold text-slate-800 mb-1">Doctor Reviews</h3>
+                    <p className="text-sm text-slate-500">Reviews you've left for doctors</p>
+                  </div></button>
+
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                        <FileText size={24} />
+                      </div>
+                      <span className="text-3xl font-bold text-slate-800">{reports.length}</span>
                     </div>
-                    <span className="text-3xl font-bold text-slate-800">{reports.length}</span>
+                    <h3 className="font-bold text-slate-800 mb-1">Medical Records</h3>
+                    <p className="text-sm text-slate-500">Stored reports and documents</p>
                   </div>
-                  <h3 className="font-bold text-slate-800 mb-1">Medical Records</h3>
-                  <p className="text-sm text-slate-500">Stored reports and documents</p>
-                </div>
-              </button>
+                </button>
               </div>
 
               {/* Recent Reviews Preview */}
@@ -269,7 +244,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                   <h3 className="text-xl font-bold text-slate-800">Recent Reviews</h3>
                   <button onClick={() => setActiveTab('reviews')} className="text-teal-600 font-bold text-sm hover:underline">View All</button>
                 </div>
-                
+
                 {reviews.length === 0 ? (
                   <div className="text-center py-8 text-slate-400 bg-slate-50 rounded-2xl">
                     <Star size={32} className="mx-auto mb-2 opacity-30" />
@@ -304,7 +279,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                   <h3 className="text-xl font-bold text-slate-800">Recent Medical Records</h3>
                   <button onClick={() => setActiveTab('reports')} className="text-teal-600 font-bold text-sm hover:underline">View All</button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {reports.slice(0, 3).map(report => (
                     <div key={report.id} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-sm transition-all cursor-pointer">
@@ -328,11 +303,11 @@ const PatientDashboard = ({ user, onLogout }) => {
                   </div>
                   <button className="text-teal-600 font-bold text-sm hover:underline">Manage</button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {watchlist.map(doc => (
-                    <div 
-                      key={doc.id} 
+                    <div
+                      key={doc.id}
                       className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
@@ -393,11 +368,11 @@ const PatientDashboard = ({ user, onLogout }) => {
                           <span className="ml-2 font-bold text-amber-700">{review.rating}/5</span>
                         </div>
                       </div>
-                      
+
                       <div className="bg-slate-50 rounded-2xl p-6 mb-4">
                         <p className="text-slate-700 leading-relaxed text-lg">"{review.text}"</p>
                       </div>
-                      
+
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-400">Posted on {review.createdAt}</span>
                         <div className="flex gap-3">
@@ -444,7 +419,7 @@ const PatientDashboard = ({ user, onLogout }) => {
               {/* Filters */}
               <div className="flex flex-wrap gap-2">
                 {['All', 'Lab Reports', 'Prescriptions', 'Scans', 'Vaccinations'].map((filter, idx) => (
-                  <button 
+                  <button
                     key={filter}
                     className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${idx === 0 ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   >
@@ -456,11 +431,11 @@ const PatientDashboard = ({ user, onLogout }) => {
               {/* Reports List */}
               <div className="space-y-3">
                 {reports.map(report => (
-                  <div 
-                    key={report.id} 
+                  <div
+                    key={report.id}
                     className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all"
                   >
-                    <div 
+                    <div
                       className="p-6 flex items-center justify-between cursor-pointer"
                       onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}
                     >
@@ -493,7 +468,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                         </button>
                       </div>
                     </div>
-                    
+
                     {expandedReport === report.id && (
                       <div className="px-6 pb-6 pt-0 bg-slate-50 border-t border-slate-100">
                         <div className="pt-4">
@@ -501,7 +476,7 @@ const PatientDashboard = ({ user, onLogout }) => {
                             <h5 className="font-bold text-slate-700 mb-2">Description</h5>
                             <p className="text-slate-600">{report.description}</p>
                           </div>
-                          
+
                           <div className="flex flex-wrap gap-3">
                             <button className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm">
                               <Download size={18} /> Download PDF
