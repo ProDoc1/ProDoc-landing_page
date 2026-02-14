@@ -405,7 +405,11 @@ export default function App() {
          )}
 
          {currentPage === 'dashboard' && (
-            <PatientDashboard user={currentUser} onLogout={handleLogout} />
+            <PatientDashboard
+               user={currentUser}
+               onLogout={handleLogout}
+               onNavigateDoctors={() => navigateTo('doctors')}
+            />
          )}
 
          {currentPage === 'doctor-dashboard' && (
