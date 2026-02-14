@@ -409,6 +409,11 @@ export default function App() {
                user={currentUser}
                onLogout={handleLogout}
                onNavigateDoctors={() => navigateTo('doctors')}
+               onNavigateHome={() => navigateTo('home')}
+               onNavigateAbout={() => navigateTo('about')}
+               onNavigateLogin={() => navigateTo('login')}
+               onNavigateSignupPage={() => navigateTo('signup')}
+               onNavigateDashboard={() => navigateTo('dashboard')}
             />
          )}
 
