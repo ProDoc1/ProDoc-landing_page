@@ -16,9 +16,10 @@ import {
   Share2,
   Lock,
   Camera,
-  Menu
+  Menu,
+  Loader2 // Imported Loader icon for saving state
 } from 'lucide-react';
-import Navbar from './components/Navbar'; // Added Import
+import Navbar from './components/Navbar'; 
 import Plasma from './components/Plasma';
 import LogoColor from './assets/Logo_with_words.png';
 import DoctorImg from './assets/doctor.png';
@@ -41,12 +42,17 @@ const DoctorDashboard = ({
   const [availability, setAvailability] = useState("Mon, Wed, Fri");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
+  // Save Data State (New)
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
+
   // Password Change State
   const [passwordForm, setPasswordForm] = useState({ new: '', confirm: '' });
   const [pwdStatus, setPwdStatus] = useState({ type: '', message: '' });
   const fileInputRef = useRef(null);
 
   const [localUser, setLocalUser] = useState({
+    id: user?.id || localStorage.getItem('doctorId'), // Ensure ID is captured
     fullName: user?.name || 'Doctor',
     email: user?.email,
     specialty: user?.specialty,
@@ -61,6 +67,7 @@ const DoctorDashboard = ({
     if (user) {
       setLocalUser(prev => ({
         ...prev,
+        id: user.id || prev.id,
         fullName: user.name || prev.fullName,
         email: user.email || prev.email,
         specialty: user.specialty || prev.specialty,
@@ -86,6 +93,7 @@ const DoctorDashboard = ({
           if (data && !data.error) {
             setLocalUser(prev => ({
               ...prev,
+              id: doctorId,
               fullName: data.name || prev.fullName,
               email: data.email || prev.email,
               specialty: data.specialty || prev.specialty,
@@ -100,6 +108,65 @@ const DoctorDashboard = ({
         .catch(err => console.error("Error fetching doctor profile:", err));
     }
   }, [onLogout, user]);
+
+  // --- UPDATED: Handle Profile Save to Backend ---
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setSaveStatus({ type: '', message: '' });
+
+    try {
+      // 1. Prepare data payload
+      const payload = {
+        id: localUser.id,
+        name: localUser.fullName,
+        specialty: localUser.specialty,
+        slmcNumber: localUser.slmcNumber,
+        location: localUser.location,
+        languages: localUser.languages,
+        image_url: localUser.image, // Assuming your backend accepts base64 or URL
+        bio: localUser.bio
+      };
+
+      // 2. Send request to backend
+      const response = await fetch('/api/update-doctor-profile', {
+        method: 'PUT', // or 'POST' depending on your API
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${localStorage.getItem('token')}` // Add if using JWT
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // Some backends return no body (204) or return plain text — guard against empty/non-JSON responses
+      const text = await response.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (parseErr) {
+        // Not JSON — keep raw text available for error messages
+        console.warn('Could not parse JSON response from update-doctor-profile:', parseErr);
+      }
+
+      if (response.ok) {
+        setSaveStatus({ type: 'success', message: data?.message || 'Profile updated successfully!' });
+
+        // Close modal after delay
+        setTimeout(() => {
+          setIsEditingProfile(false);
+          setSaveStatus({ type: '', message: '' });
+        }, 1500);
+      } else {
+        const errMsg = data?.error || text || response.statusText || 'Failed to update profile.';
+        setSaveStatus({ type: 'error', message: errMsg });
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      setSaveStatus({ type: 'error', message: 'Network connection error.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -132,11 +199,6 @@ const DoctorDashboard = ({
     }
   };
 
-  const handleProfileSave = (e) => {
-    e.preventDefault();
-    setIsEditingProfile(false);
-  };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -161,6 +223,18 @@ const DoctorDashboard = ({
         <Plasma color="#0f766e" speed={0.2} scale={1.5} opacity={0.4} />
       </div>
 
+      {/* Insert Navbar Here */}
+      <Navbar
+        currentUser={localUser}
+        onLogout={onLogout}
+        onNavigateHome={onNavigateHome}
+        onNavigateDoctors={onNavigateDoctors}
+        onNavigateAbout={onNavigateAbout}
+        onNavigateLogin={onNavigateLogin}
+        onNavigateSignupPage={onNavigateSignupPage}
+        onNavigateDashboard={() => setActiveTab('Dashboard')}
+      />
+
       <div className="flex flex-1 pt-24 md:pt-32 relative z-10 overflow-hidden">
         {/* Sidebar Overlay */}
         {isMobileMenuOpen && (
@@ -173,7 +247,6 @@ const DoctorDashboard = ({
         {/* Sidebar Navigation */}
         <aside className={`fixed md:relative z-40 w-64 h-[calc(100vh-theme(spacing.32))] bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
           <div className="p-4 md:hidden">
-            {/* Mobile-only toggle trigger within sidebar if needed */}
             <button onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 text-slate-500 font-bold mb-4">
               <X size={20} /> Close Menu
             </button>
@@ -218,7 +291,7 @@ const DoctorDashboard = ({
           </div>
         </aside>
 
-        {/* Dashbaord Mobile Control (Optional: button to open dashboard sidebar) */}
+        {/* Dashbaord Mobile Control */}
         <button
           onClick={() => setIsMobileMenuOpen(true)}
           className="md:hidden fixed bottom-6 right-6 z-50 p-4 bg-teal-600 text-white rounded-full shadow-2xl"
@@ -417,11 +490,17 @@ const DoctorDashboard = ({
           <div className="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-xl font-bold text-slate-800">Edit Profile</h3>
-              <button onClick={() => setIsEditingProfile(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
+              <button 
+                onClick={() => setIsEditingProfile(false)} 
+                disabled={isSaving}
+                className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
             </div>
             <form onSubmit={handleProfileSave} className="p-6 space-y-4">
               <div className="flex flex-col items-center mb-6">
-                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
+                <div className="relative group cursor-pointer" onClick={() => !isSaving && fileInputRef.current.click()}>
                   <div className="w-24 h-24 rounded-full border-2 border-teal-500 overflow-hidden bg-slate-100 flex items-center justify-center">
                     <img src={localUser.image} alt="Profile Preview" className="w-full h-full object-cover" />
                   </div>
@@ -435,29 +514,50 @@ const DoctorDashboard = ({
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                <input type="text" value={localUser.fullName} onChange={(e) => setLocalUser({ ...localUser, fullName: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" />
+                <input type="text" value={localUser.fullName} onChange={(e) => setLocalUser({ ...localUser, fullName: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Specialty</label>
-                  <input type="text" value={localUser.specialty} onChange={(e) => setLocalUser({ ...localUser, specialty: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" />
+                  <input type="text" value={localUser.specialty} onChange={(e) => setLocalUser({ ...localUser, specialty: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">SLMC Reg</label>
-                  <input type="text" value={localUser.slmcNumber} onChange={(e) => setLocalUser({ ...localUser, slmcNumber: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" />
+                  <input type="text" value={localUser.slmcNumber} onChange={(e) => setLocalUser({ ...localUser, slmcNumber: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
-                <input type="text" value={localUser.location} onChange={(e) => setLocalUser({ ...localUser, location: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" />
+                <input type="text" value={localUser.location} onChange={(e) => setLocalUser({ ...localUser, location: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Languages</label>
-                <input type="text" value={localUser.languages} onChange={(e) => setLocalUser({ ...localUser, languages: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" placeholder="e.g. English, Sinhala" />
+                <input type="text" value={localUser.languages} onChange={(e) => setLocalUser({ ...localUser, languages: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" placeholder="e.g. English, Sinhala" disabled={isSaving} />
               </div>
+
+              {saveStatus.message && (
+                <div className={`p-3 rounded-xl text-sm flex items-center gap-2 ${saveStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                  {saveStatus.type === 'success' ? <CheckCircle size={16} /> : <X size={16} />}
+                  {saveStatus.message}
+                </div>
+              )}
+
               <div className="pt-2 flex gap-3">
-                <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl shadow-lg">Save Changes</button>
+                <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors" disabled={isSaving}>Cancel</button>
+                <button 
+                  type="submit" 
+                  disabled={isSaving} 
+                  className="flex-1 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
               </div>
             </form>
           </div>

@@ -119,7 +119,9 @@ const Navbar = ({
   ];
 
   const userRole = localStorage.getItem('userRole');
-  const userImage = currentUser?.image_url || null;
+  // Accept multiple possible image field names from different parts of the app/backend
+  const userImage = currentUser?.image_url || currentUser?.image || currentUser?.imageURL || currentUser?.image_URL || null;
+  const isDoctor = userRole === 'doctor' || currentUser?.user_type === 'doctor' || currentUser?.role === 'doctor';
 
   return (
     <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3`}>
@@ -152,9 +154,10 @@ const Navbar = ({
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className={`flex items-center gap-2 p-1.5 pr-4 rounded-full transition-all group backdrop-blur-md border shadow-sm ${currentStyle.profileBtn}`}
+                className={`flex items-center gap-3 ${isDoctor ? 'p-2 pr-6 rounded-full bg-white text-slate-900 border border-slate-200 shadow-2xl' : 'p-1.5 pr-4 rounded-full'} transition-all group ${currentStyle.profileBtn}`}
               >
-                <div className="w-9 h-9 rounded-full bg-teal-500 flex items-center justify-center overflow-hidden border border-white/30">
+                <div className={`${isDoctor ? 'w-11 h-11' : 'w-9 h-9'} rounded-full bg-teal-500 flex items-center justify-center overflow-hidden border border-white/30`}
+                >
                   {userImage ? (
                     <img src={userImage} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
@@ -162,7 +165,7 @@ const Navbar = ({
                   )}
                 </div>
                 <div className="text-left">
-                  <p className={`text-xs font-bold leading-none ${currentStyle.text}`}>
+                  <p className={`${isDoctor ? 'text-sm' : 'text-xs'} font-bold leading-none ${isDoctor ? 'text-slate-900' : currentStyle.text}`}>
                     {currentUser.name || currentUser.fullName || 'User'}
                   </p>
                 </div>
