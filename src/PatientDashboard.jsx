@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  User, 
-  Settings, 
-  LogOut, 
-  Search, 
-  ShieldCheck, 
-  ChevronRight, 
+import {
+  User,
+  Settings,
+  LogOut,
+  Search,
+  ShieldCheck,
+  ChevronRight,
   Heart,
   FileText,
   Star,
@@ -27,6 +27,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Navbar from './components/Navbar';
+import PatientViewProfile from './lib/PatientviewProfile';
 
 // Edit Profile Modal Component
 const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
@@ -41,7 +42,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
     allergies: user?.allergies || '',
     medicalConditions: user?.medicalConditions || ''
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [activeSection, setActiveSection] = useState('personal');
@@ -68,7 +69,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
     if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
       newErrors.phone = 'Phone number is invalid';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -76,7 +77,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
     try {
       await onSave(formData);
@@ -98,19 +99,19 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div 
+      <div
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
-      
+
       <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
-        
+
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-2xl font-bold">Edit Profile</h2>
             <p className="text-teal-100 text-sm mt-1">Update your personal information</p>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-full transition-colors"
           >
@@ -124,17 +125,16 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
-                  activeSection === section.id 
-                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-200' 
-                    : 'text-slate-600 hover:bg-white hover:shadow-sm'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeSection === section.id
+                  ? 'bg-teal-600 text-white shadow-lg shadow-teal-200'
+                  : 'text-slate-600 hover:bg-white hover:shadow-sm'
+                  }`}
               >
                 <section.icon size={20} />
                 {section.label}
               </button>
             ))}
-            
+
             <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100">
               <p className="text-xs text-amber-800 font-medium leading-relaxed">
                 <AlertCircle size={14} className="inline mr-1" />
@@ -144,7 +144,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
           </div>
 
           <div className="md:hidden px-6 pt-6 shrink-0">
-            <select 
+            <select
               value={activeSection}
               onChange={(e) => setActiveSection(e.target.value)}
               className="w-full p-3 rounded-xl border border-slate-200 font-medium text-slate-700 bg-white"
@@ -157,20 +157,20 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 
           <div className="flex-1 overflow-y-auto p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
-              
+
               {activeSection === 'personal' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <User size={20} className="text-teal-600" />
                     Personal Information
                   </h3>
-                  
+
                   <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
                     <div className="relative">
                       <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 text-3xl font-bold">
                         {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : <User size={40} />}
                       </div>
-                      <button 
+                      <button
                         type="button"
                         className="absolute bottom-0 right-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg"
                       >
@@ -181,13 +181,13 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                       <h4 className="font-bold text-slate-800">Profile Photo</h4>
                       <p className="text-sm text-slate-500 mb-3">Upload a clear photo of yourself</p>
                       <div className="flex gap-2">
-                        <button 
+                        <button
                           type="button"
                           className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors"
                         >
                           Upload New
                         </button>
-                        <button 
+                        <button
                           type="button"
                           className="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors"
                         >
@@ -403,7 +403,7 @@ const PatientDashboard = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  
+
   const [currentUser, setCurrentUser] = useState(user || {
     fullName: 'John Doe',
     email: 'john@example.com',
@@ -494,7 +494,7 @@ const PatientDashboard = ({
   };
 
   const getReportIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'lab': return <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center"><FileText size={20} /></div>;
       case 'scan': return <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><Stethoscope size={20} /></div>;
       case 'prescription': return <div className="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><FileText size={20} /></div>;
@@ -516,10 +516,10 @@ const PatientDashboard = ({
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, i) => (
-      <Star 
-        key={i} 
-        size={16} 
-        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"} 
+      <Star
+        key={i}
+        size={16}
+        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
       />
     ));
   };
@@ -539,7 +539,7 @@ const PatientDashboard = ({
       />
 
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-28 md:p-8 md:pt-32 grid grid-cols-1 lg:grid-cols-4 gap-8">
-        
+
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
             <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
@@ -548,7 +548,7 @@ const PatientDashboard = ({
             </div>
             <h2 className="text-2xl font-bold text-slate-800">{currentUser?.fullName || 'Patient Name'}</h2>
             <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
-            
+
             {currentUser.bloodType && (
               <div className="flex justify-center gap-2 mb-4">
                 <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
@@ -556,14 +556,14 @@ const PatientDashboard = ({
                 </span>
               </div>
             )}
-            
-            <button 
+
+            <button
               onClick={() => setIsEditProfileOpen(true)}
               className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
             >
               <Settings size={18} /> Edit Profile
             </button>
-            <button 
+            <button
               onClick={onLogout}
               className="w-full mt-3 py-3 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
             >
@@ -572,13 +572,13 @@ const PatientDashboard = ({
           </div>
 
           <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
-            <button 
+            <button
               onClick={() => setActiveTab('overview')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               <ShieldCheck size={20} /> Overview
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('reviews')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
@@ -587,7 +587,7 @@ const PatientDashboard = ({
                 {reviews.length}
               </span>
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab('reports')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
@@ -595,6 +595,12 @@ const PatientDashboard = ({
               <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
                 {reports.length}
               </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <User size={20} /> View Profile
             </button>
           </div>
 
@@ -614,7 +620,7 @@ const PatientDashboard = ({
         </div>
 
         <div className="lg:col-span-3 space-y-6">
-          
+
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg">
@@ -623,36 +629,36 @@ const PatientDashboard = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <button 
-              onClick={() => setActiveTab('reviews')}
-              className={`w-full rounded-2xl transition-all ${activeTab === 'reviews' ? 'ring-2 ring-teal-200' : ''}`}
-            >
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full flex flex-col items-center text-center">
-                  <div className="flex items-center justify-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
-                      <Star size={24} />
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`w-full rounded-2xl transition-all ${activeTab === 'reviews' ? 'ring-2 ring-teal-200' : ''}`}
+                >
+                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full flex flex-col items-center text-center">
+                    <div className="flex items-center justify-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+                        <Star size={24} />
+                      </div>
+                      <span className="text-3xl font-bold text-slate-800">{reviews.length}</span>
                     </div>
-                    <span className="text-3xl font-bold text-slate-800">{reviews.length}</span>
-                  </div>
-                  <h3 className="font-bold text-slate-800 mb-1 text-center">Doctor Reviews</h3>
-                  <p className="text-sm text-slate-500 text-center">Reviews you've left for doctors</p>
-                </div></button>
-                
-                <button 
-              onClick={() => setActiveTab('reports')}
-              className={`w-full rounded-2xl transition-all ${activeTab === 'reports' ? 'ring-2 ring-teal-200' : ''}`}
-            >
-                <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full flex flex-col items-center text-center">
-                  <div className="flex items-center justify-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
-                      <FileText size={24} />
+                    <h3 className="font-bold text-slate-800 mb-1 text-center">Doctor Reviews</h3>
+                    <p className="text-sm text-slate-500 text-center">Reviews you've left for doctors</p>
+                  </div></button>
+
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`w-full rounded-2xl transition-all ${activeTab === 'reports' ? 'ring-2 ring-teal-200' : ''}`}
+                >
+                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow w-full flex flex-col items-center text-center">
+                    <div className="flex items-center justify-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
+                        <FileText size={24} />
+                      </div>
+                      <span className="text-3xl font-bold text-slate-800">{reports.length}</span>
                     </div>
-                    <span className="text-3xl font-bold text-slate-800">{reports.length}</span>
+                    <h3 className="font-bold text-slate-800 mb-1 text-center">Medical Records</h3>
+                    <p className="text-sm text-slate-500 text-center">Stored reports and documents</p>
                   </div>
-                  <h3 className="font-bold text-slate-800 mb-1 text-center">Medical Records</h3>
-                  <p className="text-sm text-slate-500 text-center">Stored reports and documents</p>
-                </div>
-              </button>
+                </button>
               </div>
 
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
@@ -660,7 +666,7 @@ const PatientDashboard = ({
                   <h3 className="text-xl font-bold text-slate-800">Recent Reviews</h3>
                   <button onClick={() => setActiveTab('reviews')} className="text-teal-600 font-bold text-sm hover:underline">View All</button>
                 </div>
-                
+
                 {reviews.length === 0 ? (
                   <div className="text-center py-8 text-slate-400 bg-slate-50 rounded-2xl">
                     <Star size={32} className="mx-auto mb-2 opacity-30" />
@@ -694,7 +700,7 @@ const PatientDashboard = ({
                   <h3 className="text-xl font-bold text-slate-800">Recent Medical Records</h3>
                   <button onClick={() => setActiveTab('reports')} className="text-teal-600 font-bold text-sm hover:underline">View All</button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {reports.slice(0, 3).map(report => (
                     <div key={report.id} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-sm transition-all cursor-pointer">
@@ -717,11 +723,11 @@ const PatientDashboard = ({
                   </div>
                   <button className="text-teal-600 font-bold text-sm hover:underline">Manage</button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {watchlist.map(doc => (
-                    <div 
-                      key={doc.id} 
+                    <div
+                      key={doc.id}
                       className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
@@ -781,11 +787,11 @@ const PatientDashboard = ({
                           <span className="ml-2 font-bold text-amber-700">{review.rating}/5</span>
                         </div>
                       </div>
-                      
+
                       <div className="bg-slate-50 rounded-2xl p-6 mb-4">
                         <p className="text-slate-700 leading-relaxed text-lg">"{review.text}"</p>
                       </div>
-                      
+
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-400">Posted on {review.createdAt}</span>
                         <div className="flex gap-3">
@@ -829,7 +835,7 @@ const PatientDashboard = ({
 
               <div className="flex flex-wrap gap-2">
                 {['All', 'Lab Reports', 'Prescriptions', 'Scans', 'Vaccinations'].map((filter, idx) => (
-                  <button 
+                  <button
                     key={filter}
                     className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${idx === 0 ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   >
@@ -840,11 +846,11 @@ const PatientDashboard = ({
 
               <div className="space-y-3">
                 {reports.map(report => (
-                  <div 
-                    key={report.id} 
+                  <div
+                    key={report.id}
                     className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all"
                   >
-                    <div 
+                    <div
                       className="p-6 flex items-center justify-between cursor-pointer"
                       onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}
                     >
@@ -877,7 +883,7 @@ const PatientDashboard = ({
                         </button>
                       </div>
                     </div>
-                    
+
                     {expandedReport === report.id && (
                       <div className="px-6 pb-6 pt-0 bg-slate-50 border-t border-slate-100">
                         <div className="pt-4">
@@ -885,7 +891,7 @@ const PatientDashboard = ({
                             <h5 className="font-bold text-slate-700 mb-2">Description</h5>
                             <p className="text-slate-600">{report.description}</p>
                           </div>
-                          
+
                           <div className="flex flex-wrap gap-3">
                             <button className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm">
                               <Download size={18} /> Download PDF
@@ -906,6 +912,12 @@ const PatientDashboard = ({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+              <PatientViewProfile onBack={() => setActiveTab('overview')} />
             </div>
           )}
 
