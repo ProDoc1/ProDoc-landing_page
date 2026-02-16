@@ -9,9 +9,11 @@ import SignupPage from './Signup';
 import DoctorsPage from './doctor';
 import PatientDashboard from './PatientDashboard';
 import DoctorDashboard from './DoctorDashboard';
+import PrivacyPolicy from './PrivacyPolicy';
+import TermsOfService from './TermsOfService';
 
 // --- MAIN LANDING PAGE COMPONENT ---
-const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
+const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms }) => {
 
    useEffect(() => {
       document.documentElement.style.scrollBehavior = 'smooth';
@@ -242,12 +244,30 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist }) => {
                <div className="md:col-span-2">
                   <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
                   <ul className="space-y-4 text-sm">
-                     {['About Us', 'Careers', 'Privacy Policy', 'Terms of Service'].map((item) => (
-                        <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                     <li>
+                        <a href="#" onClick={() => onNavigateAbout()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
-                           {item}
-                        </a></li>
-                     ))}
+                           About Us
+                        </a>
+                     </li>
+                     <li>
+                        <a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                           <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                           Careers
+                        </a>
+                     </li>
+                     <li>
+                        <a href="#" onClick={() => onNavigatePrivacy()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                           <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                           Privacy Policy
+                        </a>
+                     </li>
+                     <li>
+                        <a href="#" onClick={() => onNavigateTerms()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                           <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                           Terms of Service
+                        </a>
+                     </li>
                   </ul>
                </div>
 
@@ -378,7 +398,18 @@ export default function App() {
             <LandingPage
                onNavigateHowitWorks={() => navigateToSection('how-it-works')}
                onFindSpecialist={() => navigateTo('doctors')}
+               onNavigateAbout={() => navigateTo('about')}
+               onNavigatePrivacy={() => navigateTo('privacy')}
+               onNavigateTerms={() => navigateTo('terms')}
             />
+         )}
+
+         {currentPage === 'privacy' && (
+            <PrivacyPolicy onBack={() => navigateTo('home')} />
+         )}
+
+         {currentPage === 'terms' && (
+            <TermsOfService onBack={() => navigateTo('home')} />
          )}
 
          {currentPage === 'about' && (
