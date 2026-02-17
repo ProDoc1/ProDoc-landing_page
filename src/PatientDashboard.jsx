@@ -24,7 +24,10 @@ import {
   MapPin,
   Camera,
   Save,
-  AlertCircle
+  AlertCircle,
+  MessageSquare,
+  CreditCard,
+  CheckCircle
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import PatientViewProfile from './lib/PatientviewProfile';
@@ -389,6 +392,145 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
   );
 };
 
+// Payment Modal Component
+const PaymentModal = ({ isOpen, onClose, onPaymentSuccess }) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [step, setStep] = useState('payment'); // payment, success
+
+  if (!isOpen) return null;
+
+  const handlePayment = async (e) => {
+    e.preventDefault();
+    setIsProcessing(true);
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsProcessing(false);
+    setStep('success');
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="text-xl font-bold">Secure Payment</h2>
+            <p className="text-teal-100 text-sm mt-1">Complete payment to proceed</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="p-8">
+          {step === 'payment' ? (
+            <form onSubmit={handlePayment} className="space-y-6">
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-slate-500">Service</p>
+                  <p className="font-bold text-slate-800">Second Opinion Request</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-slate-500">Amount</p>
+                  <p className="font-bold text-teal-600 text-lg">$50.00</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">Card Number</label>
+                  <div className="relative">
+                    <CreditCard size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                      placeholder="0000 0000 0000 0000"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">Expiry Date</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                      placeholder="MM/YY"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700">CVV</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                      placeholder="123"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700">Cardholder Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className="w-full py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-teal-200"
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard size={20} />
+                    Pay $50.00
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <div className="text-center py-8 animate-in fade-in zoom-in-95 duration-300">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
+                <CheckCircle size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-800 mb-2">Payment Successful!</h3>
+              <p className="text-slate-500 mb-8">Your request for a second opinion has been initiated.</p>
+              <button
+                onClick={() => {
+                  onPaymentSuccess();
+                  onClose();
+                }}
+                className="w-full py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200"
+              >
+                Continue to Request Form
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Patient Dashboard Component
 const PatientDashboard = ({
   user,
@@ -403,6 +545,7 @@ const PatientDashboard = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const [currentUser, setCurrentUser] = useState(user || {
     fullName: 'John Doe',
@@ -601,6 +744,12 @@ const PatientDashboard = ({
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
               <User size={20} /> View Profile
+            </button>
+            <button
+              onClick={() => setActiveTab('secondOpinion')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'secondOpinion' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <MessageSquare size={20} /> Second Opinion
             </button>
           </div>
 
@@ -921,6 +1070,31 @@ const PatientDashboard = ({
             </div>
           )}
 
+          {activeTab === 'secondOpinion' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg mb-6">
+                <h2 className="text-3xl font-bold mb-2">Second Opinion</h2>
+                <p className="text-teal-100">Get expert advice from top specialists worldwide.</p>
+              </div>
+
+              <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100 shadow-sm">
+                <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-6 flex items-center justify-center text-teal-600">
+                  <MessageSquare size={40} />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-3">Request a Second Opinion</h3>
+                <p className="text-slate-500 max-w-lg mx-auto mb-8 leading-relaxed">
+                  Unsure about your diagnosis? Upload your medical reports and get a detailed second opinion from our network of verified specialists.
+                </p>
+                <button
+                  onClick={() => setIsPaymentModalOpen(true)}
+                  className="px-8 py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200 flex items-center gap-2 mx-auto"
+                >
+                  <Plus size={20} /> Start New Request
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
 
@@ -929,6 +1103,15 @@ const PatientDashboard = ({
         onClose={() => setIsEditProfileOpen(false)}
         user={currentUser}
         onSave={handleSaveProfile}
+      />
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onPaymentSuccess={() => {
+          console.log("Payment successful, proceed to form");
+          // Here you would navigate to the form or change state to show the form
+        }}
       />
     </div>
   );
