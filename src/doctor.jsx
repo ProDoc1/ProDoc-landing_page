@@ -18,7 +18,7 @@ const itemVariants = {
   visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } }
 };
 
-const DoctorsPage = ({ onBack }) => {
+const DoctorsPage = ({ onBack, onViewProfile }) => {
   // --- FIX 1: Ensure state is ALWAYS an array, never false ---
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -436,7 +436,10 @@ const DoctorsPage = ({ onBack }) => {
                       {/* END REVISED CARD CONTENT */}
 
                       <div className="flex justify-center w-full mt-6">
-                        <button className="bg-slate-900 text-white font-semibold px-6 py-2 rounded-xl hover:bg-teal-600 hover:shadow-md hover:shadow-teal-500/30 transition-all duration-300 flex items-center justify-center gap-1.5 text-sm group-active:scale-[0.98] w-[80%]">
+                        <button
+                          onClick={() => onViewProfile(doc.doctor_id)}
+                          className="bg-slate-900 text-white font-semibold px-6 py-2 rounded-xl hover:bg-teal-600 hover:shadow-md hover:shadow-teal-500/30 transition-all duration-300 flex items-center justify-center gap-1.5 text-sm group-active:scale-[0.98] w-[80%]"
+                        >
                           View Profile <Stethoscope size={14} className="opacity-70 group-hover:opacity-100" />
                         </button>
                       </div>

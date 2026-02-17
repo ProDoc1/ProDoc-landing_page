@@ -72,7 +72,6 @@ const Navbar = ({
       profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
     },
     doctors: {
-      // YOUR NEW STYLE: This is independent and won't affect Home or Login
       wrapper: `${wrapperWithVisibility} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
       text: "text-slate-800",
       logoBg: "bg-transparent",

@@ -11,6 +11,7 @@ import PatientDashboard from './PatientDashboard';
 import DoctorDashboard from './DoctorDashboard';
 import PrivacyPolicy from './PrivacyPolicy';
 import TermsOfService from './TermsOfService';
+import DoctorViewProfile from './DoctorViewProfile';
 
 // --- MAIN LANDING PAGE COMPONENT ---
 const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms }) => {
@@ -312,6 +313,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
 export default function App() {
    const [currentPage, setCurrentPage] = useState('home');
    const [currentUser, setCurrentUser] = useState(null);
+   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
 
    // --- EFFECT FOR PERSISTENT LOGIN ---
    // This runs once when the component mounts to check for a saved session.
@@ -328,9 +330,12 @@ export default function App() {
       }
    }, []);
 
-   const navigateTo = (page) => {
+   const navigateTo = (page, data = null) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setCurrentPage(page);
+      if (data && page === 'doctor-view') {
+         setSelectedDoctorId(data);
+      }
       // Save current page to local storage
       localStorage.setItem('currentPage', page);
    };
@@ -432,7 +437,19 @@ export default function App() {
          )}
 
          {currentPage === 'doctors' && (
-            <DoctorsPage onBack={() => navigateTo('home')} />
+            <DoctorsPage
+               onBack={() => navigateTo('home')}
+               onViewProfile={(id) => navigateTo('doctor-view', id)}
+            />
+         )}
+
+         {currentPage === 'doctor-view' && (
+            <DoctorViewProfile
+               doctorId={selectedDoctorId}
+               onBack={() => navigateTo('doctors')}
+               currentUser={currentUser}
+               onLogout={handleLogout}
+            />
          )}
 
          {currentPage === 'dashboard' && (

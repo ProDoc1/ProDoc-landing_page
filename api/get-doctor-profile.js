@@ -13,13 +13,33 @@ export default async function handler(req, res) {
 
     try {
         const { rows } = await sql`
-      SELECT doctor_id as id, full_name as name, contact_email as email, specialty, slmc_number as "slmcNumber", image_url
+      SELECT 
+        doctor_id as id, 
+        full_name, 
+        contact_email as email, 
+        specialty, 
+        slmc_number, 
+        image_url, 
+        department_type, 
+        working_hospital as "working_hosptial",
+        associated_hospitals,
+        years_of_experience,
+        bio
       FROM doctors 
       WHERE doctor_id = ${id};
     `;
 
         if (rows.length > 0) {
-            return res.status(200).json(rows[0]);
+            // Ensure associated_hospitals is parsed if it's stored as a string
+            const doctorData = rows[0];
+            if (typeof doctorData.associated_hospitals === 'string') {
+                try {
+                    doctorData.associated_hospitals = JSON.parse(doctorData.associated_hospitals);
+                } catch (e) {
+                    doctorData.associated_hospitals = [];
+                }
+            }
+            return res.status(200).json(doctorData);
         } else {
             return res.status(404).json({ error: 'Doctor not found' });
         }
