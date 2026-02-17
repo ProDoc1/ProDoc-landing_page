@@ -24,7 +24,9 @@ export default async function handler(req, res) {
         working_hospital as "working_hosptial",
         associated_hospitals,
         years_of_experience,
-        bio
+        bio,
+        second_opinion_available,
+        second_opinion_dates
       FROM doctors 
       WHERE doctor_id = ${id};
     `;

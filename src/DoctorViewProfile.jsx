@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     ShieldCheck,
-    MapPin,
     Star,
-    Clock,
     Stethoscope,
     Building2,
     Award,
@@ -12,11 +10,8 @@ import {
     ChevronLeft,
     Share2,
     Heart,
-    Mail,
-    Phone,
     ArrowLeft
 } from 'lucide-react';
-import Navbar from './components/Navbar';
 import Plasma from './components/Plasma';
 
 const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout }) => {
@@ -226,39 +221,27 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout }) => {
                                     <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
                                         <h3 className="text-2xl font-bold mb-6 relative z-10">Second Opinion</h3>
-                                        <div className="space-y-4 relative z-10">
-                                            <div className="flex items-center gap-4 bg-white/10 p-4 rounded-2xl border border-white/10">
-                                                <Calendar className="text-teal-400" size={24} />
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-teal-400 uppercase tracking-widest">Availability</p>
-                                                    <p className="font-bold">{doctor.availability || 'Not Available'}</p>
+                                        {doctor.second_opinion_available ? (
+                                            <div className="space-y-4 relative z-10">
+                                                <div className="flex items-center gap-4 bg-white/10 p-4 rounded-2xl border border-white/10">
+                                                    <Calendar className="text-teal-400" size={24} />
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-teal-400 uppercase tracking-widest">Availability</p>
+                                                        <p className="font-bold">{doctor.second_opinion_dates || 'Contact for dates'}</p>
+                                                    </div>
                                                 </div>
+                                                <button className="w-full bg-teal-500 hover:bg-teal-400 text-white font-bold py-5 rounded-2xl transition-all shadow-xl shadow-teal-900/40 hover:scale-[1.02] active:scale-[0.98]">
+                                                    Request Second Opinion
+                                                </button>
+                                                <p className="text-center text-xs text-slate-400 font-medium">Verified patients only</p>
                                             </div>
-                                            <button className="w-full bg-teal-500 hover:bg-teal-400 text-white font-bold py-5 rounded-2xl transition-all shadow-xl shadow-teal-900/40 hover:scale-[1.02] active:scale-[0.98]">
-                                                Request Second Opinion
-                                            </button>
-                                            <p className="text-center text-xs text-slate-400 font-medium">Verified patients only</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-lg">
-                                        <h3 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                            <Clock size={18} className="text-teal-500" /> Working Hours
-                                        </h3>
-                                        <ul className="space-y-4">
-                                            <li className="flex items-center justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Mon - Fri</span>
-                                                <span className="font-bold text-slate-900">04:00 PM - 08:00 PM</span>
-                                            </li>
-                                            <li className="flex items-center justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Saturday</span>
-                                                <span className="font-bold text-slate-900">09:00 AM - 01:00 PM</span>
-                                            </li>
-                                            <li className="flex items-center justify-between text-sm">
-                                                <span className="text-slate-500 font-medium">Sunday</span>
-                                                <span className="text-red-400 font-bold uppercase text-[10px]">Closed</span>
-                                            </li>
-                                        </ul>
+                                        ) : (
+                                            <div className="relative z-10 py-8 px-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                                <p className="text-teal-400 font-medium italic text-sm">
+                                                    This specialist is currently not available for second opinions.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
