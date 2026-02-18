@@ -36,7 +36,9 @@ export default async function handler(req, res) {
       user_type: body.userType ?? body.user_type,
       image_url: body.image_url ?? body.image_URL ?? body.imageURL,
       associated_hospital: body.associated_hospital ?? body.assoiated_hospital ?? body.associatedHospital,
-      bio: body.bio
+      bio: body.bio,
+      second_opinion_available: body.secondOpinionAvailable ?? body.second_opinion_available,
+      second_opinion_dates: body.secondOpinionDates ?? body.second_opinion_dates,
     };
 
     // Helper to check column exists in 'doctors' table
@@ -91,6 +93,12 @@ export default async function handler(req, res) {
     }
     if (fields.bio !== undefined && await columnExists('bio')) {
       await sql`UPDATE doctors SET bio = ${fields.bio} WHERE doctor_id = ${id}`;
+    }
+    if (fields.second_opinion_available !== undefined && await columnExists('second_opinion_available')) {
+      await sql`UPDATE doctors SET second_opinion_available = ${fields.second_opinion_available} WHERE doctor_id = ${id}`;
+    }
+    if (fields.second_opinion_dates !== undefined && await columnExists('second_opinion_dates')) {
+      await sql`UPDATE doctors SET second_opinion_dates = ${fields.second_opinion_dates} WHERE doctor_id = ${id}`;
     }
 
     // Return refreshed doctor record with consistent field names
