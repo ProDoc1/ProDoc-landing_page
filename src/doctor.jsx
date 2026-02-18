@@ -4,7 +4,7 @@ import {
   ArrowLeft, Search, MapPin, Star, ShieldCheck,
   Clock, Stethoscope, Facebook, Instagram,
   Linkedin, Mail, Phone, Filter, ChevronDown,
-  X
+  X, FileText
 } from 'lucide-react';
 
 // --- Variants ---
@@ -30,7 +30,8 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
     specialty: 'All',
     hospitalSearch: '',
     gender: 'All',
-    availability: 'All'
+    availability: 'All',
+    secondOpinion: false
   });
 
   const specRef = useRef(null);
@@ -140,7 +141,10 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
     const gender = doc?.gender || '';
     const matchesGender = filters.gender === 'All' || gender === filters.gender;
 
-    return matchesSearch && matchesSpecialty && matchesHospital && matchesAvailability && matchesGender;
+    // Filter by Second Opinion
+    const matchesSecondOpinion = !filters.secondOpinion || doc.second_opinion_available === true;
+
+    return matchesSearch && matchesSpecialty && matchesHospital && matchesAvailability && matchesGender && matchesSecondOpinion;
   });
 
   const highlightMatch = (text, query) => {
@@ -206,7 +210,7 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
                 </h2>
                 <button
                   onClick={() => {
-                    setFilters({ specialty: 'All', hospitalSearch: '', gender: 'All', availability: 'All' });
+                    setFilters({ specialty: 'All', hospitalSearch: '', gender: 'All', availability: 'All', secondOpinion: false });
                     setSearchQuery('');
                   }}
                   className="text-xs font-bold text-teal-600 hover:text-teal-700 hover:underline transition-all"
@@ -301,6 +305,24 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
                     )}
                   </AnimatePresence>
                 </div>
+              </div>
+
+
+
+              {/* Second Opinion Filter */}
+              <div className="mb-8">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <FileText size={14} /> Second Opinion
+                  </h4>
+                  <button
+                    onClick={() => setFilters({ ...filters, secondOpinion: !filters.secondOpinion })}
+                    className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${filters.secondOpinion ? 'bg-teal-500' : 'bg-slate-200'}`}
+                  >
+                    <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${filters.secondOpinion ? 'translate-x-6' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 font-medium">Show only specialists accepting remote consultations</p>
               </div>
 
               {/* Department Type */}
@@ -543,7 +565,7 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
           <p>© {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
         </div>
       </footer>
-    </div>
+    </div >
   );
 };
 

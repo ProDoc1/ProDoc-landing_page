@@ -19,7 +19,7 @@ import {
   Menu,
   Loader2 // Imported Loader icon for saving state
 } from 'lucide-react';
-import Navbar from './components/Navbar'; 
+import Navbar from './components/Navbar';
 import Plasma from './components/Plasma';
 import LogoColor from './assets/Logo_with_words.png';
 import DoctorImg from './assets/doctor.png';
@@ -45,6 +45,9 @@ const DoctorDashboard = ({
   // Save Data State (New)
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
+
+  // Separate state for Available Dates save feedback
+  const [dateSaveStatus, setDateSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
 
   // Password Change State
   const [passwordForm, setPasswordForm] = useState({ new: '', confirm: '' });
@@ -77,6 +80,13 @@ const DoctorDashboard = ({
         languages: user.languages || prev.languages,
         image: user.image_url || prev.image
       }));
+      // Also update second opinion state if present in user prop (though likely not)
+      if (user.second_opinion_available !== undefined) {
+        setIsSecondOpinionEnabled(user.second_opinion_available);
+      }
+      if (user.second_opinion_dates) {
+        setAvailability(user.second_opinion_dates);
+      }
     }
   }, [user]);
 
@@ -86,7 +96,8 @@ const DoctorDashboard = ({
 
     if (role !== 'doctor') {
       onLogout();
-    } else if (!user && doctorId) {
+    } else if (doctorId) {
+      // Always fetch latest profile to get second opinion settings
       fetch(`/api/get-doctor-profile?id=${doctorId}`)
         .then(res => res.json())
         .then(data => {
@@ -103,6 +114,13 @@ const DoctorDashboard = ({
               languages: data.languages || prev.languages,
               image: data.image_url || prev.image
             }));
+            // Initialize Second Opinion state from fetched data
+            if (data.second_opinion_available !== undefined) {
+              setIsSecondOpinionEnabled(data.second_opinion_available);
+            }
+            if (data.second_opinion_dates) {
+              setAvailability(data.second_opinion_dates);
+            }
           }
         })
         .catch(err => console.error("Error fetching doctor profile:", err));
@@ -207,6 +225,39 @@ const DoctorDashboard = ({
         setLocalUser(prev => ({ ...prev, image: reader.result }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const updateSecondOpinionSettings = async (updates) => {
+    try {
+      const response = await fetch('/api/update-doctor-profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: localUser.id,
+          ...updates
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update second opinion settings");
+      }
+      return true;
+    } catch (error) {
+      console.error("Error updating second opinion settings:", error);
+      return false;
+    }
+  };
+
+  const handleDateSave = async () => {
+    setDateSaveStatus('saving');
+    const success = await updateSecondOpinionSettings({ second_opinion_dates: availability });
+    if (success) {
+      setDateSaveStatus('success');
+      setTimeout(() => setDateSaveStatus('idle'), 2000);
+    } else {
+      setDateSaveStatus('error');
+      setTimeout(() => setDateSaveStatus('idle'), 3000);
     }
   };
 
@@ -384,7 +435,11 @@ const DoctorDashboard = ({
                         </p>
                       </div>
                       <button
-                        onClick={() => setIsSecondOpinionEnabled(!isSecondOpinionEnabled)}
+                        onClick={() => {
+                          const newValue = !isSecondOpinionEnabled;
+                          setIsSecondOpinionEnabled(newValue);
+                          updateSecondOpinionSettings({ second_opinion_available: newValue });
+                        }}
                         className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
                       >
                         <div
@@ -409,8 +464,27 @@ const DoctorDashboard = ({
                               placeholder="e.g. Mon, Wed, Fri"
                             />
                           </div>
-                          <button className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            Save
+                          <button
+                            onClick={handleDateSave}
+                            disabled={dateSaveStatus === 'saving'}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 min-w-[80px] justify-center ${dateSaveStatus === 'success'
+                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                              : dateSaveStatus === 'error'
+                                ? 'bg-red-500 text-white hover:bg-red-600'
+                                : 'bg-teal-500 hover:bg-teal-600 text-white'
+                              } ${dateSaveStatus === 'saving' ? 'opacity-70 cursor-wait' : ''}`}
+                          >
+                            {dateSaveStatus === 'saving' ? (
+                              <Loader2 className="animate-spin" size={16} />
+                            ) : dateSaveStatus === 'success' ? (
+                              <>
+                                <CheckCircle size={16} /> Saved
+                              </>
+                            ) : dateSaveStatus === 'error' ? (
+                              'Retry'
+                            ) : (
+                              'Save'
+                            )}
                           </button>
                         </div>
                         <p className="text-xs text-slate-400 mt-2">These are the dates patients see when booking.</p>
@@ -490,8 +564,8 @@ const DoctorDashboard = ({
           <div className="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-xl font-bold text-slate-800">Edit Profile</h3>
-              <button 
-                onClick={() => setIsEditingProfile(false)} 
+              <button
+                onClick={() => setIsEditingProfile(false)}
                 disabled={isSaving}
                 className="p-2 hover:bg-slate-200 rounded-full transition-colors"
               >
@@ -544,9 +618,9 @@ const DoctorDashboard = ({
 
               <div className="pt-2 flex gap-3">
                 <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors" disabled={isSaving}>Cancel</button>
-                <button 
-                  type="submit" 
-                  disabled={isSaving} 
+                <button
+                  type="submit"
+                  disabled={isSaving}
                   className="flex-1 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (

@@ -263,17 +263,19 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
                             </p>
 
                             <div className="space-y-4 relative z-10 mt-6">
-                                <div className="bg-white backdrop-blur-md rounded-[1.5rem] p-4 border border-white/10 shadow-inner">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2.5 bg-teal-500 rounded-xl text-white shadow-lg shadow-teal-500/20">
-                                            <Calendar size={18} />
-                                        </div>
-                                        <div className="text-white">
-                                            <p className="text-[9px] font-black text-teal-500 uppercase tracking-widest">Availability</p>
-                                            <p className="font-bold text-slate-900">{doctor.second_opinion_dates || 'Currently Unavailable'}</p>
+                                {doctor.second_opinion_available && (
+                                    <div className="bg-white backdrop-blur-md rounded-[1.5rem] p-4 border border-white/10 shadow-inner">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2.5 bg-teal-500 rounded-xl text-white shadow-lg shadow-teal-500/20">
+                                                <Calendar size={18} />
+                                            </div>
+                                            <div className="text-white">
+                                                <p className="text-[9px] font-black text-teal-500 uppercase tracking-widest">Availability</p>
+                                                <p className="font-bold text-slate-900">{doctor.second_opinion_dates || 'Contact for details'}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {doctor.second_opinion_available ? (
                                     <div className="space-y-3">
