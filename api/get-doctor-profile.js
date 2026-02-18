@@ -21,12 +21,13 @@ export default async function handler(req, res) {
         slmc_number, 
         image_url, 
         department_type, 
-        working_hospital as "working_hosptial",
         associated_hospitals,
         years_of_experience,
         bio,
         second_opinion_available,
-        second_opinion_dates
+        second_opinion_dates,
+        languages,
+        educational_qualifications
       FROM doctors 
       WHERE doctor_id = ${id};
     `;

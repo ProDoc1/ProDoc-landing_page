@@ -25,19 +25,20 @@ const Navbar = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [hideNavbar, setHideNavbar] = useState(false);
+
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       setScrolled(currentScrollY > 20);
 
-      if (currentPage === 'doctor') {
+      if (currentPage === 'doctor-view') {
         if (currentScrollY > lastScrollY && currentScrollY > 100) {
-          setIsVisible(false);
+          setHideNavbar(true);
         } else {
-          setIsVisible(true);
+          setHideNavbar(false);
         }
         setLastScrollY(currentScrollY);
       }
@@ -45,14 +46,11 @@ const Navbar = ({
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY, currentPage]);
+  }, [scrolled]);
 
   const baseWrapper = "fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 rounded-2xl transition-all duration-300 border";
 
-  // Logic to hide/show navbar on doctor page scroll
-  const wrapperWithVisibility = currentPage === 'doctor' && !isVisible
-    ? `${baseWrapper} -translate-y-32`
-    : baseWrapper;
+  const wrapperWithVisibility = baseWrapper;
 
   const theme = {
     home: {
@@ -106,6 +104,16 @@ const Navbar = ({
       tubelightBg: "#14B8A6",
       tubelightText: "text-white",
       profileBtn: "bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100",
+    },
+    'doctor-view': {
+      wrapper: `${wrapperWithVisibility} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
+      text: "text-slate-800",
+      logoBg: "bg-transparent",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
     }
   };
 
@@ -123,14 +131,14 @@ const Navbar = ({
   const isDoctor = userRole === 'doctor' || currentUser?.user_type === 'doctor' || currentUser?.role === 'doctor';
 
   return (
-    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3`}>
+    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-transform duration-300 ${currentPage === 'doctor-view' && hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
       <div className="flex items-center justify-between">
 
         {/* Logo Section */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={onNavigateHome}>
-          <div className={`p-0 group-hover:scale-105 transition-transform rounded-lg ${currentPage === 'doctor' ? currentStyle.logoBg : ''}`}>
+          <div className={`p-0 group-hover:scale-105 transition-transform rounded-lg ${currentPage === 'doctors' || currentPage === 'doctor-view' ? currentStyle.logoBg : ''}`}>
             <img
-              src={currentPage === 'home' || currentPage === 'doctor' ? LogoWhite : LogoColor}
+              src={currentPage === 'home' ? LogoWhite : LogoColor}
               alt="ProDoc"
               className="h-12 md:h-16 lg:h-20 object-contain w-auto"
             />
