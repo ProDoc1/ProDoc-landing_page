@@ -12,6 +12,7 @@ import DoctorDashboard from './DoctorDashboard';
 import PrivacyPolicy from './PrivacyPolicy';
 import TermsOfService from './TermsOfService';
 import DoctorViewProfile from './DoctorViewProfile';
+import ContentHub from './ContentHub';
 
 // --- MAIN LANDING PAGE COMPONENT ---
 const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms }) => {
@@ -396,6 +397,7 @@ export default function App() {
                   const role = localStorage.getItem('userRole');
                   navigateTo(role === 'doctor' ? 'doctor-dashboard' : 'dashboard');
                }}
+               onNavigateContentHub={() => navigateTo('content-hub')}
             />
          )}
 
@@ -474,6 +476,12 @@ export default function App() {
                onNavigateDoctors={() => navigateTo('doctors')}
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
+            />
+         )}
+
+         {currentPage === 'content-hub' && (
+            <ContentHub
+               onNavigateHome={() => navigateTo('home')}
             />
          )}
       </main>

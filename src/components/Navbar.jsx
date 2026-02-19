@@ -5,7 +5,8 @@ import {
   Home,
   Users,
   Menu,
-  X
+  X,
+  LayoutGrid
 } from 'lucide-react';
 import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
@@ -20,7 +21,8 @@ const Navbar = ({
   onNavigateDoctors,
   currentUser,
   onLogout,
-  onNavigateDashboard
+  onNavigateDashboard,
+  onNavigateContentHub
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -114,6 +116,15 @@ const Navbar = ({
       tubelightBg: "#14B8A6",
       tubelightText: "text-white",
       profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+    },
+    'content-hub': {
+      wrapper: `${baseWrapper} bg-white/80 backdrop-blur-xl border-slate-200 shadow-sm`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
     }
   };
 
@@ -123,6 +134,7 @@ const Navbar = ({
     { name: 'Home', url: '#', icon: Home, onClick: onNavigateHome },
     { name: 'About Us', url: '#', icon: Users, onClick: onNavigateAbout },
     { name: 'Doctors', url: '#', icon: Stethoscope, onClick: onNavigateDoctors },
+    { name: 'Content Hub', url: '#', icon: LayoutGrid, onClick: onNavigateContentHub },
   ];
 
   const userRole = localStorage.getItem('userRole');
@@ -131,7 +143,7 @@ const Navbar = ({
   const isDoctor = userRole === 'doctor' || currentUser?.user_type === 'doctor' || currentUser?.role === 'doctor';
 
   return (
-    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-transform duration-300 ${currentPage === 'doctor-view' && hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
+    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-transform duration-300 ${currentPage === 'doctor-view' && hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`} >
       <div className="flex items-center justify-between">
 
         {/* Logo Section */}
@@ -318,7 +330,7 @@ const Navbar = ({
           </div>
         )}
       </div>
-    </nav>
+    </nav >
   );
 };
 
