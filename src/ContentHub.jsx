@@ -323,4 +323,3 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin }) => {
 };
 
 export default ContentHub;
-
