@@ -78,11 +78,11 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin }) => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pt-24 pb-8 px-4">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pt-36 pb-8 px-4">
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                 {/* LEFT SIDEBAR - Navigation & Filters */}
-                <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-28 h-fit">
+                <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-36 h-fit">
                     <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                         <div className="flex flex-col gap-2">
                             {['For You', 'Following', 'Popular', 'Saved'].map(tab => (
@@ -90,8 +90,8 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin }) => {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`text-left px-4 py-3 rounded-xl font-bold transition-all flex items-center gap-3 ${activeTab === tab
-                                            ? 'bg-teal-50 text-teal-700'
-                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                                        ? 'bg-teal-50 text-teal-700'
+                                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
                                         }`}
                                 >
                                     {tab === 'For You' && <Heart size={20} />}
@@ -120,7 +120,7 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin }) => {
                 <main className="lg:col-span-6 space-y-6">
 
                     {/* Create Post Input (Mock) */}
-                    <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 flex items-center gap-4 sticky top-36 z-10">
                         <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0" />
                         <input
                             type="text"
@@ -201,7 +201,7 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin }) => {
                 </main>
 
                 {/* RIGHT SIDEBAR - Suggestions */}
-                <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-28 h-fit">
+                <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-36 h-fit">
                     <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                         <h3 className="font-bold text-slate-900 mb-6 px-2">Suggested Doctors</h3>
                         <div className="space-y-4">
