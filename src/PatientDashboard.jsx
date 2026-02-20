@@ -716,6 +716,12 @@ const PatientDashboard = ({
 
           <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
             <button
+              onClick={() => setActiveTab('profile')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              <User size={20} /> View Profile
+            </button>
+            <button
               onClick={() => setActiveTab('overview')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
             >
@@ -739,12 +745,7 @@ const PatientDashboard = ({
                 {reports.length}
               </span>
             </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <User size={20} /> View Profile
-            </button>
+            
             <button
               onClick={() => setActiveTab('secondOpinion')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'secondOpinion' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
