@@ -27,10 +27,7 @@ export default async function handler(req, res) {
         second_opinion_available,
         second_opinion_dates,
         languages,
-        languages,
-        educational_qualifications,
-        (SELECT COALESCE(AVG(overall), 0) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status IS NULL)) as average_rating,
-        (SELECT COUNT(*) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status IS NULL)) as rating_count
+        educational_qualifications
       FROM doctors 
       WHERE doctor_id = ${id};
     `;

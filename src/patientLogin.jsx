@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   HelpCircle,
   Mail,
@@ -14,7 +14,6 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
-import GoogleIcon from './components/GoogleIcon';
 
 // --- IMPORTS ---
 import LogoColor from './assets/Logo_with_words.png';
@@ -34,53 +33,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // --- GOOGLE LOGIN (OAUTH2 POPUP) ---
-  const handleGoogleToken = (accessToken) => {
-    setLoading(true);
-    fetch('/api/google-callback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: accessToken, role: userType })
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          localStorage.setItem('userRole', userType);
-          if (data.user && data.user.id) {
-            localStorage.setItem(userType === 'doctor' ? 'doctorId' : 'patientId', data.user.id);
-          }
-          onLoginSuccess(data.user, userType);
-        } else {
-          setErrorAlert({ show: true, message: data.error || "Google login failed." });
-        }
-      })
-      .catch(err => {
-        console.error("Google Auth Error:", err);
-        setErrorAlert({ show: true, message: "Connection error during Google login." });
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  const handleGoogleLogin = () => {
-    // Use google.accounts.oauth2 for Custom Button (Popup flow)
-    if (window.google && window.google.accounts) {
-      const client = window.google.accounts.oauth2.initTokenClient({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        scope: "email profile openid",
-        callback: (tokenResponse) => {
-          if (tokenResponse && tokenResponse.access_token) {
-            handleGoogleToken(tokenResponse.access_token);
-          }
-        },
-      });
-      client.requestAccessToken();
-    } else {
-      setErrorAlert({ show: true, message: "Google Sign-In is loading. Please try again in a moment." });
-    }
-  };
-
+  // --- LOGIN LOGIC ---
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -427,20 +380,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                         >
                           {loading ? 'Signing In...' : 'Sign In'} <ArrowRight size={18} />
                         </button>
-
-                        <div className="relative my-6">
-                          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
-                          <div className="relative flex justify-center text-xs uppercase"><span className="bg-slate-50 px-2 text-slate-400 font-bold">Or continue with</span></div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={handleGoogleLogin}
-                          className="w-full bg-white border border-slate-200 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-3"
-                        >
-                          <GoogleIcon size={20} />
-                          <span>Google</span>
-                        </button>
                       </form>
 
                       <div className="mt-6 flex flex-col items-center gap-4">
@@ -505,20 +444,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                           className="w-full bg-teal-500 hover:bg-teal-500 text-white font-bold py-3.5 rounded-xl shadow-[0_0_20px_rgba(8,145,178,0.4)] hover:shadow-[0_0_25px_rgba(8,145,178,0.6)] transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 mt-4"
                         >
                           {loading ? 'Authenticating...' : 'Access Dashboard'} <Activity size={18} />
-                        </button>
-
-                        <div className="relative my-6">
-                          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
-                          <div className="relative flex justify-center text-xs uppercase"><span className="bg-slate-50 px-2 text-slate-400 font-bold">Or continue with</span></div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={handleGoogleLogin}
-                          className="w-full bg-white border border-slate-200 text-slate-600 font-bold py-3.5 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-3"
-                        >
-                          <GoogleIcon size={20} />
-                          <span>Google</span>
                         </button>
                       </form>
                     </div>

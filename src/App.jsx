@@ -13,10 +13,8 @@ import PrivacyPolicy from './PrivacyPolicy';
 import TermsOfService from './TermsOfService';
 import DoctorViewProfile from './DoctorViewProfile';
 
-
-
-import AdminDashboard from './AdminDashboard';
-const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms, onNavigateAdmin }) => {
+// --- MAIN LANDING PAGE COMPONENT ---
+const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms }) => {
 
    useEffect(() => {
       document.documentElement.style.scrollBehavior = 'smooth';
@@ -248,7 +246,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                   <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
                   <ul className="space-y-4 text-sm">
                      <li>
-                        <a href="aboutus" onClick={() => onNavigateAbout()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <a href="#" onClick={() => onNavigateAbout()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            About Us
                         </a>
@@ -278,10 +276,8 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                   <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
                   <ul className="space-y-4 text-sm mb-8">
                      <li className="flex items-center gap-3 text-slate-600">
-                        <button onClick={() => onNavigateAdmin()} className="hover:text-teal-600 transition-colors text-left flex items-center gap-3">
-                           <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Mail size={18} /></div>
-                           <span>prdoc2025se06@gmail.com</span>
-                        </button>
+                        <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Mail size={18} /></div>
+                        <span>prdoc2025se06@gmail.com</span>
                      </li>
                      <li className="flex items-center gap-3 text-slate-600">
                         <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Phone size={18} /></div>
@@ -333,10 +329,6 @@ export default function App() {
          }
       }
    }, []);
-
-   // --- EFFECT FOR GOOGLE AUTH CALLBACK (LEGACY - REMOVED) ---
-   // The new Google Sign-In implementation uses a popup flow handled directly in patientLogin.jsx
-   // so we no longer need to process redirects here.
 
    const navigateTo = (page, data = null) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -414,7 +406,6 @@ export default function App() {
                onNavigateAbout={() => navigateTo('about')}
                onNavigatePrivacy={() => navigateTo('privacy')}
                onNavigateTerms={() => navigateTo('terms')}
-               onNavigateAdmin={() => navigateTo('admin')}
             />
          )}
 
@@ -483,12 +474,6 @@ export default function App() {
                onNavigateDoctors={() => navigateTo('doctors')}
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
-            />
-         )}
-
-         {currentPage === 'admin' && (
-            <AdminDashboard
-               onBack={() => navigateTo('home')}
             />
          )}
       </main>
