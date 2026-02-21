@@ -488,15 +488,15 @@ export default function App() {
             />
          )}
 
-<<<<<<< HEAD
          {currentPage === 'content-hub' && (
             <ContentHub
                onNavigateHome={() => navigateTo('home')}
-=======
+            />
+         )}
+
          {currentPage === 'admin' && (
             <AdminDashboard
                onBack={() => navigateTo('home')}
->>>>>>> google-auth
             />
          )}
       </main>

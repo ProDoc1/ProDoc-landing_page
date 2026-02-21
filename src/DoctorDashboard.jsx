@@ -45,9 +45,6 @@ const DoctorDashboard = ({
   // Save Data State (New)
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
-  const [dateSaveStatus, setDateSaveStatus] = useState('idle');
-
-  // Separate state for Available Dates save feedback
   const [dateSaveStatus, setDateSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
 
   // Password Change State
@@ -496,7 +493,6 @@ const DoctorDashboard = ({
                               placeholder="e.g. Mon, Wed, Fri"
                             />
                           </div>
-<<<<<<< HEAD
                           <button
                             onClick={handleDateSave}
                             disabled={dateSaveStatus === 'saving'}
@@ -518,10 +514,6 @@ const DoctorDashboard = ({
                             ) : (
                               'Save'
                             )}
-=======
-                          <button onClick={handleDateSave} disabled={dateSaveStatus === 'saving'} className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            {dateSaveStatus === 'saving' ? 'Saving...' : dateSaveStatus === 'success' ? 'Saved!' : 'Save'}
->>>>>>> google-auth
                           </button>
                         </div>
                         <p className="text-xs text-slate-400 mt-2">These are the dates patients see when booking.</p>
