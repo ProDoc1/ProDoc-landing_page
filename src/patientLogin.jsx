@@ -14,6 +14,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
 // --- IMPORTS ---
 import LogoColor from './assets/Logo_with_words.png';
@@ -32,6 +33,42 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  // --- GOOGLE LOGIN HOOK ---
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/google-callback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: tokenResponse.access_token,
+            role: userType
+          })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          localStorage.setItem('userRole', data.role);
+          if (data.user && data.user.id) {
+            localStorage.setItem(data.role === 'doctor' ? 'doctorId' : 'patientId', data.user.id);
+          }
+          onLoginSuccess(data.user, data.role);
+        } else {
+          setErrorAlert({ show: true, message: data.error || "Google login failed. Please try again." });
+        }
+      } catch (err) {
+        console.error("Google login error:", err);
+        setErrorAlert({ show: true, message: "Connection error with Google Login." });
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: errorResponse => {
+      console.error("Google Login Failed", errorResponse);
+      setErrorAlert({ show: true, message: "Google authorization failed." });
+    },
+  });
 
   // --- LOGIN LOGIC ---
   const handleLogin = async (e) => {
@@ -382,8 +419,17 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                         </button>
                       </form>
 
-                      <div className="mt-6 flex flex-col items-center gap-4">
-                        <p className="text-xs text-slate-500">
+                      <div className="mt-6 flex flex-col items-center gap-4 border-t border-slate-100 pt-6">
+                        <button
+                          type="button"
+                          onClick={() => loginWithGoogle()}
+                          className="w-full bg-white text-slate-700 font-bold py-3.5 rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                        >
+                          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                          Sign in with Google
+                        </button>
+
+                        <p className="text-xs text-slate-500 mt-2">
                           New user? <button onClick={() => onNavigateSignup()} className="text-teal-600 hover:text-teal-500 font-bold underline underline-offset-2">Create Account</button>
                         </p>
                       </div>
@@ -446,6 +492,17 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                           {loading ? 'Authenticating...' : 'Access Dashboard'} <Activity size={18} />
                         </button>
                       </form>
+
+                      <div className="mt-6 flex flex-col items-center gap-4 border-t border-slate-100 pt-6">
+                        <button
+                          type="button"
+                          onClick={() => loginWithGoogle()}
+                          className="w-full bg-white text-slate-700 font-bold py-3.5 rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                        >
+                          <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+                          Sign in with Google
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -556,4 +613,12 @@ const ContactItem = ({ icon, label, value }) => (
   </div>
 );
 
-export default LoginPage;
+export default function LoginPageWrapper(props) {
+  // Use your real Google Client ID here from the .env file
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "10415383182-q66i5k4nbl68erfiv9eopab75sctd6l4.apps.googleusercontent.com";
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      <LoginPage {...props} />
+    </GoogleOAuthProvider>
+  );
+}

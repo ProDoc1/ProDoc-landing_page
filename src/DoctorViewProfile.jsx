@@ -15,8 +15,9 @@ import {
     MapPin,
     GraduationCap
 } from 'lucide-react';
+import DoctorRating from './components/DoctorRating';
 
-const DoctorViewProfile = ({ doctorId, onBack }) => {
+const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout }) => {
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -121,7 +122,7 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
                                         {doctor.image_url ? (
                                             <img
                                                 src={doctor.image_url}
-                                                alt={doctor.full_name}
+                                                alt={doctor.full_name || doctor.name}
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
@@ -138,7 +139,7 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
                                 {/* Profile Header Info */}
                                 <div className="flex-1 text-center md:text-left">
                                     <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-tight tracking-tight mb-4">
-                                        {doctor.full_name}
+                                        {doctor.full_name || doctor.name}
                                     </h1>
 
                                     <div className="flex flex-wrap items-center gap-3 mb-4 justify-center md:justify-start">
@@ -259,7 +260,7 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
 
                             <h3 className="text-3xl text-white font-bold mb-8 relative z-10 tracking-tight leading-tight">Expert Second Opinion</h3>
                             <p className="text-xs text-white leading-relaxed font-medium">
-                                Receive a comprehensive review of your medical status and treatment plan from {doctor.full_name.split(' ').slice(0, 2).join(' ')}.
+                                Receive a comprehensive review of your medical status and treatment plan from {(doctor.full_name || doctor.name || 'Doctor').split(' ').slice(0, 2).join(' ')}.
                             </p>
 
                             <div className="space-y-4 relative z-10 mt-6">
@@ -297,6 +298,15 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Rating and Reviews Section */}
+                <div className="mt-8">
+                    <DoctorRating
+                        doctorId={doctorId}
+                        user={currentUser}
+                        doctorName={doctor?.full_name || doctor?.name}
+                    />
                 </div>
             </div>
         </div>
