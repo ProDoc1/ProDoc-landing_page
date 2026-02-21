@@ -98,7 +98,7 @@ const DoctorDashboard = ({
       onLogout();
     } else if (doctorId) {
       // Always fetch latest profile to get second opinion settings
-      fetch(`/api/get-doctor-profile?id=${doctorId}`)
+      fetch(`/api/doctor?id=${doctorId}`)
         .then(res => res.json())
         .then(data => {
           if (data && !data.error) {
@@ -147,7 +147,7 @@ const DoctorDashboard = ({
       };
 
       // 2. Send request to backend
-      const response = await fetch('/api/update-doctor-profile', {
+      const response = await fetch('/api/doctor', {
         method: 'PUT', // or 'POST' depending on your API
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ const DoctorDashboard = ({
     }
 
     try {
-      const response = await fetch('/api/update-password', {
+      const response = await fetch('/api/auth?action=update-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -261,7 +261,7 @@ const DoctorDashboard = ({
 
   const updateSecondOpinionSettings = async (updates) => {
     try {
-      const response = await fetch('/api/update-doctor-profile', {
+      const response = await fetch('/api/doctor', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
