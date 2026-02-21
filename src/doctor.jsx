@@ -64,7 +64,7 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
     const fetchDoctors = async () => {
       try {
         // Add a timestamp to bypass browser cache
-        const response = await fetch(`/api/get-doctors?t=${Date.now()}`);
+        const response = await fetch(`/api/doctor?t=${Date.now()}`);
         if (!response.ok) throw new Error("API Error");
         const data = await response.json();
 
@@ -398,7 +398,9 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
                               </h1>
                               <div className="flex items-center gap-1.5 shrink-0 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
                                 <Star size={12} className="fill-amber-400 text-amber-400" />
-                                <span className="text-xs font-bold text-amber-700">4.9</span>
+                                <span className="text-xs font-bold text-amber-700">
+                                  {doc.average_rating > 0 ? Number(doc.average_rating).toFixed(1) : 'New'}
+                                </span>
                               </div>
                             </div>
                             <p className="text-teal-600 text-xs font-bold uppercase tracking-wider mb-4">

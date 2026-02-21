@@ -19,7 +19,7 @@ import {
   Menu,
   Loader2 // Imported Loader icon for saving state
 } from 'lucide-react';
-import Navbar from './components/Navbar'; 
+import Navbar from './components/Navbar';
 import Plasma from './components/Plasma';
 import LogoColor from './assets/Logo_with_words.png';
 import DoctorImg from './assets/doctor.png';
@@ -45,6 +45,7 @@ const DoctorDashboard = ({
   // Save Data State (New)
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
+  const [dateSaveStatus, setDateSaveStatus] = useState('idle');
 
   // Password Change State
   const [passwordForm, setPasswordForm] = useState({ new: '', confirm: '' });
@@ -86,8 +87,9 @@ const DoctorDashboard = ({
 
     if (role !== 'doctor') {
       onLogout();
-    } else if (!user && doctorId) {
-      fetch(`/api/get-doctor-profile?id=${doctorId}`)
+    } else if (doctorId) {
+      // Always fetch latest profile to get second opinion settings
+      fetch(`/api/doctor?id=${doctorId}`)
         .then(res => res.json())
         .then(data => {
           if (data && !data.error) {
@@ -129,7 +131,7 @@ const DoctorDashboard = ({
       };
 
       // 2. Send request to backend
-      const response = await fetch('/api/update-doctor-profile', {
+      const response = await fetch('/api/doctor', {
         method: 'PUT', // or 'POST' depending on your API
         headers: {
           'Content-Type': 'application/json',
@@ -178,7 +180,7 @@ const DoctorDashboard = ({
     }
 
     try {
-      const response = await fetch('/api/update-password', {
+      const response = await fetch('/api/auth?action=update-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -207,6 +209,39 @@ const DoctorDashboard = ({
         setLocalUser(prev => ({ ...prev, image: reader.result }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const updateSecondOpinionSettings = async (updates) => {
+    try {
+      const response = await fetch('/api/doctor', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: localUser.id,
+          ...updates
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update second opinion settings");
+      }
+      return true;
+    } catch (error) {
+      console.error("Error updating second opinion settings:", error);
+      return false;
+    }
+  };
+
+  const handleDateSave = async () => {
+    setDateSaveStatus('saving');
+    const success = await updateSecondOpinionSettings({ second_opinion_dates: availability });
+    if (success) {
+      setDateSaveStatus('success');
+      setTimeout(() => setDateSaveStatus('idle'), 2000);
+    } else {
+      setDateSaveStatus('error');
+      setTimeout(() => setDateSaveStatus('idle'), 3000);
     }
   };
 
@@ -409,8 +444,8 @@ const DoctorDashboard = ({
                               placeholder="e.g. Mon, Wed, Fri"
                             />
                           </div>
-                          <button className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            Save
+                          <button onClick={handleDateSave} disabled={dateSaveStatus === 'saving'} className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            {dateSaveStatus === 'saving' ? 'Saving...' : dateSaveStatus === 'success' ? 'Saved!' : 'Save'}
                           </button>
                         </div>
                         <p className="text-xs text-slate-400 mt-2">These are the dates patients see when booking.</p>
@@ -490,8 +525,8 @@ const DoctorDashboard = ({
           <div className="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-xl font-bold text-slate-800">Edit Profile</h3>
-              <button 
-                onClick={() => setIsEditingProfile(false)} 
+              <button
+                onClick={() => setIsEditingProfile(false)}
                 disabled={isSaving}
                 className="p-2 hover:bg-slate-200 rounded-full transition-colors"
               >
@@ -544,9 +579,9 @@ const DoctorDashboard = ({
 
               <div className="pt-2 flex gap-3">
                 <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors" disabled={isSaving}>Cancel</button>
-                <button 
-                  type="submit" 
-                  disabled={isSaving} 
+                <button
+                  type="submit"
+                  disabled={isSaving}
                   className="flex-1 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isSaving ? (

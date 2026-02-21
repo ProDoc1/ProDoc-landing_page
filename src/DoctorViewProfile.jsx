@@ -15,8 +15,9 @@ import {
     MapPin,
     GraduationCap
 } from 'lucide-react';
+import DoctorRating from './components/DoctorRating';
 
-const DoctorViewProfile = ({ doctorId, onBack }) => {
+const DoctorViewProfile = ({ doctorId, onBack, currentUser }) => {
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -25,7 +26,7 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
         const fetchDoctorProfile = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/get-doctor-profile?id=${doctorId}`);
+                const response = await fetch(`/api/doctor?id=${doctorId}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch doctor profile');
                 }
@@ -179,8 +180,11 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Patient Rating</p>
                                     <div className="flex items-center justify-center gap-1.5 mb-0.5 text-xl font-black text-slate-900">
                                         <Star size={16} className="fill-amber-400 text-amber-400" />
-                                        4.9
+                                        {doctor.average_rating > 0 ? Number(doctor.average_rating).toFixed(1) : 'New'}
                                     </div>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase">
+                                        {doctor.rating_count > 0 ? `${doctor.rating_count} Reviews` : 'No Reviews'}
+                                    </p>
                                 </div>
                                 <div className="bg-slate-50/50 backdrop-blur-sm border border-slate-100 rounded-[1.5rem] p-4 text-center group hover:bg-white hover:shadow-md transition-all">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Practice</p>
@@ -234,6 +238,10 @@ const DoctorViewProfile = ({ doctorId, onBack }) => {
                                 )}
                             </div>
                         </section>
+
+                        {currentUser && (
+                            <DoctorRating doctorId={doctorId} user={currentUser} doctorName={doctor.full_name} />
+                        )}
                     </div>
 
                     {/* Right Side: Appointment & Second Opinion */}
