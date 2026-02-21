@@ -27,8 +27,15 @@ export default async function handler(req, res) {
         second_opinion_available,
         second_opinion_dates,
         languages,
+<<<<<<< HEAD
         working_hospital as location,
         educational_qualifications
+=======
+        languages,
+        educational_qualifications,
+        (SELECT COALESCE(AVG(overall), 0) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status IS NULL)) as average_rating,
+        (SELECT COUNT(*) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status IS NULL)) as rating_count
+>>>>>>> google-auth
       FROM doctors 
       WHERE doctor_id = ${id};
     `;
