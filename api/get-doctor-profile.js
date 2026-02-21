@@ -15,10 +15,10 @@ export default async function handler(req, res) {
         const { rows } = await sql`
       SELECT 
         doctor_id as id, 
-        full_name, 
+        full_name as name, 
         contact_email as email, 
         specialty, 
-        slmc_number, 
+        slmc_number as "slmcNumber", 
         image_url, 
         department_type, 
         associated_hospitals,
@@ -27,6 +27,7 @@ export default async function handler(req, res) {
         second_opinion_available,
         second_opinion_dates,
         languages,
+        working_hospital as location,
         educational_qualifications
       FROM doctors 
       WHERE doctor_id = ${id};

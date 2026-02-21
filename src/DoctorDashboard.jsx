@@ -61,8 +61,8 @@ const DoctorDashboard = ({
     specialty: user?.specialty,
     bio: user?.bio,
     slmcNumber: user?.slmcNumber,
-    location: 'Colombo, Sri Lanka',
-    languages: 'English, Sinhala',
+    location: user?.location ?? '',
+    languages: user?.languages ?? '',
     image: user?.image_url || DoctorImg
   });
 
@@ -76,7 +76,7 @@ const DoctorDashboard = ({
         specialty: user.specialty || prev.specialty,
         bio: user.bio || prev.bio,
         slmcNumber: user.slmcNumber || prev.slmcNumber,
-        location: user.location || prev.location,
+        location: user.location ?? prev.location,
         languages: user.languages || prev.languages,
         image: user.image_url || prev.image
       }));
@@ -105,14 +105,14 @@ const DoctorDashboard = ({
             setLocalUser(prev => ({
               ...prev,
               id: doctorId,
-              fullName: data.name || prev.fullName,
-              email: data.email || prev.email,
-              specialty: data.specialty || prev.specialty,
-              bio: data.bio || prev.bio,
-              slmcNumber: data.slmcNumber || prev.slmcNumber,
-              location: data.location || prev.location,
-              languages: data.languages || prev.languages,
-              image: data.image_url || prev.image
+              fullName: data.name ?? prev.fullName,
+              email: data.email ?? prev.email,
+              specialty: data.specialty ?? prev.specialty,
+              bio: data.bio ?? prev.bio,
+              slmcNumber: data.slmcNumber ?? prev.slmcNumber,
+              location: data.location ?? prev.location,
+              languages: data.languages ?? prev.languages,
+              image: data.image_url ?? prev.image
             }));
             // Initialize Second Opinion state from fetched data
             if (data.second_opinion_available !== undefined) {
@@ -167,8 +167,39 @@ const DoctorDashboard = ({
       }
 
       if (response.ok) {
-        setSaveStatus({ type: 'success', message: data?.message || 'Profile updated successfully!' });
+        const doctor = data?.doctor;
+        // Sync UI from server so we don't show success until state matches DB; avoid overwriting with stale prev when server sends null/empty
+        const syncFromDoctor = (doc) => {
+          const has = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+          setLocalUser(prev => ({
+            ...prev,
+            fullName: has(doc, 'name') ? (doc.name ?? '') : prev.fullName,
+            email: has(doc, 'email') ? (doc.email ?? '') : prev.email,
+            specialty: has(doc, 'specialty') ? (doc.specialty ?? '') : prev.specialty,
+            slmcNumber: has(doc, 'slmcNumber') ? (doc.slmcNumber ?? '') : prev.slmcNumber,
+            bio: has(doc, 'bio') ? (doc.bio ?? '') : prev.bio,
+            location: has(doc, 'location') ? (doc.location ?? '') : prev.location,
+            languages: has(doc, 'languages') ? (doc.languages ?? '') : prev.languages,
+            image: has(doc, 'image_url') ? (doc.image_url ?? prev.image) : prev.image
+          }));
+        };
 
+        if (doctor) {
+          syncFromDoctor(doctor);
+          setSaveStatus({ type: 'success', message: data?.message || 'Profile updated successfully!' });
+        } else {
+          // API didn't return doctor; refetch so UI stays in sync
+          try {
+            const refetchRes = await fetch(`/api/get-doctor-profile?id=${localUser.id}`);
+            const refetchData = refetchRes.ok ? await refetchRes.json() : null;
+            if (refetchData && !refetchData.error) {
+              syncFromDoctor({ name: refetchData.name, email: refetchData.email, specialty: refetchData.specialty, slmcNumber: refetchData.slmcNumber, bio: refetchData.bio, location: refetchData.location, languages: refetchData.languages, image_url: refetchData.image_url });
+            }
+          } catch (refetchErr) {
+            console.warn('Profile saved but refetch failed:', refetchErr);
+          }
+          setSaveStatus({ type: 'success', message: 'Profile updated. If you don\'t see changes, refresh the page.' });
+        }
         // Close modal after delay
         setTimeout(() => {
           setIsEditingProfile(false);

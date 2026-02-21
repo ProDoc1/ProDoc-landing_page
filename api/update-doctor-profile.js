@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       specialty: body.specialty,
       gender: body.gender,
       department_type: body.departmentType ?? body.department_type,
-      working_hospital: body.workingHospital ?? body.working_hospital ?? body['working hospital'],
+      working_hospital: body.workingHospital ?? body.working_hospital ?? body['working hospital'] ?? body.location,
       contact_email: body.contactEmail ?? body.contact_email,
       years_of_experience: body.yearsOfExperience ?? body.years_of_experience ?? body.years_of_experince,
       password: body.password,
@@ -37,6 +37,7 @@ export default async function handler(req, res) {
       image_url: body.image_url ?? body.image_URL ?? body.imageURL,
       associated_hospital: body.associated_hospital ?? body.assoiated_hospital ?? body.associatedHospital,
       bio: body.bio,
+      languages: body.languages,
       second_opinion_available: body.secondOpinionAvailable ?? body.second_opinion_available,
       second_opinion_dates: body.secondOpinionDates ?? body.second_opinion_dates,
     };
@@ -94,6 +95,9 @@ export default async function handler(req, res) {
     if (fields.bio !== undefined && await columnExists('bio')) {
       await sql`UPDATE doctors SET bio = ${fields.bio} WHERE doctor_id = ${id}`;
     }
+    if (fields.languages !== undefined && await columnExists('languages')) {
+      await sql`UPDATE doctors SET languages = ${fields.languages} WHERE doctor_id = ${id}`;
+    }
     if (fields.second_opinion_available !== undefined && await columnExists('second_opinion_available')) {
       await sql`UPDATE doctors SET second_opinion_available = ${fields.second_opinion_available} WHERE doctor_id = ${id}`;
     }
@@ -103,7 +107,7 @@ export default async function handler(req, res) {
 
     // Return refreshed doctor record with consistent field names
     const updatedRes = await sql`
-      SELECT doctor_id as id, full_name as name, contact_email as email, specialty, slmc_number as "slmcNumber", image_url, bio
+      SELECT doctor_id as id, full_name as name, contact_email as email, specialty, slmc_number as "slmcNumber", image_url, bio, working_hospital as location, languages
       FROM doctors WHERE doctor_id = ${id}
     `;
     const updated = updatedRes?.rows ? updatedRes.rows[0] : updatedRes[0];
