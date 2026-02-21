@@ -64,7 +64,7 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
     const fetchDoctors = async () => {
       try {
         // Add a timestamp to bypass browser cache
-        const response = await fetch(`/api/get-doctors?t=${Date.now()}`);
+        const response = await fetch(`/api/doctor?t=${Date.now()}`);
         if (!response.ok) throw new Error("API Error");
         const data = await response.json();
 

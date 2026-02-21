@@ -86,8 +86,14 @@ const DoctorDashboard = ({
 
     if (role !== 'doctor') {
       onLogout();
+<<<<<<< Updated upstream
     } else if (!user && doctorId) {
       fetch(`/api/get-doctor-profile?id=${doctorId}`)
+=======
+    } else if (doctorId) {
+      // Always fetch latest profile to get second opinion settings
+      fetch(`/api/doctor?id=${doctorId}`)
+>>>>>>> Stashed changes
         .then(res => res.json())
         .then(data => {
           if (data && !data.error) {
@@ -129,7 +135,7 @@ const DoctorDashboard = ({
       };
 
       // 2. Send request to backend
-      const response = await fetch('/api/update-doctor-profile', {
+      const response = await fetch('/api/doctor', {
         method: 'PUT', // or 'POST' depending on your API
         headers: {
           'Content-Type': 'application/json',
@@ -178,7 +184,7 @@ const DoctorDashboard = ({
     }
 
     try {
-      const response = await fetch('/api/update-password', {
+      const response = await fetch('/api/auth?action=update-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -210,6 +216,42 @@ const DoctorDashboard = ({
     }
   };
 
+<<<<<<< Updated upstream
+=======
+  const updateSecondOpinionSettings = async (updates) => {
+    try {
+      const response = await fetch('/api/doctor', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: localUser.id,
+          ...updates
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update second opinion settings");
+      }
+      return true;
+    } catch (error) {
+      console.error("Error updating second opinion settings:", error);
+      return false;
+    }
+  };
+
+  const handleDateSave = async () => {
+    setDateSaveStatus('saving');
+    const success = await updateSecondOpinionSettings({ second_opinion_dates: availability });
+    if (success) {
+      setDateSaveStatus('success');
+      setTimeout(() => setDateSaveStatus('idle'), 2000);
+    } else {
+      setDateSaveStatus('error');
+      setTimeout(() => setDateSaveStatus('idle'), 3000);
+    }
+  };
+
+>>>>>>> Stashed changes
   const professionalStats = [
     { label: "Profile Views", value: "1,240", icon: <Activity className="text-green-600" />, color: "bg-green-100" },
     { label: "Rating", value: "4.8/5", icon: <Star className="text-green-600" />, color: "bg-green-100" },

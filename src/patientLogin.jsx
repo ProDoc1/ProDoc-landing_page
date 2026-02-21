@@ -92,7 +92,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      const apiEndpoint = userType === 'doctor' ? '/api/doctor-login' : '/api/login';
+      const apiEndpoint = userType === 'doctor' ? '/api/auth?action=doctor-login' : '/api/login';
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,7 +132,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/forgot-password', {
+      const res = await fetch('/api/auth?action=forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, role: userType })
@@ -177,7 +177,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/reset-password', {
+      const res = await fetch('/api/auth?action=reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -26,7 +26,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser }) => {
         const fetchDoctorProfile = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/get-doctor-profile?id=${doctorId}`);
+                const response = await fetch(`/api/doctor?id=${doctorId}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch doctor profile');
                 }
