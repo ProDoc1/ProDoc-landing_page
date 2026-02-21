@@ -16,7 +16,7 @@ const AdminDashboard = ({ onBack }) => {
 
     const fetchReviews = async () => {
         try {
-            const res = await fetch('/api/get-pending-reviews');
+            const res = await fetch('/api/reviews');
             if (!res.ok) throw new Error('Failed to load reviews');
             const data = await res.json();
             setReviews(data);
@@ -32,8 +32,8 @@ const AdminDashboard = ({ onBack }) => {
             // Optimistic update
             setReviews(prev => prev.filter(r => r.id !== id));
 
-            const res = await fetch('/api/moderate-review', {
-                method: 'POST',
+            const res = await fetch('/api/reviews', {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ reviewId: id, action })
             });
@@ -99,7 +99,7 @@ const AdminDashboard = ({ onBack }) => {
                             >
                                 {/* Status Badge */}
                                 <div className={`absolute top-0 right-0 px-4 py-1.5 rounded-bl-2xl text-[10px] uppercase font-bold tracking-wider ${review.status === 'rejected' ? 'bg-red-50 text-red-600' :
-                                        review.toxicity_score > 0.5 ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+                                    review.toxicity_score > 0.5 ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
                                     }`}>
                                     {review.status === 'rejected' ? 'Auto-Rejected' : 'Pending Review'}
                                 </div>

@@ -45,6 +45,8 @@ const DoctorDashboard = ({
   // Save Data State (New)
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
+
+  // Separate state for Available Dates save feedback
   const [dateSaveStatus, setDateSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
 
   // Password Change State
@@ -59,8 +61,8 @@ const DoctorDashboard = ({
     specialty: user?.specialty,
     bio: user?.bio,
     slmcNumber: user?.slmcNumber,
-    location: user?.location ?? '',
-    languages: user?.languages ?? '',
+    location: 'Colombo, Sri Lanka',
+    languages: 'English, Sinhala',
     image: user?.image_url || DoctorImg
   });
 
@@ -74,7 +76,7 @@ const DoctorDashboard = ({
         specialty: user.specialty || prev.specialty,
         bio: user.bio || prev.bio,
         slmcNumber: user.slmcNumber || prev.slmcNumber,
-        location: user.location ?? prev.location,
+        location: user.location || prev.location,
         languages: user.languages || prev.languages,
         image: user.image_url || prev.image
       }));
@@ -96,21 +98,21 @@ const DoctorDashboard = ({
       onLogout();
     } else if (doctorId) {
       // Always fetch latest profile to get second opinion settings
-      fetch(`/api/doctor?id=${doctorId}`)
+      fetch(`/api/doctors?id=${doctorId}`)
         .then(res => res.json())
         .then(data => {
           if (data && !data.error) {
             setLocalUser(prev => ({
               ...prev,
               id: doctorId,
-              fullName: data.name ?? prev.fullName,
-              email: data.email ?? prev.email,
-              specialty: data.specialty ?? prev.specialty,
-              bio: data.bio ?? prev.bio,
-              slmcNumber: data.slmcNumber ?? prev.slmcNumber,
-              location: data.location ?? prev.location,
-              languages: data.languages ?? prev.languages,
-              image: data.image_url ?? prev.image
+              fullName: data.name || prev.fullName,
+              email: data.email || prev.email,
+              specialty: data.specialty || prev.specialty,
+              bio: data.bio || prev.bio,
+              slmcNumber: data.slmcNumber || prev.slmcNumber,
+              location: data.location || prev.location,
+              languages: data.languages || prev.languages,
+              image: data.image_url || prev.image
             }));
             // Initialize Second Opinion state from fetched data
             if (data.second_opinion_available !== undefined) {
@@ -145,7 +147,7 @@ const DoctorDashboard = ({
       };
 
       // 2. Send request to backend
-      const response = await fetch('/api/doctor', {
+      const response = await fetch('/api/doctors', {
         method: 'PUT', // or 'POST' depending on your API
         headers: {
           'Content-Type': 'application/json',
@@ -165,39 +167,8 @@ const DoctorDashboard = ({
       }
 
       if (response.ok) {
-        const doctor = data?.doctor;
-        // Sync UI from server so we don't show success until state matches DB; avoid overwriting with stale prev when server sends null/empty
-        const syncFromDoctor = (doc) => {
-          const has = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-          setLocalUser(prev => ({
-            ...prev,
-            fullName: has(doc, 'name') ? (doc.name ?? '') : prev.fullName,
-            email: has(doc, 'email') ? (doc.email ?? '') : prev.email,
-            specialty: has(doc, 'specialty') ? (doc.specialty ?? '') : prev.specialty,
-            slmcNumber: has(doc, 'slmcNumber') ? (doc.slmcNumber ?? '') : prev.slmcNumber,
-            bio: has(doc, 'bio') ? (doc.bio ?? '') : prev.bio,
-            location: has(doc, 'location') ? (doc.location ?? '') : prev.location,
-            languages: has(doc, 'languages') ? (doc.languages ?? '') : prev.languages,
-            image: has(doc, 'image_url') ? (doc.image_url ?? prev.image) : prev.image
-          }));
-        };
+        setSaveStatus({ type: 'success', message: data?.message || 'Profile updated successfully!' });
 
-        if (doctor) {
-          syncFromDoctor(doctor);
-          setSaveStatus({ type: 'success', message: data?.message || 'Profile updated successfully!' });
-        } else {
-          // API didn't return doctor; refetch so UI stays in sync
-          try {
-            const refetchRes = await fetch(`/api/get-doctor-profile?id=${localUser.id}`);
-            const refetchData = refetchRes.ok ? await refetchRes.json() : null;
-            if (refetchData && !refetchData.error) {
-              syncFromDoctor({ name: refetchData.name, email: refetchData.email, specialty: refetchData.specialty, slmcNumber: refetchData.slmcNumber, bio: refetchData.bio, location: refetchData.location, languages: refetchData.languages, image_url: refetchData.image_url });
-            }
-          } catch (refetchErr) {
-            console.warn('Profile saved but refetch failed:', refetchErr);
-          }
-          setSaveStatus({ type: 'success', message: 'Profile updated. If you don\'t see changes, refresh the page.' });
-        }
         // Close modal after delay
         setTimeout(() => {
           setIsEditingProfile(false);
@@ -225,7 +196,7 @@ const DoctorDashboard = ({
     }
 
     try {
-      const response = await fetch('/api/auth?action=update-password', {
+      const response = await fetch('/api/update-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -259,7 +230,7 @@ const DoctorDashboard = ({
 
   const updateSecondOpinionSettings = async (updates) => {
     try {
-      const response = await fetch('/api/doctor', {
+      const response = await fetch('/api/doctors', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

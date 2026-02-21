@@ -88,7 +88,7 @@ const DoctorRating = ({ doctorId, user, doctorName }) => {
         setErrorMessage('');
 
         try {
-            const response = await fetch('/api/submit-rating', {
+            const response = await fetch('/api/reviews', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
