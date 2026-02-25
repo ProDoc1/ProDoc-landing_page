@@ -22,7 +22,7 @@ export function NavBar({ items, className, accentColor, bgColor, textClass }) {
               key={item.name}
               href={item.url}
               onClick={(e) => {
-                if (item.url === '#') e.preventDefault();
+                if (item.url && item.url.startsWith('#')) e.preventDefault();
                 setActiveTab(item.name);
                 if (item.onClick) item.onClick();
               }}

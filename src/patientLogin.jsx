@@ -82,7 +82,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      const apiEndpoint = userType === 'doctor' ? '/api/doctor-login' : '/api/login';
+      const apiEndpoint = '/api/login';
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

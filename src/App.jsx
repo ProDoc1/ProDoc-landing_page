@@ -236,10 +236,15 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                <div className="md:col-span-2">
                   <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
                   <ul className="space-y-4 text-sm">
-                     {['Find a Doctor', 'How it Works', 'Our Team', 'Reviews'].map((item) => (
-                        <li key={item}><a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                     {[
+                        { name: 'Find a Doctor', url: '#doctors', action: onFindSpecialist },
+                        { name: 'How it Works', url: '#how-it-works', action: onNavigateHowitWorks },
+                        { name: 'Our Team', url: '#team', action: null },
+                        { name: 'Reviews', url: '#reviews', action: null }
+                     ].map((item) => (
+                        <li key={item.name}><a href={item.url} onClick={(e) => { if (item.action) { e.preventDefault(); item.action(); } }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
-                           {item}
+                           {item.name}
                         </a></li>
                      ))}
                   </ul>
@@ -249,25 +254,25 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                   <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
                   <ul className="space-y-4 text-sm">
                      <li>
-                        <a href="aboutus" onClick={() => onNavigateAbout()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <a href="#about" onClick={(e) => { e.preventDefault(); onNavigateAbout(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            About Us
                         </a>
                      </li>
                      <li>
-                        <a href="#" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <a href="#careers" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            Careers
                         </a>
                      </li>
                      <li>
-                        <a href="#" onClick={() => onNavigatePrivacy()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <a href="#privacy" onClick={(e) => { e.preventDefault(); onNavigatePrivacy(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            Privacy Policy
                         </a>
                      </li>
                      <li>
-                        <a href="#" onClick={() => onNavigateTerms()} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <a href="#terms" onClick={(e) => { e.preventDefault(); onNavigateTerms(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            Terms of Service
                         </a>
@@ -338,6 +343,30 @@ export default function App() {
    // --- EFFECT FOR GOOGLE AUTH CALLBACK (LEGACY - REMOVED) ---
    // The new Google Sign-In implementation uses a popup flow handled directly in patientLogin.jsx
    // so we no longer need to process redirects here.
+
+   // --- EFFECT TO UPDATE PAGE TITLE AND URL ---
+   useEffect(() => {
+      const titles = {
+         'home': 'ProDoc | Home',
+         'about': 'ProDoc | About Us',
+         'doctors': 'ProDoc | Doctors',
+         'login': 'ProDoc | Login',
+         'signup': 'ProDoc | Sign Up',
+         'dashboard': 'ProDoc | Patient Dashboard',
+         'doctor-dashboard': 'ProDoc | Doctor Dashboard',
+         'doctor-view': 'ProDoc | Doctor Profile',
+         'privacy': 'ProDoc | Privacy Policy',
+         'terms': 'ProDoc | Terms of Service',
+         'content-hub': 'ProDoc | Content Hub',
+         'admin': 'ProDoc | Admin Dashboard'
+      };
+
+      document.title = titles[currentPage] || 'ProDoc';
+      const hash = currentPage === 'home' ? '' : `#${currentPage}`;
+      if (window.location.hash !== hash) {
+         window.history.pushState(null, '', `/${hash}`);
+      }
+   }, [currentPage]);
 
    const navigateTo = (page, data = null) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });

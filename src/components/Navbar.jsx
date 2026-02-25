@@ -131,10 +131,10 @@ const Navbar = ({
   const currentStyle = theme[currentPage] || theme.home;
 
   const navItems = [
-    { name: 'Home', url: '#', icon: Home, onClick: onNavigateHome },
-    { name: 'About Us', url: '#', icon: Users, onClick: onNavigateAbout },
-    { name: 'Doctors', url: '#', icon: Stethoscope, onClick: onNavigateDoctors },
-    { name: 'Content Hub', url: '#', icon: LayoutGrid, onClick: onNavigateContentHub },
+    { name: 'Home', url: '#home', icon: Home, onClick: onNavigateHome },
+    { name: 'About Us', url: '#about', icon: Users, onClick: onNavigateAbout },
+    { name: 'Doctors', url: '#doctors', icon: Stethoscope, onClick: onNavigateDoctors },
+    { name: 'Content Hub', url: '#content-hub', icon: LayoutGrid, onClick: onNavigateContentHub },
   ];
 
   const userRole = localStorage.getItem('userRole');
