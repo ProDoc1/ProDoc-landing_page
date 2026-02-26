@@ -17,11 +17,12 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
     email: '',
     phone: '',
     dateOfBirth: '',
+    gender: '',
     address: '',
     emergencyContact: '',
     bloodType: '',
-    allergies: '',
-    medicalConditions: ''
+    allergies: [],
+    chronicConditions: []
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -35,11 +36,12 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
         email: user.email || '',
         phone: user.phone || '',
         dateOfBirth: user.dateOfBirth || '',
+        gender: user.gender || '',
         address: user.address || '',
         emergencyContact: user.emergencyContact || '',
         bloodType: user.bloodType || '',
-        allergies: user.allergies || '',
-        medicalConditions: user.medicalConditions || ''
+        allergies: user.allergies || [],
+        chronicConditions: user.chronicConditions || []
       });
     }
   }, [user, isOpen]);
@@ -50,7 +52,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -58,8 +59,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
-    if (!formData.email.trim()) {
+    if (!formData.fullName?.trim()) newErrors.fullName = 'Full name is required';
+    if (!formData.email?.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
@@ -78,7 +79,15 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
     
     setIsLoading(true);
     try {
-      await onSave(formData);
+      // Calculate age from date of birth
+      const birthDate = new Date(formData.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      
+      await onSave({
+        ...formData,
+        age: age > 0 ? age : null
+      });
       onClose();
     } catch (error) {
       console.error('Failed to save profile:', error);
@@ -97,16 +106,13 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
       
-      {/* Modal */}
       <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Header */}
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-2xl font-bold">Edit Profile</h2>
@@ -121,7 +127,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Navigation */}
           <div className="w-64 bg-slate-50 border-r border-slate-200 p-6 space-y-2 shrink-0 hidden md:block">
             {sections.map(section => (
               <button
@@ -141,12 +146,11 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
             <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100">
               <p className="text-xs text-amber-800 font-medium leading-relaxed">
                 <AlertCircle size={14} className="inline mr-1" />
-                Your medical information is encrypted and only visible to you and your authorized doctors.
+                Your medical information is encrypted and only visible to you.
               </p>
             </div>
           </div>
 
-          {/* Mobile Section Selector */}
           <div className="md:hidden px-6 pt-6 shrink-0">
             <select 
               value={activeSection}
@@ -159,11 +163,9 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
             </select>
           </div>
 
-          {/* Form Content */}
           <div className="flex-1 overflow-y-auto p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Personal Information Section */}
               {activeSection === 'personal' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -171,7 +173,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                     Personal Information
                   </h3>
                   
-                  {/* Profile Photo Upload */}
                   <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
                     <div className="relative">
                       <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 text-3xl font-bold">
@@ -219,6 +220,23 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                     </div>
 
                     <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700">Gender</label>
+                      <select
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white"
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">Date of Birth</label>
                       <input
                         type="date"
@@ -227,6 +245,26 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                         onChange={handleChange}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-slate-700">Blood Type</label>
+                      <select
+                        name="bloodType"
+                        value={formData.bloodType}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white"
+                      >
+                        <option value="">Select Blood Type</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                      </select>
                     </div>
                   </div>
 
@@ -248,7 +286,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                 </div>
               )}
 
-              {/* Contact Section */}
               {activeSection === 'contact' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -282,7 +319,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                         onChange={handleChange}
                         rows={3}
                         className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none"
-                        placeholder="123 Main Street, Colombo 03"
+                        placeholder="123 Galle Road, Colombo 03"
                       />
                     </div>
                   </div>
@@ -302,7 +339,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                 </div>
               )}
 
-              {/* Medical Section */}
               {activeSection === 'medical' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -310,49 +346,31 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                     Medical Information
                   </h3>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700">Blood Type</label>
-                      <select
-                        name="bloodType"
-                        value={formData.bloodType}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white"
-                      >
-                        <option value="">Select Blood Type</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                      </select>
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Allergies</label>
-                    <textarea
-                      name="allergies"
-                      value={formData.allergies}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none"
-                      placeholder="List any allergies (medications, food, etc.)"
+                    <label className="text-sm font-bold text-slate-700">Allergies (comma separated)</label>
+                    <input
+                      type="text"
+                      value={formData.allergies.join(', ')}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        allergies: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                      }))}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                      placeholder="e.g. Penicillin, Peanuts, Dust"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700">Existing Medical Conditions</label>
-                    <textarea
-                      name="medicalConditions"
-                      value={formData.medicalConditions}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none"
-                      placeholder="Diabetes, Hypertension, Asthma, etc."
+                    <label className="text-sm font-bold text-slate-700">Chronic Conditions (comma separated)</label>
+                    <input
+                      type="text"
+                      value={formData.chronicConditions.join(', ')}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        chronicConditions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                      }))}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+                      placeholder="e.g. Asthma, Hypertension, Diabetes"
                     />
                   </div>
 
@@ -364,7 +382,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                 </div>
               )}
 
-              {/* Footer Actions */}
               <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 mt-8 sticky bottom-0 bg-white">
                 <button
                   type="button"
