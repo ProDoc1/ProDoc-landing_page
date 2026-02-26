@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import PatientViewProfile from './lib/PatientviewProfile';
-
+import EditProfileModal from './EditProfileModal';
 // Edit Profile Modal Component
 const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
   const [formData, setFormData] = useState({
@@ -1064,12 +1064,15 @@ const PatientDashboard = ({
             </div>
           )}
 
-          {activeTab === 'profile' && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <PatientViewProfile onBack={() => setActiveTab('overview')} />
-            </div>
-          )}
-
+         {activeTab === 'profile' && (
+    <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+        <PatientViewProfile 
+            user={currentUser}
+            onBack={() => setActiveTab('overview')}
+            onSaveProfile={handleSaveProfile}
+        />
+    </div>
+)}
           {activeTab === 'secondOpinion' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg mb-6">

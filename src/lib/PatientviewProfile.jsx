@@ -11,290 +11,73 @@ import {
     Weight,
     Ruler,
     Download,
-    Share2,
     ArrowLeft,
     FileText,
     Clock,
     Plus,
-    MessageSquare,
     Stethoscope,
     Edit,
-    Eye,
     ChevronRight
 } from 'lucide-react';
+import EditProfileModal from './EditProfileModal';
 
-const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
+const PatientViewProfile = ({ 
+    user, 
+    onBack, 
+    onNavigate,
+    onSaveProfile 
+}) => {
     const [isEditMode, setIsEditMode] = useState(false);
     
-    const [patient, setPatient] = useState({
-        id: "PT-2024-894",
-        fullName: "Amanda Silva",
-        dateOfBirth: "1995-08-14",
-        age: 28,
-        gender: "Female",
-        email: "amanda.silva@example.com",
-        phone: "+94 71 234 5678",
-        address: "45/12, Havelock Road, Colombo 05",
+    // Use the same data structure as PatientDashboard
+    const [patient, setPatient] = useState(user || {
+        id: "PT-2024-001",
+        fullName: "John Doe",
+        dateOfBirth: "1990-05-15",
+        age: 34,
+        gender: "Male",
+        email: "john@example.com",
+        phone: "+94 77 123 4567",
+        address: "123 Galle Road, Colombo 03",
         bloodType: "O+",
-        emergencyContact: "Mr. Nimal Silva (Father) - +94 77 123 4567",
-        allergies: ["Penicillin", "Peanuts", "Dust Mites"],
-        chronicConditions: ["Asthma", "Mild Hypertension"],
-        lastVisit: "2023-10-15",
+        emergencyContact: "Jane Doe: +94 77 987 6543",
+        allergies: ["Penicillin", "Peanuts"],
+        chronicConditions: ["Hypertension"],
         status: "Active"
     });
 
-    const [vitals, setVitals] = useState({
-        height: "165 cm",
-        weight: "62 kg",
-        bmi: "22.8",
+    const [vitals] = useState({
+        height: "175 cm",
+        weight: "70 kg",
+        bmi: "22.9",
         bloodPressure: "120/80 mmHg",
         heartRate: "72 bpm",
-        temperature: "36.6 °C",
         updatedAt: "Today, 09:30 AM"
     });
 
-    const [medicalHistory, setMedicalHistory] = useState([
-        { id: 1, date: "2023-10-15", type: "Consultation", doctor: "Dr. Sarah Perera", notes: "Routine checkup. BP slightly elevated. Prescribed Amlodipine.", status: "Completed" },
+    const [medicalHistory] = useState([
+        { id: 1, date: "2023-10-15", type: "Consultation", doctor: "Dr. Sarah Perera", notes: "Routine checkup. BP slightly elevated.", status: "Completed" },
         { id: 2, date: "2023-08-10", type: "Lab Report", doctor: "Dr. Sunil Jayawardena", notes: "Full Blood Count - Normal Range.", status: "Reviewed" },
-        { id: 3, date: "2023-05-20", type: "Prescription", doctor: "Dr. Sarah Perera", notes: "Ventolin Inhaler refill.", status: "Dispensed" },
-        { id: 4, date: "2022-11-12", type: "Emergency", doctor: "Dr. K. Fernando", notes: "Mild asthma attack. Treated with nebulizer.", status: "Resolved" }
+        { id: 3, date: "2023-05-20", type: "Prescription", doctor: "Dr. Sarah Perera", notes: "Medication refill.", status: "Dispensed" },
     ]);
 
-    // Edit Profile Modal Component
-    const EditProfileModal = () => {
-        const [formData, setFormData] = useState({ ...patient });
-        const [activeSection, setActiveSection] = useState('personal');
-
-        const handleChange = (e) => {
-            const { name, value } = e.target;
-            setFormData(prev => ({ ...prev, [name]: value }));
-        };
-
-        const handleSave = () => {
-            setPatient(formData);
-            setIsEditMode(false);
-        };
-
-        const sections = [
-            { id: 'personal', label: 'Personal Info' },
-            { id: 'contact', label: 'Contact' },
-            { id: 'medical', label: 'Medical Info' }
-        ];
-
-        if (!isEditMode) return null;
-
-        return (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                <div 
-                    className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                    onClick={() => setIsEditMode(false)}
-                />
-                
-                <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-                    <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
-                        <div>
-                            <h2 className="text-2xl font-bold">Edit Profile</h2>
-                            <p className="text-teal-100 text-sm mt-1">Update your personal information</p>
-                        </div>
-                        <button 
-                            onClick={() => setIsEditMode(false)}
-                            className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                        >
-                            <ArrowLeft size={24} />
-                        </button>
-                    </div>
-
-                    <div className="flex flex-1 overflow-hidden">
-                        <div className="w-56 bg-slate-50 border-r border-slate-200 p-4 space-y-2 shrink-0">
-                            {sections.map(section => (
-                                <button
-                                    key={section.id}
-                                    onClick={() => setActiveSection(section.id)}
-                                    className={`w-full text-left px-4 py-3 rounded-xl font-semibold transition-all ${
-                                        activeSection === section.id 
-                                            ? 'bg-teal-600 text-white shadow-lg' 
-                                            : 'text-slate-600 hover:bg-white'
-                                    }`}
-                                >
-                                    {section.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6">
-                            <div className="space-y-4">
-                                {activeSection === 'personal' && (
-                                    <>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Full Name</label>
-                                            <input
-                                                type="text"
-                                                name="fullName"
-                                                value={formData.fullName}
-                                                onChange={handleChange}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-sm font-bold text-slate-700 block mb-2">Date of Birth</label>
-                                                <input
-                                                    type="date"
-                                                    name="dateOfBirth"
-                                                    value={formData.dateOfBirth}
-                                                    onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-sm font-bold text-slate-700 block mb-2">Gender</label>
-                                                <select
-                                                    name="gender"
-                                                    value={formData.gender}
-                                                    onChange={handleChange}
-                                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                                >
-                                                    <option>Male</option>
-                                                    <option>Female</option>
-                                                    <option>Other</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Blood Type</label>
-                                            <select
-                                                name="bloodType"
-                                                value={formData.bloodType}
-                                                onChange={handleChange}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                            >
-                                                <option value="">Select</option>
-                                                <option>A+</option>
-                                                <option>A-</option>
-                                                <option>B+</option>
-                                                <option>B-</option>
-                                                <option>AB+</option>
-                                                <option>AB-</option>
-                                                <option>O+</option>
-                                                <option>O-</option>
-                                            </select>
-                                        </div>
-                                    </>
-                                )}
-
-                                {activeSection === 'contact' && (
-                                    <>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Email</label>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Phone</label>
-                                            <input
-                                                type="tel"
-                                                name="phone"
-                                                value={formData.phone}
-                                                onChange={handleChange}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Address</label>
-                                            <textarea
-                                                name="address"
-                                                value={formData.address}
-                                                onChange={handleChange}
-                                                rows={3}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none resize-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Emergency Contact</label>
-                                            <input
-                                                type="text"
-                                                name="emergencyContact"
-                                                value={formData.emergencyContact}
-                                                onChange={handleChange}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                            />
-                                        </div>
-                                    </>
-                                )}
-
-                                {activeSection === 'medical' && (
-                                    <>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Allergies (comma separated)</label>
-                                            <input
-                                                type="text"
-                                                value={formData.allergies.join(', ')}
-                                                onChange={(e) => setFormData(prev => ({
-                                                    ...prev,
-                                                    allergies: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                                                }))}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                                placeholder="e.g. Penicillin, Peanuts"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm font-bold text-slate-700 block mb-2">Chronic Conditions (comma separated)</label>
-                                            <input
-                                                type="text"
-                                                value={formData.chronicConditions.join(', ')}
-                                                onChange={(e) => setFormData(prev => ({
-                                                    ...prev,
-                                                    chronicConditions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                                                }))}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
-                                                placeholder="e.g. Asthma, Diabetes"
-                                            />
-                                        </div>
-                                    </>
-                                )}
-
-                                <div className="flex gap-3 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsEditMode(false)}
-                                        className="flex-1 py-3 border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleSave}
-                                        className="flex-1 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700"
-                                    >
-                                        Save Changes
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+    const handleSave = async (formData) => {
+        if (onSaveProfile) {
+            await onSaveProfile(formData);
+        }
+        setPatient(prev => ({ ...prev, ...formData }));
     };
 
     // Clickable Info Row Component
-    const ClickableInfoRow = ({ label, value, icon: Icon, emptyText = "Not provided", section }) => {
+    const ClickableInfoRow = ({ label, value, icon: Icon, highlight }) => {
         const isEmpty = !value || value === '';
         
         return (
             <div 
-                onClick={() => {
-                    setIsEditMode(true);
-                    // You could also set the active section here if needed
-                }}
+                onClick={() => setIsEditMode(true)}
                 className="group flex items-start gap-3 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition-all border border-transparent hover:border-slate-200"
             >
-                <div className="p-2 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-teal-100 group-hover:text-teal-600 transition-colors">
+                <div className={`p-2 rounded-lg ${highlight ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500 group-hover:bg-teal-100 group-hover:text-teal-600'} transition-colors`}>
                     <Icon size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -305,18 +88,18 @@ const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
                             <span className="text-sm">Add {label.toLowerCase()}</span>
                         </div>
                     ) : (
-                        <p className="text-sm font-medium text-slate-700 truncate">{value}</p>
+                        <p className={`text-sm font-medium truncate ${highlight ? 'text-amber-900' : 'text-slate-700'}`}>{value}</p>
                     )}
                 </div>
-                <ChevronRight size={18} className="text-slate-300 group-hover:text-teal-500 opacity-0 group-hover:opacity-100 transition-all" />
+                <ChevronRight size={18} className="text-slate-300 group-hover:text-teal-500 opacity-0 group-hover:opacity-100 transition-all shrink-0" />
             </div>
         );
     };
 
     // Clickable Vital Card
-    const ClickableVitalCard = ({ icon: Icon, label, value, color, bg, status, onClick }) => (
+    const ClickableVitalCard = ({ icon: Icon, label, value, color, bg, status }) => (
         <div 
-            onClick={onClick}
+            onClick={() => setIsEditMode(true)}
             className="group bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col items-center justify-center text-center hover:border-teal-200 hover:shadow-md transition-all cursor-pointer relative overflow-hidden"
         >
             <div className="absolute inset-0 bg-teal-50 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -338,7 +121,12 @@ const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans">
-            <EditProfileModal />
+            <EditProfileModal
+                isOpen={isEditMode}
+                onClose={() => setIsEditMode(false)}
+                user={patient}
+                onSave={handleSave}
+            />
 
             {/* Header Section */}
             <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
@@ -377,7 +165,7 @@ const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
                         <div className="relative mt-12 mb-4">
                             <div className="w-28 h-28 bg-white rounded-full mx-auto p-1 shadow-md">
                                 <div className="w-full h-full bg-teal-100 rounded-full flex items-center justify-center text-teal-600 text-4xl font-bold">
-                                    {patient.fullName.charAt(0)}
+                                    {patient.fullName ? patient.fullName.charAt(0).toUpperCase() : <User size={40} />}
                                 </div>
                             </div>
                             <button 
@@ -404,20 +192,17 @@ const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
                                     onClick={() => setIsEditMode(true)}
                                     className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold flex items-center gap-1 hover:bg-teal-100 hover:text-teal-700 transition-colors"
                                 >
-                                    <Plus size={12} /> Add Blood Type
+                                    <Plus size={12} /> Add
                                 </button>
                             )}
                         </div>
 
-                        <div className="space-y-3">
-                            <button 
-                                onClick={() => setIsEditMode(true)}
-                                className="w-full h-12 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-teal-200"
-                            >
-                                <Edit size={18} className="shrink-0" />
-                                <span className="leading-none">Update Profile</span>
-                            </button>
-                        </div>
+                        <button 
+                            onClick={() => setIsEditMode(true)}
+                            className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-200"
+                        >
+                            <Edit size={18} /> Update Profile
+                        </button>
                     </div>
 
                     {/* Critical Alerts */}
@@ -491,39 +276,10 @@ const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <ClickableVitalCard 
-                                icon={Weight} 
-                                label="Weight" 
-                                value={vitals.weight} 
-                                color="text-blue-600" 
-                                bg="bg-blue-50"
-                                onClick={() => setIsEditMode(true)}
-                            />
-                            <ClickableVitalCard 
-                                icon={Ruler} 
-                                label="Height" 
-                                value={vitals.height} 
-                                color="text-indigo-600" 
-                                bg="bg-indigo-50"
-                                onClick={() => setIsEditMode(true)}
-                            />
-                            <ClickableVitalCard 
-                                icon={Activity} 
-                                label="BMI" 
-                                value={vitals.bmi} 
-                                color="text-emerald-600" 
-                                bg="bg-emerald-50" 
-                                status="Normal"
-                                onClick={() => setIsEditMode(true)}
-                            />
-                            <ClickableVitalCard 
-                                icon={HeartPulse} 
-                                label="Heart Rate" 
-                                value={vitals.heartRate} 
-                                color="text-rose-600" 
-                                bg="bg-rose-50"
-                                onClick={() => setIsEditMode(true)}
-                            />
+                            <ClickableVitalCard icon={Weight} label="Weight" value={vitals.weight} color="text-blue-600" bg="bg-blue-50" />
+                            <ClickableVitalCard icon={Ruler} label="Height" value={vitals.height} color="text-indigo-600" bg="bg-indigo-50" />
+                            <ClickableVitalCard icon={Activity} label="BMI" value={vitals.bmi} color="text-emerald-600" bg="bg-emerald-50" status="Normal" />
+                            <ClickableVitalCard icon={HeartPulse} label="Heart Rate" value={vitals.heartRate} color="text-rose-600" bg="bg-rose-50" />
                         </div>
                     </div>
 
@@ -543,12 +299,12 @@ const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <ClickableInfoRow label="Full Name" value={patient.fullName} icon={User} section="personal" />
-                            <ClickableInfoRow label="Date of Birth" value={patient.dateOfBirth} icon={Calendar} section="personal" />
-                            <ClickableInfoRow label="Gender" value={patient.gender} icon={User} section="personal" />
-                            <ClickableInfoRow label="Email Address" value={patient.email} icon={Mail} section="contact" />
-                            <ClickableInfoRow label="Phone Number" value={patient.phone} icon={Phone} section="contact" />
-                            <ClickableInfoRow label="Address" value={patient.address} icon={MapPin} section="contact" />
+                            <ClickableInfoRow label="Full Name" value={patient.fullName} icon={User} />
+                            <ClickableInfoRow label="Date of Birth" value={patient.dateOfBirth} icon={Calendar} />
+                            <ClickableInfoRow label="Gender" value={patient.gender} icon={User} />
+                            <ClickableInfoRow label="Email Address" value={patient.email} icon={Mail} />
+                            <ClickableInfoRow label="Phone Number" value={patient.phone} icon={Phone} />
+                            <ClickableInfoRow label="Address" value={patient.address} icon={MapPin} />
                         </div>
                         
                         <div className="mt-4 pt-4 border-t border-slate-100">
@@ -556,7 +312,7 @@ const PatientViewProfile = ({ patientId, onBack, onNavigate }) => {
                                 label="Emergency Contact" 
                                 value={patient.emergencyContact} 
                                 icon={AlertCircle}
-                                section="contact"
+                                highlight
                             />
                         </div>
                     </div>
