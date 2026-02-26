@@ -38,6 +38,11 @@ const PrivacyPolicy = ({ onBack }) => {
             title: "Policy Updates",
             icon: <Bell size={24} className="text-teal-600" />,
             content: "We may update this policy from time to time. We will notify you of any significant changes via email or through a prominent notice on our platform. Continued use of ProDoc after such changes constitutes acceptance of the new policy."
+        },
+        {
+            title: "Google API Services Usage",
+            icon: <Lock size={24} className="text-teal-600" />,
+            content: "ProDoc's use and transfer to any other app of information received from Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements. We only access the data you explicitly permit during the Google Sign-In process (such as your email and basic profile information) strictly for authentication and account creation purposes. We do not use Google user data to develop, improve, or train generalized/non-personalized AI or machine learning models."
         }
     ];
 

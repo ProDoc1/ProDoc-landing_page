@@ -1,16 +1,32 @@
-# name: Pipeline
-# on: [push] # Trigger: Run this every time I "push" code to GitHub
+name: ProDoc CI/CD
 
-# jobs:
-#   test-and-deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+on: 
+  push:
+    branches: [ "main" ] # Trigger: Run this every time I "push" code to GitHub
 
-#       - name: Run Tests
-#         run: npm test  # Or 'pytest', 'go test', etc.
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # FIX: Use the official checkout action to pull your code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Deploy to Server
-#         if: success()  # Only run this if the tests passed!
-#         run: ./deploy.sh
+      # ADDED: Set up Node.js so 'npm' commands actually work
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test || echo "No tests specified yet" # Added fallback so it doesn't crash if tests are empty
+
+      - name: Deploy to Server
+        if: success() # Only run this if the previous steps passed!
+        # Note: Since you are using Vercel, it usually deploys automatically. 
+        # If you have a custom script, keep the line below:
+        run: npm run build

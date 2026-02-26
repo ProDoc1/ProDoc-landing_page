@@ -6,7 +6,9 @@ import {
   Users,
   Menu,
   X,
-  LayoutGrid
+  LayoutGrid,
+  ShieldCheck,
+  FileText
 } from 'lucide-react';
 import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
@@ -22,7 +24,9 @@ const Navbar = ({
   currentUser,
   onLogout,
   onNavigateDashboard,
-  onNavigateContentHub
+  onNavigateContentHub,
+  onNavigatePrivacy,
+  onNavigateTerms
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -125,16 +129,35 @@ const Navbar = ({
       tubelightBg: "#14B8A6",
       tubelightText: "text-white",
       profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+    },
+    privacy: {
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+    },
+    terms: {
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
     }
   };
 
   const currentStyle = theme[currentPage] || theme.home;
 
   const navItems = [
-    { name: 'Home', url: '#home', icon: Home, onClick: onNavigateHome },
-    { name: 'About Us', url: '#about', icon: Users, onClick: onNavigateAbout },
-    { name: 'Doctors', url: '#doctors', icon: Stethoscope, onClick: onNavigateDoctors },
-    { name: 'Content Hub', url: '#content-hub', icon: LayoutGrid, onClick: onNavigateContentHub },
+    { name: 'Home', url: '/', icon: Home, onClick: onNavigateHome },
+    { name: 'About Us', url: '/about', icon: Users, onClick: onNavigateAbout },
+    { name: 'Doctors', url: '/doctors', icon: Stethoscope, onClick: onNavigateDoctors },
+    { name: 'Content Hub', url: '/content-hub', icon: LayoutGrid, onClick: onNavigateContentHub },
+ 
   ];
 
   const userRole = localStorage.getItem('userRole');

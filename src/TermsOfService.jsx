@@ -38,6 +38,11 @@ const TermsOfService = ({ onBack }) => {
             title: "Termination of Service",
             icon: <HelpCircle size={24} className="text-teal-600" />,
             content: "We reserve the right to suspend or terminate access to our services at any time, without prior notice, for conduct that we believe violates these Terms or is harmful to other users of the platform."
+        },
+        {
+            title: "Third-Party Accounts and Services",
+            icon: <Handshake size={24} className="text-teal-600" />,
+            content: "If you register using a third-party service such as Google Sign-In, you authorize us to access and use your information as permitted by that service. We strictly adhere to the Google API Services User Data Policy, and your use of such services is additionally governed by their respective Terms of Service."
         }
     ];
 
