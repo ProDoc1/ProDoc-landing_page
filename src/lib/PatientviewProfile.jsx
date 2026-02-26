@@ -19,7 +19,7 @@ import {
     Edit,
     ChevronRight
 } from 'lucide-react';
-import EditProfileModal from './EditProfileModal';
+import EditProfileModal from '../EditProfileModal';  // Fixed import path
 
 const PatientViewProfile = ({ 
     user, 
