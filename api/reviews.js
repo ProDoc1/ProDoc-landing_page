@@ -9,7 +9,7 @@ export default async function handler(req, res) {
           r.*,
           d.full_name as doctor_name,
           d.image_url as doctor_image
-        FROM doctor_ratings r
+        FROM reviews r
         JOIN doctors d ON r.doctor_id::text = d.doctor_id::text
         WHERE r.status = 'pending' OR r.status = 'rejected'
         ORDER BY r.created_at DESC;

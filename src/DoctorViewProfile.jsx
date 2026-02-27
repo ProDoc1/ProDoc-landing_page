@@ -13,14 +13,25 @@ import {
     Globe,
     CheckCircle2,
     MapPin,
-    GraduationCap
+    GraduationCap,
+    X
 } from 'lucide-react';
 import DoctorRating from './components/DoctorRating';
 
-const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout }) => {
+const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigateLogin, onNavigateSignupPage }) => {
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isSaved, setIsSaved] = useState(false);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+    const handleSaveClick = () => {
+        if (!currentUser) {
+            setShowLoginPrompt(true);
+        } else {
+            setIsSaved(!isSaved);
+        }
+    };
 
     useEffect(() => {
         const fetchDoctorProfile = async () => {
@@ -107,8 +118,14 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout }) => {
 
                             {/* Interaction Icons */}
                             <div className="absolute top-6 right-8 flex gap-3 z-30">
-                                <button className="p-3 bg-white/50 backdrop-blur border border-slate-200 text-slate-400 rounded-2xl hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm group">
-                                    <Heart size={20} className="group-hover:scale-110 transition-transform" />
+                                <button
+                                    onClick={handleSaveClick}
+                                    className={`p-3 bg-white/50 backdrop-blur border border-slate-200 rounded-2xl transition-all shadow-sm group ${isSaved
+                                        ? 'text-red-500 border-red-200 bg-red-50'
+                                        : 'text-slate-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50'
+                                        }`}
+                                >
+                                    <Heart size={20} className={`group-hover:scale-110 transition-transform ${isSaved ? 'fill-red-500' : ''}`} />
                                 </button>
                                 <button className="p-3 bg-white/50 backdrop-blur border border-slate-200 text-slate-400 rounded-2xl hover:border-teal-200 hover:text-teal-600 hover:bg-teal-50 transition-all shadow-sm group">
                                     <Share2 size={20} className="group-hover:scale-110 transition-transform" />
@@ -306,9 +323,49 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout }) => {
                         doctorId={doctorId}
                         user={currentUser}
                         doctorName={doctor?.full_name || doctor?.name}
+                        onNavigateLogin={onNavigateLogin}
+                        onNavigateSignup={onNavigateSignupPage}
                     />
                 </div>
             </div>
+
+            {/* Login Prompt Modal */}
+            {showLoginPrompt && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-[2rem] p-8 max-w-md w-full text-center shadow-2xl relative">
+                        <button
+                            onClick={() => setShowLoginPrompt(false)}
+                            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Heart size={36} className="text-red-500 fill-red-500" />
+                        </div>
+
+                        <h3 className="text-2xl font-bold text-slate-900 mb-2">Login Required</h3>
+                        <p className="text-slate-500 mb-8 max-w-sm mx-auto">
+                            Please login or register to save doctors to your profile for easy access later.
+                        </p>
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => { setShowLoginPrompt(false); onNavigateLogin && onNavigateLogin(); }}
+                                className="w-full bg-teal-500 text-white font-bold py-4 rounded-xl hover:bg-teal-600 transition-colors shadow-lg active:scale-95"
+                            >
+                                Login
+                            </button>
+                            <button
+                                onClick={() => { setShowLoginPrompt(false); onNavigateSignupPage && onNavigateSignupPage(); }}
+                                className="w-full bg-slate-50 text-slate-700 font-bold py-4 rounded-xl hover:bg-slate-100 transition-colors border border-slate-200 active:scale-95"
+                            >
+                                Register Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

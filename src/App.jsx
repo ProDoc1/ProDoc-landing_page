@@ -512,6 +512,8 @@ export default function App() {
                onBack={() => navigateTo('doctors')}
                currentUser={currentUser}
                onLogout={handleLogout}
+               onNavigateLogin={() => navigateTo('login')}
+               onNavigateSignupPage={() => navigateTo('signup')}
             />
          )}
 
