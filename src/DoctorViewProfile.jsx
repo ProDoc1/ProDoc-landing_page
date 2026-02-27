@@ -268,7 +268,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             </p>
                             <div className="bg-slate-50 rounded-2xl p-5 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest border border-slate-100">
                                 <span>Registration ID</span>
-                                <span className="text-slate-900 font-mono text-xs">{doctor.slmc_number}</span>
+                                <span className="text-slate-900 font-mono text-xs">{doctor.slmcNumber}</span>
                             </div>
                         </div>
                         {/* Second Opnion Sidebar */}

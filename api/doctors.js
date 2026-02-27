@@ -31,8 +31,8 @@ export default async function handler(req, res) {
             working_hospital as location,
             languages,
             educational_qualifications,
-            (SELECT COALESCE(AVG(overall), 0) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status IS NULL)) as average_rating,
-            (SELECT COUNT(*) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status IS NULL)) as rating_count
+            (SELECT COALESCE(AVG(overall), 0) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status = 'pending' OR status IS NULL)) as average_rating,
+            (SELECT COUNT(*) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status = 'pending' OR status IS NULL)) as rating_count
           FROM doctors 
           WHERE doctor_id = ${id};
         `;
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
               AVG(overall) as avg_rating, 
               COUNT(id) as count 
             FROM doctor_ratings 
-            WHERE status = 'approved' OR status IS NULL
+            WHERE status = 'approved' OR status = 'pending' OR status IS NULL
             GROUP BY doctor_id
           ) r ON d.doctor_id::text = r.doctor_id::text
           ORDER BY d.full_name ASC;

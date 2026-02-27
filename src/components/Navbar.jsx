@@ -147,6 +147,15 @@ const Navbar = ({
       tubelightBg: "#14B8A6",
       tubelightText: "text-white",
       profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+    },
+    admin: {
+      wrapper: `${baseWrapper} bg-white/80 backdrop-blur-xl border-slate-200 shadow-sm`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
     }
   };
 
@@ -157,7 +166,6 @@ const Navbar = ({
     { name: 'About Us', url: '/about', icon: Users, onClick: onNavigateAbout },
     { name: 'Doctors', url: '/doctors', icon: Stethoscope, onClick: onNavigateDoctors },
     { name: 'Content Hub', url: '/content-hub', icon: LayoutGrid, onClick: onNavigateContentHub },
- 
   ];
 
   const userRole = localStorage.getItem('userRole');

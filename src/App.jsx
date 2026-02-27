@@ -13,11 +13,11 @@ import PrivacyPolicy from './PrivacyPolicy';
 import TermsOfService from './TermsOfService';
 import DoctorViewProfile from './DoctorViewProfile';
 import ContentHub from './ContentHub';
-
-
-
 import AdminDashboard from './AdminDashboard';
-const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms, onNavigateAdmin }) => {
+
+
+
+const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms }) => {
 
    useEffect(() => {
       document.documentElement.style.scrollBehavior = 'smooth';
@@ -284,10 +284,10 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                   <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
                   <ul className="space-y-4 text-sm mb-8">
                      <li className="flex items-center gap-3 text-slate-600">
-                        <button onClick={() => onNavigateAdmin()} className="hover:text-teal-600 transition-colors text-left flex items-center gap-3">
+                        <div className="flex items-center gap-3">
                            <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Mail size={18} /></div>
-                           <span>prdoc2025se06@gmail.com</span>
-                        </button>
+                           <a href="mailto:prdoc2025se06@gmail.com" className="hover:text-teal-600 transition-colors">prdoc2025se06@gmail.com</a>
+                        </div>
                      </li>
                      <li className="flex items-center gap-3 text-slate-600">
                         <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Phone size={18} /></div>
@@ -321,7 +321,13 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
-   const [currentPage, setCurrentPage] = useState('home');
+   const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'privacy', 'terms', 'content-hub', 'admin'];
+
+   const [currentPage, setCurrentPage] = useState(() => {
+      const segments = window.location.pathname.split('/').filter(Boolean);
+      const path = segments[0] || 'home';
+      return validPages.includes(path) ? path : 'home';
+   });
    const [currentUser, setCurrentUser] = useState(null);
    const [selectedDoctorId, setSelectedDoctorId] = useState(null);
 
@@ -333,9 +339,13 @@ export default function App() {
 
       if (savedUser) {
          setCurrentUser(JSON.parse(savedUser));
-         // If a page was saved and is a dashboard, go back to it.
-         if (savedPage === 'dashboard' || savedPage === 'doctor-dashboard') {
-            setCurrentPage(savedPage);
+
+         // Only auto-redirect to dashboard if we are on the landing page
+         // This allows direct URL navigation to other pages like /admin to work.
+         if (window.location.pathname === '/' || window.location.pathname === '/home') {
+            if (savedPage === 'dashboard' || savedPage === 'doctor-dashboard') {
+               setCurrentPage(savedPage);
+            }
          }
       }
    }, []);
@@ -368,22 +378,11 @@ export default function App() {
       }
    }, [currentPage]);
 
-   // --- INITIAL LOAD ROUTING ---
+   // --- POPSTATE & INITIAL NAVIGATION SYNC ---
    useEffect(() => {
-      const path = window.location.pathname.replace('/', '');
-      const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'privacy', 'terms', 'content-hub', 'admin'];
-
-      if (path && validPages.includes(path)) {
-         setCurrentPage(path);
-      } else if (window.location.hash) {
-         const hash = window.location.hash.replace('#', '');
-         if (validPages.includes(hash)) {
-            setCurrentPage(hash);
-         }
-      }
-
       const handlePopState = () => {
-         const currentPath = window.location.pathname.replace('/', '');
+         const currentSegments = window.location.pathname.split('/').filter(Boolean);
+         const currentPath = currentSegments[0] || 'home';
          setCurrentPage(validPages.includes(currentPath) ? currentPath : 'home');
       };
 
@@ -468,7 +467,6 @@ export default function App() {
                onNavigateAbout={() => navigateTo('about')}
                onNavigatePrivacy={() => navigateTo('privacy')}
                onNavigateTerms={() => navigateTo('terms')}
-               onNavigateAdmin={() => navigateTo('admin')}
             />
          )}
 

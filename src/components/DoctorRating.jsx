@@ -1,4 +1,4 @@
-import React, { useState , useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Star, Send, CheckCircle2, AlertCircle, Upload, FileText, X } from 'lucide-react';
 
 const RatingCategory = ({ label, value, onChange }) => {
@@ -33,7 +33,6 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
         communication: 0,
         punctuality: 0,
         treatmentPlan: 0,
-        professionalism: 0,
         overall: 0
     });
 
@@ -87,9 +86,9 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
             return;
         }
 
-        if (comment.trim() && !proofFile) {
+        if (comment.trim().length > 0 && !proofFile) {
             setSubmitStatus('error');
-            setErrorMessage('Proof of visit (receipt or appointment slip) is required.');
+            setErrorMessage('Proof of visit (receipt or appointment slip) is required to submit a written review.');
             return;
         }
 
@@ -131,7 +130,6 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                     communication: 0,
                     punctuality: 0,
                     treatmentPlan: 0,
-                    professionalism: 0,
                     overall: 0
                 });
                 setComment('');
@@ -192,11 +190,10 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                         <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${submitStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-teal-100 text-teal-600'}`}>
                             <CheckCircle2 size={32} />
                         </div>
-                        <h4 className="text-xl font-bold text-slate-900 mb-2">{submitStatus === 'success' ? 'Published!' : 'Under Review'}</h4>
+                        <h4 className="text-xl font-bold text-slate-900 mb-2">Submitted Successfully!</h4>
                         <p className="text-slate-600">
-                            {submitStatus === 'success'
-                                ? 'Your review has been verified and published successfully.'
-                                : 'Your review has been submitted for moderation and will differ after approval.'}
+                            Your rating has been published directly.
+                            {submitStatus === 'pending-approval' && ' Your written review has been sent for admin verification.'}
                         </p>
                     </div>
                 ) : (
@@ -226,11 +223,6 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                                 onChange={(val) => handleRatingChange('treatmentPlan', val)}
                             />
                             <RatingCategory
-                                label="Professionalism"
-                                value={ratings.professionalism}
-                                onChange={(val) => handleRatingChange('professionalism', val)}
-                            />
-                            <RatingCategory
                                 label="Overall Satisfaction"
                                 value={ratings.overall}
                                 onChange={(val) => handleRatingChange('overall', val)}
@@ -240,12 +232,18 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                         <div className="pt-6 border-t border-slate-200 mb-6">
                             <h4 className="text-lg font-bold text-slate-800 mb-2">Write a Review (Optional)</h4>
                             <p className="text-sm text-slate-500 mb-6">
-                                To share a written review, you must first upload a proof of visit to ensure authenticity.
+                                Sharing a written review helps others! Note: A proof of visit is <strong>only</strong> required if you choose to write a comment.
                             </p>
 
                             <div className="mb-6">
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Proof of Visit</label>
-                                <p className="text-xs text-slate-500 mb-3">Upload a receipt or appointment slip. (Max 5MB)</p>
+                                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                                    Proof of Visit {comment.trim() && <span className="text-red-500">*</span>}
+                                </label>
+                                <p className="text-xs text-slate-500 mb-3">
+                                    {comment.trim()
+                                        ? "Required for written reviews. Upload receipt/slip. (Max 5MB)"
+                                        : "Optional unless writing a review. (Max 5MB)"}
+                                </p>
                                 <div className="relative border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-teal-400 hover:bg-teal-50/30 transition-all group cursor-pointer bg-slate-50">
                                     <input
                                         type="file"

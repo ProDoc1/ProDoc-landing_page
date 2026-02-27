@@ -9,11 +9,13 @@ export default async function handler(req, res) {
           r.*,
           d.full_name as doctor_name,
           d.image_url as doctor_image
-        FROM reviews r
+        FROM doctor_ratings r
         JOIN doctors d ON r.doctor_id::text = d.doctor_id::text
-        WHERE r.status = 'pending' OR r.status = 'rejected'
+        WHERE (r.status = 'pending' OR r.status = 'rejected')
+        AND (r.comment IS NOT NULL AND r.comment != '')
         ORDER BY r.created_at DESC;
       `;
+
             return res.status(200).json(rows);
         } catch (error) {
             console.error("Error fetching pending reviews:", error);
@@ -23,10 +25,15 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
         // submit-rating
-        const { doctorId, userId, userName, ratings, comment } = req.body;
+        const { doctorId, userId, userName, ratings, comment, proof } = req.body;
 
         if (!doctorId || !userId || !ratings) {
-            return res.status(400).json({ error: 'Missing required fields' });
+            return res.status(400).json({ error: 'Missing required fields.' });
+        }
+
+        // Proof is required ONLY if a written review (comment) is provided
+        if (comment && comment.trim().length > 0 && !proof) {
+            return res.status(400).json({ error: 'Proof of visit is required to submit a written review.' });
         }
 
         try {
@@ -52,20 +59,25 @@ export default async function handler(req, res) {
             let isToxic = false;
             let toxicityScore = 0;
 
-            if (toxicWords.some(word => commentLower.includes(word))) {
+            if (commentLower && toxicWords.some(word => commentLower.includes(word))) {
                 isToxic = true;
                 toxicityScore = 0.9;
             }
 
+            // Status logic:
+            // 1. Toxic -> Rejected
+            // 2. Has Comment -> Pending (requires admin verification of text)
+            // 3. No Comment -> Approved (stars only)
             let status = 'approved';
-
             if (isToxic) {
                 status = 'rejected';
-            } else if (!req.body.proof) {
+            } else if (comment && comment.trim().length > 0) {
                 status = 'pending';
             } else {
                 status = 'approved';
             }
+
+
 
             await sql`
         INSERT INTO doctor_ratings (
