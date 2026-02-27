@@ -14,6 +14,7 @@ import TermsOfService from './TermsOfService';
 import DoctorViewProfile from './DoctorViewProfile';
 import ContentHub from './ContentHub';
 import AdminDashboard from './AdminDashboard';
+import AdminLogin from './AdminLogin';
 
 
 
@@ -330,6 +331,10 @@ export default function App() {
    });
    const [currentUser, setCurrentUser] = useState(null);
    const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+   const [adminUser, setAdminUser] = useState(() => {
+      const savedAdmin = localStorage.getItem('adminUser');
+      return savedAdmin ? JSON.parse(savedAdmin) : null;
+   });
 
    // --- EFFECT FOR PERSISTENT LOGIN ---
    // This runs once when the component mounts to check for a saved session.
@@ -378,6 +383,14 @@ export default function App() {
       }
    }, [currentPage]);
 
+   // Patients and Doctors should not have access to the admin login/dashboard.
+   useEffect(() => {
+      if (currentPage === 'admin' && currentUser) {
+         const role = localStorage.getItem('userRole');
+         navigateTo(role === 'doctor' ? 'doctor-dashboard' : 'dashboard');
+      }
+   }, [currentPage, currentUser]);
+
    // --- POPSTATE & INITIAL NAVIGATION SYNC ---
    useEffect(() => {
       const handlePopState = () => {
@@ -416,6 +429,11 @@ export default function App() {
       }
    };
 
+   const handleAdminLogin = (adminData) => {
+      setAdminUser(adminData);
+      navigateTo('admin');
+   };
+
    const handleLogout = () => {
       // Clear all session data
       localStorage.removeItem('prodoc_user');
@@ -441,7 +459,7 @@ export default function App() {
    return (
       <main className="relative min-h-screen">
          {/* Navbar visibility logic */}
-         {currentPage !== 'login' && currentPage !== 'signup' && (
+         {currentPage !== 'login' && currentPage !== 'signup' && (currentPage !== 'admin' || adminUser) && (
             <Navbar
                currentPage={currentPage}
                currentUser={currentUser}
@@ -449,6 +467,8 @@ export default function App() {
                onNavigateAbout={() => navigateTo('about')}
                onNavigateDoctors={() => navigateTo('doctors')}
                onNavigateHowitWorks={() => navigateToSection('how-it-works')}
+               adminUser={adminUser}
+               onNavigateAdmin={() => navigateTo('admin')}
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
                onLogout={handleLogout}
@@ -547,9 +567,20 @@ export default function App() {
          )}
 
          {currentPage === 'admin' && (
-            <AdminDashboard
-               onBack={() => navigateTo('home')}
-            />
+            adminUser ? (
+               <AdminDashboard
+                  onBack={() => {
+                     localStorage.removeItem('adminToken');
+                     localStorage.removeItem('adminUser');
+                     setAdminUser(null);
+                     navigateTo('home');
+                  }}
+               />
+            ) : (
+               <AdminLogin
+                  onLoginSuccess={handleAdminLogin}
+               />
+            )
          )}
       </main>
    );

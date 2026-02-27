@@ -26,7 +26,9 @@ const Navbar = ({
   onNavigateDashboard,
   onNavigateContentHub,
   onNavigatePrivacy,
-  onNavigateTerms
+  onNavigateTerms,
+  adminUser,
+  onNavigateAdmin
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -250,6 +252,13 @@ const Navbar = ({
                 </div>
               )}
             </div>
+          ) : adminUser ? (
+            <button
+              onClick={onNavigateAdmin}
+              className={`${currentStyle.btnPrimary} px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-teal-500/10 flex items-center gap-2`}
+            >
+              <ShieldCheck size={16} /> Admin Dashboard
+            </button>
           ) : (
             <>
               <button
@@ -333,6 +342,16 @@ const Navbar = ({
                       Logout
                     </button>
                   </>
+                ) : adminUser ? (
+                  <button
+                    onClick={() => {
+                      onNavigateAdmin();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full py-4 rounded-xl font-black text-[10px] uppercase tracking-widest bg-teal-500 text-white shadow-lg shadow-teal-500/20 flex items-center justify-center gap-2"
+                  >
+                    <ShieldCheck size={16} /> Admin Control
+                  </button>
                 ) : (
                   <>
                     <button

@@ -79,6 +79,31 @@ export default async function handler(req, res) {
                 user: { ...doctor, id: doctor.doctor_id, name: doctor.full_name, email: doctor.contact_email },
                 token
             });
+        } else if (userType === 'admin') {
+            const { rows } = await sql`SELECT * FROM admins WHERE username = ${email}`;
+            const admin = rows[0];
+
+            if (!admin) {
+                return res.status(401).json({ error: 'Invalid admin credentials' });
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, admin.password);
+
+            if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Invalid admin credentials' });
+            }
+
+            const token = jwt.sign(
+                { id: admin.id, username: admin.username, role: 'admin' },
+                JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+
+            return res.status(200).json({
+                success: true,
+                user: { id: admin.id, name: 'System Admin', email: admin.username, role: 'admin' },
+                token
+            });
         }
 
         return res.status(400).json({ error: 'Invalid user type' });
