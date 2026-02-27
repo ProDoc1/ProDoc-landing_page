@@ -418,10 +418,6 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
                               <h1 className="font-bold text-xl text-slate-900 leading-tight group-hover:text-teal-700 transition-colors">
                                 {highlightMatch(doc.full_name, searchQuery)}
                               </h1>
-                              <div className="flex items-center gap-1.5 shrink-0 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
-                                <Star size={12} className="fill-amber-400 text-amber-400" />
-                                <span className="text-xs font-bold text-amber-700">4.9</span>
-                              </div>
                             </div>
                             <p className="text-teal-600 text-xs font-bold uppercase tracking-wider mb-4">
                               {doc.specialty || 'General Practitioner'}

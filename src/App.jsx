@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
@@ -13,8 +13,8 @@ import PrivacyPolicy from './PrivacyPolicy';
 import TermsOfService from './TermsOfService';
 import DoctorViewProfile from './DoctorViewProfile';
 import ContentHub from './ContentHub';
-import AdminDashboard from './AdminDashboard';
-import AdminLogin from './AdminLogin';
+const AdminDashboard = lazy(() => import('./AdminDashboard'));
+const AdminLogin = lazy(() => import('./AdminLogin'));
 
 
 
@@ -567,20 +567,22 @@ export default function App() {
          )}
 
          {currentPage === 'admin' && (
-            adminUser ? (
-               <AdminDashboard
-                  onBack={() => {
-                     localStorage.removeItem('adminToken');
-                     localStorage.removeItem('adminUser');
-                     setAdminUser(null);
-                     navigateTo('home');
-                  }}
-               />
-            ) : (
-               <AdminLogin
-                  onLoginSuccess={handleAdminLogin}
-               />
-            )
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F0F8F8] text-teal-800 font-medium">Loading...</div>}>
+               {adminUser ? (
+                  <AdminDashboard
+                     onBack={() => {
+                        localStorage.removeItem('adminToken');
+                        localStorage.removeItem('adminUser');
+                        setAdminUser(null);
+                        navigateTo('home');
+                     }}
+                  />
+               ) : (
+                  <AdminLogin
+                     onLoginSuccess={handleAdminLogin}
+                  />
+               )}
+            </Suspense>
          )}
       </main>
    );

@@ -2,22 +2,56 @@ import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
     if (req.method === 'GET') {
-        // get-pending-reviews
-        try {
-            const { rows } = await sql`
-        SELECT 
-          r.*,
-          d.full_name as doctor_name,
-          d.image_url as doctor_image
-        FROM doctor_ratings r
-        JOIN doctors d ON r.doctor_id::text = d.doctor_id::text
-        WHERE (r.comment IS NOT NULL AND r.comment != '')
-        ORDER BY r.created_at DESC;
-      `;
+        const { doctorId, userId } = req.query;
 
-            return res.status(200).json(rows);
+        try {
+            if (userId) {
+                const { rows } = await sql`
+                    SELECT 
+                        r.id,
+                        r.overall as rating,
+                        r.comment as text,
+                        r.created_at,
+                        TO_CHAR(r.created_at, 'YYYY-MM-DD') as visitdate,
+                        TO_CHAR(r.created_at, 'YYYY-MM-DD') as createdat,
+                        d.full_name as doctor_name,
+                        d.specialty
+                    FROM doctor_ratings r
+                    JOIN doctors d ON r.doctor_id::text = d.doctor_id::text
+                    WHERE r.user_id = ${userId}
+                    ORDER BY r.created_at DESC;
+                `;
+                return res.status(200).json(rows);
+            } else if (doctorId) {
+                // Get approved reviews for a specific doctor
+                const { rows } = await sql`
+                    SELECT 
+                        id,
+                        user_name,
+                        overall,
+                        comment,
+                        created_at
+                    FROM doctor_ratings
+                    WHERE doctor_id = ${doctorId} AND status = 'approved'
+                    ORDER BY created_at DESC;
+                `;
+                return res.status(200).json(rows);
+            } else {
+                // get all reviews for admin
+                const { rows } = await sql`
+                    SELECT 
+                        r.*,
+                        d.full_name as doctor_name,
+                        d.image_url as doctor_image
+                    FROM doctor_ratings r
+                    JOIN doctors d ON r.doctor_id::text = d.doctor_id::text
+                    WHERE (r.comment IS NOT NULL AND r.comment != '')
+                    ORDER BY r.created_at DESC;
+                `;
+                return res.status(200).json(rows);
+            }
         } catch (error) {
-            console.error("Error fetching pending reviews:", error);
+            console.error("Error fetching reviews:", error);
             return res.status(500).json({ error: "Failed to fetch reviews" });
         }
     }

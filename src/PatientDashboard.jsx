@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Settings,
@@ -201,24 +201,36 @@ const PatientDashboard = ({
     chronicConditions: ['Hypertension']
   });
 
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      doctor: { name: "Dr. Sarah Perera", specialty: "Cardiologist", hospital: "Asiri Hospital" },
-      rating: 5,
-      text: "Excellent doctor, very thorough and caring. Highly recommend for cardiac issues.",
-      visitDate: "2024-01-15",
-      createdAt: "2024-01-16"
-    },
-    {
-      id: 2,
-      doctor: { name: "Dr. Sunil Jayawardena", specialty: "Neurologist", hospital: "Nawaloka Hospital" },
-      rating: 4,
-      text: "Very knowledgeable, but waiting time was a bit long. Good experience overall.",
-      visitDate: "2023-12-20",
-      createdAt: "2023-12-21"
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && (user.id || user.uid)) {
+      setReviewsLoading(true);
+      const userId = user.id || user.uid;
+      fetch(`/api/reviews?userId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const formattedReviews = data.map(r => ({
+              id: r.id,
+              doctor: {
+                name: r.doctor_name || 'Doctor',
+                specialty: r.specialty || 'General',
+                hospital: "Verified Institution"
+              },
+              rating: r.rating,
+              text: r.text || '',
+              visitDate: r.visitdate || new Date().toLocaleDateString(),
+              createdAt: r.createdat || new Date().toLocaleDateString()
+            }));
+            setReviews(formattedReviews);
+          }
+        })
+        .catch(err => console.error("Error fetching patient reviews:", err))
+        .finally(() => setReviewsLoading(false));
     }
-  ]);
+  }, [user]);
 
   const [reports, setReports] = useState([
     {
@@ -708,7 +720,7 @@ const PatientDashboard = ({
 
           {activeTab === 'profile' && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <PatientViewProfile 
+              <PatientViewProfile
                 user={currentUser}
                 onBack={() => setActiveTab('overview')}
                 onSaveProfile={handleSaveProfile}

@@ -185,6 +185,13 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                             </button>
                         </div>
                     </div>
+                ) : localStorage.getItem('userRole') === 'doctor' ? (
+                    <div className="text-center py-12 bg-slate-50 border border-slate-100 rounded-3xl shadow-sm">
+                        <h4 className="text-xl font-bold text-slate-500 mb-2">Doctor Accounts Cannot Submit Ratings</h4>
+                        <p className="text-slate-400 max-w-md mx-auto">
+                            To maintain platform integrity and fairness, doctor accounts are restricted from rating or reviewing specialists.
+                        </p>
+                    </div>
                 ) : submitStatus === 'success' || submitStatus === 'pending-approval' ? (
                     <div className={`rounded-2xl p-8 text-center animate-fade-in border ${submitStatus === 'success' ? 'bg-green-50 border-green-100' : 'bg-teal-50 border-teal-100'}`}>
                         <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${submitStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-teal-100 text-teal-600'}`}>

@@ -49,6 +49,9 @@ const DoctorDashboard = ({
   // Separate state for Available Dates save feedback
   const [dateSaveStatus, setDateSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
 
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
   // Password Change State
   const [passwordForm, setPasswordForm] = useState({ new: '', confirm: '' });
   const [pwdStatus, setPwdStatus] = useState({ type: '', message: '' });
@@ -62,8 +65,9 @@ const DoctorDashboard = ({
     bio: user?.bio,
     slmcNumber: user?.slmcNumber,
     location: 'Colombo, Sri Lanka',
-    languages: 'English, Sinhala',
-    image: user?.image_url || DoctorImg
+    image: user?.image_url || DoctorImg,
+    average_rating: user?.average_rating || 0,
+    rating_count: user?.rating_count || 0
   });
 
   useEffect(() => {
@@ -112,7 +116,9 @@ const DoctorDashboard = ({
               slmcNumber: data.slmcNumber || prev.slmcNumber,
               location: data.location || prev.location,
               languages: data.languages || prev.languages,
-              image: data.image_url || prev.image
+              image: data.image_url || prev.image,
+              average_rating: data.average_rating || 0,
+              rating_count: data.rating_count || 0
             }));
             // Initialize Second Opinion state from fetched data
             if (data.second_opinion_available !== undefined) {
@@ -126,6 +132,19 @@ const DoctorDashboard = ({
         .catch(err => console.error("Error fetching doctor profile:", err));
     }
   }, [onLogout, user]);
+
+  useEffect(() => {
+    if (activeTab === 'Reviews' && localUser.id) {
+      setReviewsLoading(true);
+      fetch(`/api/reviews?doctorId=${localUser.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setReviews(data);
+        })
+        .catch(err => console.error("Error fetching reviews:", err))
+        .finally(() => setReviewsLoading(false));
+    }
+  }, [activeTab, localUser.id]);
 
   // --- UPDATED: Handle Profile Save to Backend ---
   const handleProfileSave = async (e) => {
@@ -263,7 +282,7 @@ const DoctorDashboard = ({
 
   const professionalStats = [
     { label: "Profile Views", value: "1,240", icon: <Activity className="text-green-600" />, color: "bg-green-100" },
-    { label: "Rating", value: "4.8/5", icon: <Star className="text-green-600" />, color: "bg-green-100" },
+    { label: "Rating", value: `${Number(localUser.average_rating || 0).toFixed(1)}/5`, icon: <Star className="text-green-600" />, color: "bg-green-100" },
     { label: "Status", value: "Verified", icon: <Verified className="text-green-600" />, color: "bg-green-100" },
   ];
 
@@ -322,7 +341,11 @@ const DoctorDashboard = ({
             <NavItem
               icon={<Star size={20} />}
               label="Reviews"
-              onClick={() => setIsMobileMenuOpen(false)}
+              active={activeTab === 'Reviews'}
+              onClick={() => {
+                setActiveTab('Reviews');
+                setIsMobileMenuOpen(false);
+              }}
             />
             <NavItem
               icon={<ShieldCheck size={20} />}
@@ -492,6 +515,52 @@ const DoctorDashboard = ({
                     )}
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : activeTab === 'Reviews' ? (
+            <div className="animate-slideUp max-w-4xl mx-auto">
+              <div className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="p-4 bg-amber-100 rounded-2xl text-amber-600">
+                    <Star size={32} className="fill-amber-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Patient Reviews</h2>
+                    <p className="text-slate-500 text-sm">See what your patients are saying about you</p>
+                  </div>
+                </div>
+
+                {reviewsLoading ? (
+                  <div className="flex justify-center items-center py-20">
+                    <Loader2 className="animate-spin text-teal-500 max-w-full" size={40} />
+                  </div>
+                ) : reviews.length === 0 ? (
+                  <div className="text-center py-16 bg-slate-50 rounded-3xl border border-slate-100">
+                    <Star size={48} className="text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold text-slate-700 mb-2">No Reviews Yet</h3>
+                    <p className="text-slate-500">When patients leave reviews, they will appear here.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {reviews.map(review => (
+                      <div key={review.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="font-bold text-slate-800">{review.user_name || 'Anonymous'}</h4>
+                            <p className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                          </div>
+                          <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-slate-200">
+                            <Star className="text-amber-400 fill-amber-400" size={16} />
+                            <span className="font-bold text-slate-700">{review.overall}</span>
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-slate-600 italic">"{review.comment}"</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : (

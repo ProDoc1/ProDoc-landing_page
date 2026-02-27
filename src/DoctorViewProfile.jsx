@@ -24,6 +24,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
     const [error, setError] = useState(null);
     const [isSaved, setIsSaved] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [reviews, setReviews] = useState([]);
 
     const handleSaveClick = () => {
         if (!currentUser) {
@@ -34,17 +35,26 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
     };
 
     useEffect(() => {
-        const fetchDoctorProfile = async () => {
+        const fetchDoctorData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/doctors?id=${doctorId}`);
-                if (!response.ok) {
+                const [profileResponse, reviewsResponse] = await Promise.all([
+                    fetch(`/api/doctors?id=${doctorId}`),
+                    fetch(`/api/reviews?doctorId=${doctorId}`)
+                ]);
+
+                if (!profileResponse.ok) {
                     throw new Error('Failed to fetch doctor profile');
                 }
-                const data = await response.json();
-                setDoctor(data);
+                const profileData = await profileResponse.json();
+                setDoctor(profileData);
+
+                if (reviewsResponse.ok) {
+                    const reviewsData = await reviewsResponse.json();
+                    setReviews(reviewsData);
+                }
             } catch (err) {
-                console.error('Error fetching doctor profile:', err);
+                console.error('Error fetching doctor data:', err);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -52,7 +62,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
         };
 
         if (doctorId) {
-            fetchDoctorProfile();
+            fetchDoctorData();
         }
     }, [doctorId]);
 
@@ -195,9 +205,12 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                 </div>
                                 <div className="bg-slate-50/50 backdrop-blur-sm border border-slate-100 rounded-[1.5rem] p-4 text-center group hover:bg-white hover:shadow-md transition-all">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Patient Rating</p>
-                                    <div className="flex items-center justify-center gap-1.5 mb-0.5 text-xl font-black text-slate-900">
-                                        <Star size={16} className="fill-amber-400 text-amber-400" />
-                                        4.9
+                                    <div className="flex flex-col items-center justify-center mb-0.5">
+                                        <div className="flex items-center justify-center gap-1.5 text-xl font-black text-slate-900">
+                                            <Star size={16} className="fill-amber-400 text-amber-400" />
+                                            {Number(doctor.average_rating || 0).toFixed(1)}
+                                        </div>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase">{doctor.rating_count || 0} Reviews</p>
                                     </div>
                                 </div>
                                 <div className="bg-slate-50/50 backdrop-blur-sm border border-slate-100 rounded-[1.5rem] p-4 text-center group hover:bg-white hover:shadow-md transition-all">
@@ -318,7 +331,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                 </div>
 
                 {/* Rating and Reviews Section */}
-                <div className="mt-8">
+                <div className="mt-8 space-y-8">
                     <DoctorRating
                         doctorId={doctorId}
                         user={currentUser}
@@ -326,6 +339,36 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                         onNavigateLogin={onNavigateLogin}
                         onNavigateSignup={onNavigateSignupPage}
                     />
+
+                    {reviews.length > 0 && (
+                        <section className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-lg border border-slate-100 relative overflow-hidden">
+                            <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                                <div className="p-3 bg-teal-50 rounded-2xl text-teal-500">
+                                    <Star size={24} className="fill-teal-500" />
+                                </div>
+                                Patient Reviews ({reviews.length})
+                            </h3>
+                            <div className="space-y-6">
+                                {reviews.map((review) => (
+                                    <div key={review.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div>
+                                                <h4 className="font-bold text-slate-800">{review.user_name || 'Anonymous'}</h4>
+                                                <p className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                            <div className="flex gap-1 text-amber-400 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                                                <Star className="fill-amber-400" size={16} />
+                                                <span className="font-bold text-amber-600 text-sm">{review.overall}</span>
+                                            </div>
+                                        </div>
+                                        {review.comment && (
+                                            <p className="text-slate-600 leading-relaxed text-sm italic">"{review.comment}"</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
                 </div>
             </div>
 
