@@ -265,7 +265,6 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pt-36 pb-8 px-4">
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                {/* LEFT SIDEBAR */}
                 <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-36 h-fit">
                     <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                         <div className="flex flex-col gap-2">
@@ -287,20 +286,57 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-slate-900 mb-4 px-2">Trending Topics</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {['#MentalHealth', '#Nutrition', '#COVID19', '#Wellness', '#Pediatrics', '#Surgery'].map(tag => (
-                                <span key={tag} className="bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer hover:bg-teal-50 hover:text-teal-600 transition-colors">
-                                    {tag}
-                                </span>
+                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col max-h-[50vh]">
+                        <h3 className="font-bold text-slate-900 mb-4 px-2 flex-shrink-0">Suggested Doctors</h3>
+                        <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                            {(showAllSuggestions ? suggestedDoctors : suggestedDoctors.slice(0, 3)).map(doctor => (
+                                <div key={doctor.doctor_id} className="flex items-center justify-between gap-3 group">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        {doctor.image_url ? (
+                                            <img
+                                                src={doctor.image_url.replace(/^\.\//, '/')}
+                                                alt={doctor.full_name}
+                                                className="w-10 h-10 rounded-full object-cover border border-teal-50 flex-shrink-0 group-hover:ring-2 ring-teal-100 transition-all"
+                                            />
+                                        ) : (
+                                            <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold flex-shrink-0 group-hover:ring-2 ring-teal-200 transition-all text-xs">
+                                                {doctor.full_name ? doctor.full_name[0] : 'D'}
+                                            </div>
+                                        )}
+                                        <div className="truncate">
+                                            <p className="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors truncate" title={doctor.full_name}>
+                                                {doctor.full_name}
+                                            </p>
+                                            <p className="text-[10px] text-slate-500 truncate" title={doctor.specialty}>
+                                                {doctor.specialty}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => onViewProfile && onViewProfile(doctor.doctor_id)}
+                                        className="text-[11px] font-bold text-teal-600 border border-teal-100 hover:bg-teal-600 hover:text-white px-2.5 py-1.5 rounded-lg transition-all flex-shrink-0"
+                                    >
+                                        View
+                                    </button>
+                                </div>
                             ))}
+                            {suggestedDoctors.length === 0 && (
+                                <p className="text-xs text-slate-500 text-center py-4">No suggestions found.</p>
+                            )}
                         </div>
+                        {suggestedDoctors.length > 3 && (
+                            <button
+                                onClick={() => setShowAllSuggestions(!showAllSuggestions)}
+                                className="w-full mt-4 py-3 text-xs font-bold text-slate-400 hover:text-teal-600 transition-colors border-t border-slate-50 flex-shrink-0"
+                            >
+                                {showAllSuggestions ? 'Show Less' : 'View All Suggestions'}
+                            </button>
+                        )}
                     </div>
                 </aside>
 
                 {/* CENTER FEED */}
-                <main className="lg:col-span-6 space-y-6">
+                <main className="lg:col-span-9 space-y-6">
 
                     {/* Create Post Input (Doctors Only) */}
                     {userRole === 'doctor' && (
@@ -380,17 +416,17 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
-                                        className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 p-6 space-y-4"
+                                        className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100 p-5 space-y-4"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-slate-100 animate-pulse" />
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 animate-pulse" />
                                             <div className="space-y-2 flex-1">
                                                 <div className="h-4 bg-slate-100 rounded-full w-1/3 animate-pulse" />
                                                 <div className="h-3 bg-slate-100 rounded-full w-1/4 animate-pulse" />
                                             </div>
                                         </div>
-                                        <div className="aspect-video bg-slate-100 rounded-2xl animate-pulse" />
-                                        <div className="space-y-2">
+                                        <div className="aspect-[16/9] bg-slate-100 rounded-[1.25rem] animate-pulse mx-4" />
+                                        <div className="space-y-2 px-1">
                                             <div className="h-4 bg-slate-100 rounded-full w-full animate-pulse" />
                                             <div className="h-4 bg-slate-100 rounded-full w-5/6 animate-pulse" />
                                         </div>
@@ -435,57 +471,57 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
                                         key={post.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 transition-all hover:shadow-md"
+                                        className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100 transition-all hover:shadow-md"
                                     >
                                         {/* Post Header */}
-                                        <div className="p-6 flex items-center justify-between">
+                                        <div className="p-5 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 {post.authorImage ? (
-                                                    <img src={post.authorImage} alt={post.author} className="w-12 h-12 rounded-full object-cover border-2 border-teal-50" />
+                                                    <img src={post.authorImage} alt={post.author} className="w-10 h-10 rounded-full object-cover border-2 border-teal-50" />
                                                 ) : (
-                                                    <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-lg">
+                                                    <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-sm">
                                                         {post.author[0]}
                                                     </div>
                                                 )}
                                                 <div>
                                                     <h4 className="font-bold text-slate-900 text-sm leading-tight hover:text-teal-600 transition-colors cursor-pointer">{post.author}</h4>
-                                                    <p className="text-xs text-slate-500 font-medium">{post.specialty} • {post.timeAgo}</p>
+                                                    <p className="text-[11px] text-slate-500 font-medium">{post.specialty} • {post.timeAgo}</p>
                                                 </div>
                                             </div>
                                             <button className="text-slate-300 hover:text-slate-600 hover:bg-slate-50 p-2 rounded-full transition-all">
-                                                <MoreHorizontal size={20} />
+                                                <MoreHorizontal size={18} />
                                             </button>
                                         </div>
 
                                         {/* Post Image */}
                                         {post.image && (
-                                            <div className="px-4 pb-4">
-                                                <div className="w-full aspect-[16/9] bg-slate-50 overflow-hidden rounded-[1.5rem] border border-slate-100">
+                                            <div className="px-4 pb-3">
+                                                <div className="w-full aspect-[16/9] bg-slate-50 overflow-hidden rounded-[1.25rem] border border-slate-100">
                                                     <img src={post.image} alt="Post content" className="w-full h-full object-cover transition-transform hover:scale-105 duration-700" />
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Post Content */}
-                                        <div className="px-6 pb-6">
-                                            <p className="text-slate-700 leading-relaxed whitespace-pre-line text-[15px]">{post.content}</p>
+                                        <div className="px-6 pb-5">
+                                            <p className="text-slate-700 leading-relaxed whitespace-pre-line text-sm">{post.content}</p>
                                         </div>
 
                                         {/* Post Actions */}
-                                        <div className="p-4 px-6 flex items-center justify-between border-t border-slate-50 bg-slate-50/30">
+                                        <div className="p-3 px-6 flex items-center justify-between border-t border-slate-50 bg-slate-50/30">
                                             <div className="flex items-center gap-6">
                                                 <button
                                                     onClick={() => handleLike(post.id)}
-                                                    className={`flex items-center gap-2 text-sm font-bold transition-all ${post.isLiked ? 'text-teal-600 scale-110' : 'text-slate-500 hover:text-slate-800'}`}
+                                                    className={`flex items-center gap-2 text-xs font-bold transition-all ${post.isLiked ? 'text-teal-600 scale-105' : 'text-slate-500 hover:text-slate-800'}`}
                                                 >
-                                                    <ThumbsUp size={20} className={post.isLiked ? 'fill-teal-600 stroke-teal-600' : ''} />
+                                                    <ThumbsUp size={18} className={post.isLiked ? 'fill-teal-600 stroke-teal-600' : ''} />
                                                     {post.likes}
                                                 </button>
                                                 <button
                                                     onClick={() => handleShare(post.id)}
-                                                    className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
+                                                    className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
                                                 >
-                                                    <Share2 size={20} />
+                                                    <Share2 size={18} />
                                                     {post.shares}
                                                 </button>
                                             </div>
@@ -493,7 +529,7 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
                                                 onClick={() => handleBookmark(post.id)}
                                                 className={`p-2 rounded-full transition-all ${post.isBookmarked ? 'text-teal-600 bg-teal-50' : 'text-slate-400 hover:bg-slate-50'}`}
                                             >
-                                                <Bookmark size={20} className={post.isBookmarked ? 'fill-teal-600 stroke-teal-600' : ''} />
+                                                <Bookmark size={18} className={post.isBookmarked ? 'fill-teal-600 stroke-teal-600' : ''} />
                                             </button>
                                         </div>
                                     </motion.div>
@@ -502,64 +538,6 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
                         </AnimatePresence>
                     </div>
                 </main>
-
-                {/* RIGHT SIDEBAR */}
-                <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-36 h-fit">
-                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col max-h-[85vh]">
-                        <h3 className="font-bold text-slate-900 mb-6 px-2 flex-shrink-0">Suggested Doctors</h3>
-                        <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
-                            {(showAllSuggestions ? suggestedDoctors : suggestedDoctors.slice(0, 3)).map(doctor => (
-                                <div key={doctor.doctor_id} className="flex items-center justify-between gap-3 group">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        {doctor.image_url ? (
-                                            <img
-                                                src={doctor.image_url.replace(/^\.\//, '/')}
-                                                alt={doctor.full_name}
-                                                className="w-10 h-10 rounded-full object-cover border border-teal-50 flex-shrink-0 group-hover:ring-2 ring-teal-100 transition-all"
-                                            />
-                                        ) : (
-                                            <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold flex-shrink-0 group-hover:ring-2 ring-teal-200 transition-all text-xs">
-                                                {doctor.full_name ? doctor.full_name[0] : 'D'}
-                                            </div>
-                                        )}
-                                        <div className="truncate">
-                                            <p className="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors truncate" title={doctor.full_name}>
-                                                {doctor.full_name}
-                                            </p>
-                                            <p className="text-[10px] text-slate-500 truncate" title={doctor.specialty}>
-                                                {doctor.specialty}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => onViewProfile && onViewProfile(doctor.doctor_id)}
-                                        className="text-[11px] font-bold text-teal-600 border border-teal-100 hover:bg-teal-600 hover:text-white px-2.5 py-1.5 rounded-lg transition-all flex-shrink-0"
-                                    >
-                                        View
-                                    </button>
-                                </div>
-                            ))}
-                            {suggestedDoctors.length === 0 && (
-                                <p className="text-xs text-slate-500 text-center py-4">No suggestions found.</p>
-                            )}
-                        </div>
-                        {suggestedDoctors.length > 3 && (
-                            <button
-                                onClick={() => setShowAllSuggestions(!showAllSuggestions)}
-                                className="w-full mt-4 py-3 text-xs font-bold text-slate-400 hover:text-teal-600 transition-colors border-t border-slate-50 flex-shrink-0"
-                            >
-                                {showAllSuggestions ? 'Show Less' : 'View All Suggestions'}
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="text-center p-6">
-                        <p className="text-xs text-slate-400">
-                            © 2026 ProDoc Content Hub<br />
-                            Privacy • Terms • Guidelines
-                        </p>
-                    </div>
-                </aside>
 
             </div>
         </div>
