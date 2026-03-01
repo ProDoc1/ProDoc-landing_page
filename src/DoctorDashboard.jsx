@@ -332,7 +332,11 @@ const DoctorDashboard = ({
     setArticleStatus({ type: '', message: '' });
 
     try {
+<<<<<<< Updated upstream
       const response = await fetch('/api/create-content-hub-post', {
+=======
+      const response = await fetch('/api/manage-doctor-posts', {
+>>>>>>> Stashed changes
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

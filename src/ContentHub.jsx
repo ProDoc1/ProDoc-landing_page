@@ -67,7 +67,11 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
         setArticleError('');
 
         try {
+<<<<<<< Updated upstream
             const response = await fetch('/api/create-content-hub-post', {
+=======
+            const response = await fetch('/api/manage-doctor-posts', {
+>>>>>>> Stashed changes
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -182,7 +186,11 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
 
         // Send API call to database
         try {
+<<<<<<< Updated upstream
             await fetch('/api/interact-content-hub-post', {
+=======
+            await fetch('/api/manage-doctor-posts', {
+>>>>>>> Stashed changes
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ post_id: id, action: isLiking ? 'like' : 'unlike' })
@@ -203,7 +211,11 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
 
         // Send API call to database
         try {
+<<<<<<< Updated upstream
             await fetch('/api/interact-content-hub-post', {
+=======
+            await fetch('/api/manage-doctor-posts', {
+>>>>>>> Stashed changes
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ post_id: id, action: 'share' })
