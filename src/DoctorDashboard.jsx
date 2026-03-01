@@ -17,6 +17,10 @@ import {
   Lock,
   Camera,
   Menu,
+  PlusSquare,
+  UploadCloud,
+  Trash2,
+  Newspaper,
   Loader2 // Imported Loader icon for saving state
 } from 'lucide-react';
 import Navbar from './components/Navbar';
@@ -51,6 +55,14 @@ const DoctorDashboard = ({
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  // Article State
+  const [articleForm, setArticleForm] = useState({ content: '', image: null });
+  const [articleStatus, setArticleStatus] = useState({ type: '', message: '' });
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [doctorPosts, setDoctorPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
+  const articleImageRef = useRef(null);
 
   // Password Change State
   const [passwordForm, setPasswordForm] = useState({ new: '', confirm: '' });
@@ -144,7 +156,26 @@ const DoctorDashboard = ({
         .catch(err => console.error("Error fetching reviews:", err))
         .finally(() => setReviewsLoading(false));
     }
+
+    if ((activeTab === 'Create' || activeTab === 'Dashboard' || activeTab === 'Articles') && localUser.id) {
+      fetchDoctorPosts();
+    }
   }, [activeTab, localUser.id]);
+
+  const fetchDoctorPosts = async () => {
+    setLoadingPosts(true);
+    try {
+      const res = await fetch(`/api/manage-doctor-posts?doctor_id=${localUser.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDoctorPosts(data);
+      }
+    } catch (err) {
+      console.error("Error fetching articles:", err);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
 
   // --- UPDATED: Handle Profile Save to Backend ---
   const handleProfileSave = async (e) => {
@@ -280,6 +311,77 @@ const DoctorDashboard = ({
     }
   };
 
+  const handleArticleImage = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setArticleForm(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const publishArticle = async (e) => {
+    e.preventDefault();
+    if (!articleForm.content || !articleForm.image) {
+      setArticleStatus({ type: 'error', message: 'Both an image and content are required.' });
+      return;
+    }
+    setIsPublishing(true);
+    setArticleStatus({ type: '', message: '' });
+
+    try {
+      const response = await fetch('/api/create-content-hub-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctor_id: localUser.id,
+          full_name: localUser.fullName,
+          specialty: localUser.specialty,
+          image_url: localUser.image,
+          post_content: articleForm.content,
+          post_image: articleForm.image
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setArticleStatus({ type: 'success', message: 'Article published successfully!' });
+        setArticleForm({ content: '', image: null });
+        fetchDoctorPosts(); // Refresh list automatically
+        setTimeout(() => setArticleStatus({ type: '', message: '' }), 5000);
+      } else {
+        setArticleStatus({ type: 'error', message: data.error || 'Failed to publish article.' });
+      }
+    } catch (err) {
+      setArticleStatus({ type: 'error', message: 'Network error. Please try again.' });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Are you sure you want to permanently delete this article?')) return;
+
+    try {
+      const response = await fetch('/api/manage-doctor-posts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: postId, doctor_id: localUser.id })
+      });
+      if (response.ok) {
+        setDoctorPosts(doctorPosts.filter(post => post.post_id !== postId));
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Failed to delete article');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error connecting to the server while trying to delete.');
+    }
+  };
+
   const professionalStats = [
     { label: "Profile Views", value: "1,240", icon: <Activity className="text-green-600" />, color: "bg-green-100" },
     { label: "Rating", value: `${Number(localUser.average_rating || 0).toFixed(1)}/5`, icon: <Star className="text-green-600" />, color: "bg-green-100" },
@@ -353,6 +455,24 @@ const DoctorDashboard = ({
               active={activeTab === 'Credential Vault'}
               onClick={() => {
                 setActiveTab('Credential Vault');
+                setIsMobileMenuOpen(false);
+              }}
+            />
+            <NavItem
+              icon={<PlusSquare size={20} />}
+              label="Create"
+              active={activeTab === 'Create'}
+              onClick={() => {
+                setActiveTab('Create');
+                setIsMobileMenuOpen(false);
+              }}
+            />
+            <NavItem
+              icon={<Newspaper size={20} />}
+              label="Articles"
+              active={activeTab === 'Articles'}
+              onClick={() => {
+                setActiveTab('Articles');
                 setIsMobileMenuOpen(false);
               }}
             />
@@ -515,6 +635,70 @@ const DoctorDashboard = ({
                     )}
                   </div>
                 </div>
+              </div>            </div>
+          ) : activeTab === 'Articles' ? (
+            <div className="animate-slideUp max-w-4xl mx-auto w-full">
+              {/* Your Published Articles List */}
+              <div className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100 mb-4 w-full">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
+                    <Newspaper size={32} />
+                  </div>
+                  <div className="flex-1 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-800">Your Published Articles</h3>
+                      <p className="text-slate-500 text-sm">Manage the articles you've shared</p>
+                    </div>
+                    <div className="bg-teal-50 px-4 py-2 rounded-full hidden md:block">
+                      <span className="text-teal-700 font-bold text-sm">{doctorPosts.length} Articles</span>
+                    </div>
+                  </div>
+                </div>
+
+                {loadingPosts ? (
+                  <div className="flex justify-center items-center py-10">
+                    <Loader2 className="animate-spin text-teal-500 max-w-full" size={32} />
+                  </div>
+                ) : doctorPosts.length === 0 ? (
+                  <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
+                    <p className="text-slate-500 text-sm">You haven't published any articles yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {doctorPosts.map(post => (
+                      <div key={post.post_id} className="flex flex-col md:flex-row gap-4 p-4 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 hover:border-teal-200 transition-colors group">
+                        {post.post_image && (
+                          <div className="w-full md:w-40 h-32 flex-shrink-0 bg-slate-200 rounded-xl overflow-hidden border border-slate-200">
+                            <img src={post.post_image.replace(/^\.\//, '/')} alt="Thumbnail" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="flex flex-col justify-between flex-1">
+                          <div>
+                            <p className="text-xs text-slate-400 font-bold mb-2">
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </p>
+                            <p className="text-slate-700 text-sm line-clamp-3">
+                              {post.post_content}
+                            </p>
+                          </div>
+
+                          <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-200">
+                            <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
+                              <span>❤️ {post.likes_count || 0}</span>
+                              <span>💬 {post.comments_count || 0}</span>
+                            </div>
+                            <button
+                              onClick={() => handleDeletePost(post.post_id)}
+                              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-all"
+                            >
+                              <Trash2 size={16} /> Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : activeTab === 'Reviews' ? (
@@ -563,7 +747,7 @@ const DoctorDashboard = ({
                 )}
               </div>
             </div>
-          ) : (
+          ) : activeTab === 'Credential Vault' ? (
             /* CREDENTIAL VAULT PAGE */
             <div className="max-w-2xl mx-auto animate-slideUp">
               <div className="bg-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
@@ -623,7 +807,80 @@ const DoctorDashboard = ({
                 </div>
               </div>
             </div>
-          )}
+          ) : activeTab === 'Create' ? (
+            <div className="max-w-3xl mx-auto animate-slideUp">
+              <div className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
+                    <PlusSquare size={32} />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Create Article</h2>
+                    <p className="text-slate-500 text-sm">Share knowledge and updates with the ProDoc community</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-6 md:p-8 rounded-[2rem] border border-slate-100">
+                  <form onSubmit={publishArticle} className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Article Image (Required)</label>
+                      <div
+                        onClick={() => articleImageRef.current.click()}
+                        className="w-full h-64 border-2 border-dashed border-teal-200 rounded-2xl flex flex-col items-center justify-center bg-white cursor-pointer hover:bg-teal-50 transition-colors overflow-hidden relative group"
+                      >
+                        {articleForm.image ? (
+                          <img src={articleForm.image} alt="Article format" className="w-full h-full object-cover" />
+                        ) : (
+                          <>
+                            <UploadCloud size={40} className="text-teal-300 mb-3" />
+                            <p className="font-bold text-teal-700">Click to upload an image</p>
+                            <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                          </>
+                        )}
+                        {articleForm.image && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-white font-bold bg-black/50 px-4 py-2 rounded-lg">Change Image</span>
+                          </div>
+                        )}
+                      </div>
+                      <input type="file" ref={articleImageRef} onChange={handleArticleImage} className="hidden" accept="image/*" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Article Content (Required)</label>
+                      <textarea
+                        value={articleForm.content}
+                        onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
+                        placeholder="Write your article content here..."
+                        className="w-full h-40 px-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-teal-500 outline-none transition-all resize-none"
+                      />
+                    </div>
+
+                    {articleStatus.message && (
+                      <div className={`p-4 rounded-xl text-sm flex items-center gap-3 ${articleStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                        {articleStatus.type === 'success' ? <CheckCircle size={18} /> : <X size={18} />}
+                        {articleStatus.message}
+                      </div>
+                    )}
+
+                    <div className="flex justify-end pt-2">
+                      <button
+                        type="submit"
+                        disabled={isPublishing || !articleForm.content || !articleForm.image}
+                        className="px-8 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {isPublishing ? (
+                          <><Loader2 className="animate-spin" size={18} /> Publishing...</>
+                        ) : (
+                          'Publish Article'
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </main>
       </div>
 

@@ -562,7 +562,11 @@ export default function App() {
 
          {currentPage === 'content-hub' && (
             <ContentHub
+               user={currentUser}
+               userRole={localStorage.getItem('userRole')}
                onNavigateHome={() => navigateTo('home')}
+               onNavigateDoctors={() => navigateTo('doctors')}
+               onViewProfile={(id) => navigateTo('doctor-view', id)}
             />
          )}
 
