@@ -1,6 +1,15 @@
 import { sql } from '@vercel/postgres';
 
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '10mb',
+        },
+    },
+};
+
 export default async function handler(req, res) {
+    // --- GET (List articles for a specific doctor) ---
     if (req.method === 'GET') {
         try {
             const { doctor_id } = req.query;
@@ -18,6 +27,70 @@ export default async function handler(req, res) {
         }
     }
 
+    // --- POST (Create, Like, Share) ---
+    if (req.method === 'POST') {
+        const { action } = req.body;
+
+        // 1. Interaction Actions (Like/Share)
+        if (action === 'like' || action === 'unlike' || action === 'share') {
+            try {
+                const { post_id } = req.body;
+                if (!post_id) return res.status(400).json({ error: 'post_id is required.' });
+
+                if (action === 'like') {
+                    await sql`UPDATE content_hub_posts SET likes_count = COALESCE(likes_count, 0) + 1 WHERE post_id = ${post_id}`;
+                    return res.status(200).json({ success: true, message: 'Post liked' });
+                } else if (action === 'unlike') {
+                    await sql`UPDATE content_hub_posts SET likes_count = GREATEST(COALESCE(likes_count, 0) - 1, 0) WHERE post_id = ${post_id}`;
+                    return res.status(200).json({ success: true, message: 'Post unliked' });
+                } else if (action === 'share') {
+                    await sql`UPDATE content_hub_posts SET shares_count = COALESCE(shares_count, 0) + 1 WHERE post_id = ${post_id}`;
+                    return res.status(200).json({ success: true, message: 'Post shared' });
+                }
+            } catch (error) {
+                console.error("Error updating interaction:", error);
+                return res.status(500).json({ error: "Failed to update interaction." });
+            }
+        }
+
+        // 2. Create Post Action (Default if action is 'create' or undefined for compatibility)
+        if (!action || action === 'create') {
+            try {
+                const { doctor_id, full_name, specialty, image_url, post_content, post_image } = req.body;
+
+                if (!post_content || !post_image || !doctor_id) {
+                    return res.status(400).json({ error: 'Content, image, and doctor_id are required to create an article.' });
+                }
+
+                await sql`
+                    INSERT INTO content_hub_posts (
+                        doctor_id,
+                        full_name, 
+                        specialty, 
+                        image_url, 
+                        post_content, 
+                        post_image
+                    ) VALUES (
+                        ${doctor_id},
+                        ${full_name},
+                        ${specialty},
+                        ${image_url},
+                        ${post_content},
+                        ${post_image}
+                    )
+                `;
+
+                return res.status(200).json({ success: true, message: 'Article created successfully!' });
+            } catch (error) {
+                console.error("Error creating content hub post:", error);
+                return res.status(500).json({ error: error.message || "Failed to create article." });
+            }
+        }
+
+        return res.status(400).json({ error: 'Invalid POST action.' });
+    }
+
+    // --- DELETE (Remove article) ---
     if (req.method === 'DELETE') {
         try {
             const { post_id, doctor_id } = req.body;
