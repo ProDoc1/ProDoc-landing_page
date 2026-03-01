@@ -11,6 +11,11 @@ export default async function handler(req, res) {
                         r.id,
                         r.overall as rating,
                         r.comment as text,
+                        r.communication,
+                        r.punctuality,
+                        r.treatment_plan,
+                        r.status,
+                        r.proof_url,
                         r.created_at,
                         TO_CHAR(r.created_at, 'YYYY-MM-DD') as visitdate,
                         TO_CHAR(r.created_at, 'YYYY-MM-DD') as createdat,
@@ -23,13 +28,17 @@ export default async function handler(req, res) {
                 `;
                 return res.status(200).json(rows);
             } else if (doctorId) {
-                // Get approved reviews for a specific doctor
+                // Get approved reviews for a specific doctor (include per-category scores)
                 const { rows } = await sql`
                     SELECT 
                         id,
                         user_name,
+                        communication,
+                        punctuality,
+                        treatment_plan,
                         overall,
                         comment,
+                        proof_url,
                         created_at
                     FROM doctor_ratings
                     WHERE doctor_id = ${doctorId} AND status = 'approved'
@@ -176,6 +185,22 @@ export default async function handler(req, res) {
         } catch (error) {
             console.error("Error updating review:", error);
             return res.status(500).json({ error: "Update failed" });
+        }
+    }
+
+    if (req.method === 'DELETE') {
+        const { reviewId } = req.body;
+        if (!reviewId) {
+            return res.status(400).json({ error: 'Missing reviewId' });
+        }
+        try {
+            await sql`
+        DELETE FROM doctor_ratings WHERE id = ${reviewId};
+      `;
+            return res.status(200).json({ success: true });
+        } catch (error) {
+            console.error('Error deleting review:', error);
+            return res.status(500).json({ error: 'Deletion failed' });
         }
     }
 

@@ -16,8 +16,8 @@ const RatingCategory = ({ label, value, onChange }) => {
                         <Star
                             size={24}
                             className={`${star <= value
-                                ? 'fill-amber-400 text-amber-400'
-                                : 'fill-slate-100 text-slate-300 hover:text-amber-200'
+                                ? 'fill-teal-500 text-teal-500'
+                                : 'fill-slate-100 text-slate-300 hover:text-teal-200'
                                 } transition-colors duration-200`}
                         />
                     </button>
@@ -105,7 +105,7 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                 body: JSON.stringify({
                     doctorId,
                     userId: user.id || user.uid,
-                    userName: user.name || user.displayName || 'Anonymous',
+                    userName: user.name || user.displayName || 'Verified User',
                     ratings,
                     comment,
                     proof: proofFile // Send base64 image
