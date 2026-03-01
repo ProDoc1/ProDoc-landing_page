@@ -52,10 +52,10 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin }) => {
                 id: post.post_id,
                 author: post.full_name || 'ProDoc Member',
                 specialty: post.specialty || 'Generalist',
-                authorImage: post.image_url || null, // Doctor's profile image
+                authorImage: post.image_url ? post.image_url.replace(/^\.\//, '/') : null, // Doctor's profile image
                 timeAgo: formatTimeAgo(post.created_at),
                 content: post.post_content || '',
-                image: post.post_image || null, // The actual image for the post
+                image: post.post_image ? post.post_image.replace(/^\.\//, '/') : null, // The actual image for the post
                 likes: parseInt(post.likes_count || 0),
                 comments: parseInt(post.comments_count || 0),
                 shares: parseInt(post.shares_count || 0),
