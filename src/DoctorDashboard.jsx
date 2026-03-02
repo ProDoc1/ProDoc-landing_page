@@ -55,6 +55,8 @@ const DoctorDashboard = ({
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  // local filter for doctor view: show all, ratings only, or reviews only
+  const [reviewFilter, setReviewFilter] = useState('all');
 
   // Article State
   const [articleForm, setArticleForm] = useState({ content: '', image: null });
@@ -162,6 +164,7 @@ const DoctorDashboard = ({
     }
   }, [activeTab, localUser.id]);
 
+
   const fetchDoctorPosts = async () => {
     setLoadingPosts(true);
     try {
@@ -174,6 +177,7 @@ const DoctorDashboard = ({
       console.error("Error fetching articles:", err);
     } finally {
       setLoadingPosts(false);
+
     }
   };
 
@@ -705,8 +709,8 @@ const DoctorDashboard = ({
             <div className="animate-slideUp max-w-4xl mx-auto">
               <div className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
                 <div className="flex items-center gap-4 mb-10">
-                  <div className="p-4 bg-amber-100 rounded-2xl text-amber-600">
-                    <Star size={32} className="fill-amber-600" />
+                  <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
+                    <Star size={32} className="fill-teal-600" />
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-slate-800">Patient Reviews</h2>
@@ -725,25 +729,162 @@ const DoctorDashboard = ({
                     <p className="text-slate-500">When patients leave reviews, they will appear here.</p>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    {reviews.map(review => (
-                      <div key={review.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h4 className="font-bold text-slate-800">{review.user_name || 'Anonymous'}</h4>
-                            <p className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
-                          </div>
-                          <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-slate-200">
-                            <Star className="text-amber-400 fill-amber-400" size={16} />
-                            <span className="font-bold text-slate-700">{review.overall}</span>
-                          </div>
-                        </div>
-                        {review.comment && (
-                          <p className="text-slate-600 italic">"{review.comment}"</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <>
+                    {/* filter controls */}
+                    <div className="flex gap-2 mb-6">
+                      {['all','ratings','reviews'].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => setReviewFilter(opt)}
+                          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${reviewFilter===opt ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        >
+                          {opt==='all' ? 'All' : opt==='ratings' ? 'Ratings' : 'Reviews'}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-6">
+                      {(() => {
+                        const ratingsOnly = reviews.filter(r => !r.comment || r.comment.trim() === '');
+                        const textReviews = reviews.filter(r => r.comment && r.comment.trim() !== '');
+                        const showRatings = reviewFilter === 'all' || reviewFilter === 'ratings';
+                        const showText = reviewFilter === 'all' || reviewFilter === 'reviews';
+                        return (
+                          <>
+                            {showRatings && ratingsOnly.length > 0 && (
+                              <div className="space-y-4">
+                                <h4 className="text-xl font-semibold text-slate-800">Ratings</h4>
+                                {ratingsOnly.map(review => (
+                                  <div key={review.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative">
+                                    {/* optional status badge */}
+                                    {review.status && (
+                                      <div className="absolute top-4 right-4">
+                                        <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                          {review.status}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="flex justify-between items-start mb-4">
+                                      <div>
+                                        <h4 className="font-bold text-slate-800">Verified User</h4>
+                                        <p className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                                      </div>
+                                      <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-slate-200">
+                                        <Star className="text-teal-400 fill-teal-400" size={16} />
+                                        <span className="font-bold text-slate-700">{review.overall}</span>
+                                      </div>
+                                    </div>
+                                    {/* category ratings grid */}
+                                    <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                                      <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                        <span className="font-semibold text-slate-700">Communication:</span>
+                                        <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.communication || '--'}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                        <span className="font-semibold text-slate-700">Punctuality:</span>
+                                        <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.punctuality || '--'}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                        <span className="font-semibold text-slate-700">Treatment Plan:</span>
+                                        <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.treatment_plan || '--'}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between bg-teal-50 p-2 rounded-lg border border-teal-100">
+                                        <span className="font-semibold text-slate-700">Overall Satisfaction:</span>
+                                        <span className="flex items-center gap-1 text-teal-700 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.overall || '--'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* report button */}
+                                    <div className="text-right">
+                                      <button onClick={() => handleReport(review.id)} className="text-rose-600 text-sm font-semibold">Report</button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {showText && textReviews.length > 0 && (
+                              <div className="space-y-4">
+                                <h4 className="text-xl font-semibold text-slate-800">Reviews</h4>
+                                {textReviews.map(review => (
+                                  <div key={review.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative">
+                                    
+                                    {review.status && (
+                                      <div className="absolute top-4 right-4">
+                                        <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                          {review.status}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="flex justify-between items-start mb-4">
+                                      <div>
+                                        <h4 className="font-bold text-slate-800">Verified User</h4>
+                                        <p className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                                      </div>
+                                      <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-slate-200">
+                                        <Star className="text-teal-400 fill-teal-400" size={16} />
+                                        <span className="font-bold text-slate-700">{review.overall}</span>
+                                      </div>
+                                    </div>
+                                    {/* category ratings grid */}
+                                    <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                                      <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                        <span className="font-semibold text-slate-700">Communication:</span>
+                                        <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.communication || '--'}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                        <span className="font-semibold text-slate-700">Punctuality:</span>
+                                        <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.punctuality || '--'}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                        <span className="font-semibold text-slate-700">Treatment:</span>
+                                        <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.treatment_plan || '--'}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-centerjustify-between bg-teal-50 p-2 rounded-lg border border-teal-100">
+                                        <span className="font-semibold text-slate-700">Overall:</span>
+                                        <span className="flex items-center gap-1 text-teal-700 font-bold">
+                                          <Star size={12} className="fill-teal-400" />
+                                          {review.overall || '--'}
+                                        </span>
+                                    </div>
+                                    </div>
+                                    
+                                    {/* comment text */}
+                                    {review.comment && (
+                                      <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-3 bg-white p-3 rounded-lg border-l-4 border-teal-400">{review.comment}</p>
+                                    )}
+                                    {/* report button */}
+                                    <div className="text-right">
+                                      <button onClick={() => handleReport(review.id)} className="text-rose-600 text-sm font-semibold">Report</button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </>
                 )}
               </div>
             </div>

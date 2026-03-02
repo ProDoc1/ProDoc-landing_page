@@ -19,12 +19,6 @@ import {
   Plus,
   Share,
   X,
-  Mail,
-  Phone,
-  MapPin,
-  Camera,
-  Save,
-  AlertCircle,
   MessageSquare,
   CreditCard,
   CheckCircle
@@ -188,21 +182,18 @@ const PatientDashboard = ({
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState(user || {
-    fullName: 'John Doe',
-    email: 'john@example.com',
-    phone: '+94 77 123 4567',
-    dateOfBirth: '1990-05-15',
-    gender: 'Male',
-    address: '123 Galle Road, Colombo 03',
-    emergencyContact: 'Jane Doe: +94 77 987 6543',
-    bloodType: 'O+',
-    allergies: ['Penicillin', 'Peanuts'],
-    chronicConditions: ['Hypertension']
-  });
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState('all');
+
+  // Sync user prop to currentUser only if valid
+  useEffect(() => {
+    if (user && (user.id || user.uid)) {
+      setCurrentUser(user);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user && (user.id || user.uid)) {
@@ -220,7 +211,12 @@ const PatientDashboard = ({
                 hospital: "Verified Institution"
               },
               rating: r.rating,
+              communication: r.communication,
+              punctuality: r.punctuality,
+              treatment_plan: r.treatment_plan,
+              proof: r.proof_url || '',
               text: r.text || '',
+              status: r.status || 'approved',
               visitDate: r.visitdate || new Date().toLocaleDateString(),
               createdAt: r.createdat || new Date().toLocaleDateString()
             }));
@@ -232,57 +228,10 @@ const PatientDashboard = ({
     }
   }, [user]);
 
-  const [reports, setReports] = useState([
-    {
-      id: 1,
-      title: "Blood Test Report - January 2024",
-      type: "lab",
-      reportDate: "2024-01-15",
-      doctorName: "Dr. Sarah Perera",
-      hospital: "Asiri Hospital",
-      fileSize: "2.4 MB",
-      isConfidential: false,
-      description: "Complete blood count, lipid profile, and liver function tests"
-    },
-    {
-      id: 2,
-      title: "ECG Report",
-      type: "scan",
-      reportDate: "2024-01-15",
-      doctorName: "Dr. Sarah Perera",
-      hospital: "Asiri Hospital",
-      fileSize: "1.8 MB",
-      isConfidential: false,
-      description: "Resting ECG - Normal sinus rhythm"
-    },
-    {
-      id: 3,
-      title: "Prescription - Amoxicillin",
-      type: "prescription",
-      reportDate: "2024-01-15",
-      doctorName: "Dr. Sarah Perera",
-      hospital: "Asiri Hospital",
-      fileSize: "156 KB",
-      isConfidential: false,
-      description: "7-day course for respiratory infection"
-    },
-    {
-      id: 4,
-      title: "COVID-19 Vaccination Certificate",
-      type: "vaccination",
-      reportDate: "2023-06-10",
-      doctorName: null,
-      hospital: "National Hospital Colombo",
-      fileSize: "890 KB",
-      isConfidential: false,
-      description: "Second dose completion certificate"
-    }
-  ]);
+  const [reports, setReports] = useState([]);
 
-  const watchlist = [
-    { id: 1, name: "Dr. Sarah Perera", specialty: "Cardiologist", status: "SLMC Verified", lastActive: "2 hours ago" },
-    { id: 2, name: "Dr. Sunil Jayawardena", specialty: "Neurologist", status: "Pending Update", lastActive: "1 day ago" },
-  ];
+  const [watchlist, setWatchlist] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
 
   const handleSaveProfile = async (formData) => {
     console.log('Saving profile:', formData);
@@ -316,13 +265,58 @@ const PatientDashboard = ({
       <Star
         key={i}
         size={16}
-        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
+        className={i < rating ? "text-teal-400 fill-teal-400" : "text-slate-300"}
       />
     ));
   };
 
+  const performDelete = async (reviewId) => {
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setReviews(prev => prev.filter(r => r.id !== reviewId));
+      } else {
+        console.error('Failed to delete review', data);
+      }
+    } catch (err) {
+      console.error('Error deleting review', err);
+    }
+  };
+
+  const confirmDelete = (reviewId) => {
+    setDeleteConfirm({ show: true, id: reviewId });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, id: null });
+  };
+
+  const handleDeleteReview = () => {
+    if (deleteConfirm.show && deleteConfirm.id) {
+      performDelete(deleteConfirm.id);
+      setDeleteConfirm({ show: false, id: null });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full space-y-4">
+            <h3 className="text-lg font-bold text-slate-800">Confirm deletion</h3>
+            <p className="text-slate-600">Are you sure you want to delete this review or rating? This action cannot be undone.</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={cancelDelete} className="px-4 py-2 bg-slate-200 rounded-lg">Cancel</button>
+              <button onClick={handleDeleteReview} className="px-4 py-2 bg-red-500 text-white rounded-lg">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Navbar
         currentPage="dashboard"
         currentUser={currentUser}
@@ -337,6 +331,7 @@ const PatientDashboard = ({
 
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-28 md:p-8 md:pt-32 grid grid-cols-1 lg:grid-cols-4 gap-8">
 
+        {currentUser && (
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
             <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
@@ -421,6 +416,7 @@ const PatientDashboard = ({
             <ShieldCheck className="absolute -bottom-4 -right-4 w-32 h-32 text-white/10 rotate-12" />
           </div>
         </div>
+        )}
 
         <div className="lg:col-span-3 space-y-6">
 
@@ -552,63 +548,179 @@ const PatientDashboard = ({
 
           {activeTab === 'reviews' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold text-slate-800">My Reviews</h3>
-                <button className="px-4 py-2 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center gap-2">
-                  <Plus size={18} /> Write a Review
-                </button>
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h3 className="text-2xl font-bold text-slate-800">My Reviews & Ratings</h3>
+              </div>
+
+              {/* filter buttons */}
+              <div className="flex gap-2">
+                {['all','reviews','ratings'].map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => setReviewFilter(opt)}
+                    className={`px-4 py-2 rounded-xl font-semibold transition-colors ${reviewFilter===opt ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {opt==='all' ? 'All' : opt==='ratings' ? 'Ratings' : 'Reviews'}
+                  </button>
+                ))}
               </div>
 
               {reviews.length === 0 ? (
                 <div className="bg-white rounded-[2rem] p-12 text-center text-slate-400 border border-slate-100 shadow-sm">
                   <Star size={48} className="mx-auto mb-4 opacity-20" />
-                  <h4 className="text-lg font-bold text-slate-600 mb-2">No reviews yet</h4>
+                  <h4 className="text-lg font-bold text-slate-600 mb-2">No reviews or ratings yet</h4>
                   <p className="mb-6">Share your experience with doctors to help others.</p>
                   <button className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors">
                     Write Your First Review
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {reviews.map(review => (
-                    <div key={review.id} className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm hover:shadow-md transition-all">
-                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl">
-                            {review.doctor.name.charAt(0)}
+                <>
+                  {(() => {
+                    const ratingsOnly = reviews.filter(r => !r.text || r.text.trim() === '');
+                    const textReviews = reviews.filter(r => r.text && r.text.trim() !== '');
+                    const showRatings = reviewFilter === 'all' || reviewFilter === 'ratings';
+                    const showText = reviewFilter === 'all' || reviewFilter === 'reviews';
+                    return (
+                      <div className="space-y-6">
+                        {showRatings && ratingsOnly.length > 0 && (
+                          <div className="space-y-4">
+                            <h4 className="text-xl font-semibold text-slate-800">Ratings</h4>
+                            {ratingsOnly.map(review => (
+                              <div key={review.id} className={`bg-white border rounded-[2rem] p-4 shadow-sm hover:shadow-md transition-all relative ${review.status==='rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
+                                {/* Status Badge */}
+                                <div className="absolute top-4 right-4">
+                                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    {review.status}
+                                  </span>
+                                </div>
+                                
+                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-lg">
+                                      {review.doctor.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <h4 className="font-bold text-md text-slate-800">{review.doctor.name}</h4>
+                                      <p className="text-slate-500 text-sm">{review.doctor.specialty} at {review.doctor.hospital}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* proof link */}
+                                {review.proof && (
+                                  <div className="mb-4 text-sm">
+                                    Proof: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">View</a>
+                                  </div>
+                                )}
+                             
+                                <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                                  <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                    <span className="font-semibold text-slate-700">Communication:</span>
+                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.communication || '--'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                    <span className="font-semibold text-slate-700">Punctuality:</span>
+                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.punctuality || '--'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                    <span className="font-semibold text-slate-700">Treatment Plan:</span>
+                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.treatment_plan || '--'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between bg-teal-50 p-2 rounded-lg border border-teal-100">
+                                    <span className="font-semibold text-slate-700">Overall Satisfaction:</span>
+                                    <span className="flex items-center gap-1 text-teal-700 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.rating || '--'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-slate-400 text-sm">
+                                  <span>Posted on {review.createdAt}</span>
+                                </div>
+                                <div className="flex justify-end mt-2">
+                                  <button
+                                    onClick={() => confirmDelete(review.id)}
+                                    className="text-sm text-red-500 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <div>
-                            <h4 className="font-bold text-lg text-slate-800">{review.doctor.name}</h4>
-                            <p className="text-slate-500">{review.doctor.specialty} at {review.doctor.hospital}</p>
-                            <div className="flex items-center gap-2 mt-1 text-sm text-slate-400">
-                              <Calendar size={14} /> Visited on {review.visitDate}
-                            </div>
+                        )}
+                        {showText && textReviews.length > 0 && (
+                          <div className="space-y-4">
+                            <h4 className="text-xl font-semibold text-slate-800">Written Reviews</h4>
+                            {textReviews.map(review => (
+                              <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status==='rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
+                                {/* Status Badge */}
+                                <div className="absolute top-1 right-8">
+                                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    {review.status}
+                                  </span>
+                                </div>
+                                {/* Delete button moved below */}
+                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl">
+                                      {review.doctor.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <h4 className="font-bold text-lg text-slate-800">{review.doctor.name}</h4>
+                                      <p className="text-slate-500">{review.doctor.specialty} at {review.doctor.hospital}</p>
+                                      <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                                        <Calendar size={14}/> Posted on {review.createdAt}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-5">
+                                <p className="text-slate-600 text-sm ">
+                                </p>
+                                {/* Rating Badge */}
+                                <div className="flex justify-start">
+                                  <div className="flex items-center gap-1 bg-teal-50 px-3 py-2 rounded-xl border border-teal-100 mr-2">
+                                    {renderStars(review.rating)}
+                                    <span className="ml-2 font-bold text-teal-600">
+                                      {review.rating}/5
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                                </div>
+                                <div className="bg-slate-50 rounded-2xl p-6 mb-4">
+                                  <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-3 bg-white p-3 rounded-lg border-l-4 border-teal-400">{review.text}</p>
+                                </div>
+                                {review.proof && (
+                                  <div className="mb-4 text-sm">
+                                    Proof of visit: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">View</a>
+                                  </div>
+                                )}
+                                <div className="flex justify-end mt-2">
+                                  <button
+                                    onClick={() => confirmDelete(review.id)}
+                                    className="text-sm text-red-500 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1 bg-amber-50 px-3 py-2 rounded-xl">
-                          {renderStars(review.rating)}
-                          <span className="ml-2 font-bold text-amber-700">{review.rating}/5</span>
-                        </div>
+                        )}
                       </div>
-
-                      <div className="bg-slate-50 rounded-2xl p-6 mb-4">
-                        <p className="text-slate-700 leading-relaxed text-lg">"{review.text}"</p>
-                      </div>
-
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-400">Posted on {review.createdAt}</span>
-                        <div className="flex gap-3">
-                          <button className="text-teal-600 hover:text-teal-700 font-bold px-4 py-2 rounded-xl hover:bg-teal-50 transition-colors">
-                            Edit
-                          </button>
-                          <button className="text-red-500 hover:text-red-600 font-bold px-4 py-2 rounded-xl hover:bg-red-50 transition-colors">
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    );
+                  })()}
+                </>
               )}
             </div>
           )}
@@ -662,7 +774,7 @@ const PatientDashboard = ({
                         <div>
                           <h4 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
                             {report.title}
-                            {report.isConfidential && <Lock size={16} className="text-amber-500" />}
+                            {report.isConfidential && <Lock size={16} className="text-teal-500" />}
                           </h4>
                           <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
                             <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">

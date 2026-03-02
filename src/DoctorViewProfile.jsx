@@ -26,6 +26,15 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [reviews, setReviews] = useState([]);
 
+    // derived collections
+    const ratingsOnly = reviews.filter(r => !r.comment || r.comment.trim() === '');
+    const textReviews = reviews.filter(r => r.comment && r.comment.trim() !== '');
+    const totalRatingsCount = reviews.length;
+    const commentCount = textReviews.length;
+
+    const shouldScrollRatings = ratingsOnly.length > 3;
+    const shouldScrollReviews = textReviews.length > 3;
+
     const handleSaveClick = () => {
         if (!currentUser) {
             setShowLoginPrompt(true);
@@ -61,9 +70,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
             }
         };
 
-        if (doctorId) {
-            fetchDoctorData();
-        }
+        if (doctorId) fetchDoctorData();
     }, [doctorId]);
 
     if (loading) {
@@ -100,7 +107,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 pb-24 relative overflow-hidden">
-            {/* Background Blobs */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-teal-200/20 blur-[120px] rounded-full animate-pulse duration-[8000ms]"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-200/20 blur-[120px] rounded-full animate-pulse duration-[10000ms]"></div>
@@ -108,7 +114,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 pt-28 md:pt-40">
-                {/* Back Button */}
                 <button
                     onClick={onBack}
                     className="flex items-center gap-2 text-slate-500 hover:text-teal-600 font-bold transition-all mb-10 group"
@@ -120,13 +125,10 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                 </button>
 
                 <div className="grid lg:grid-cols-12 gap-10">
-                    {/* Left Side: Profile Information */}
                     <div className="lg:col-span-8 space-y-8">
-                        {/* Header Profile Section */}
                         <div className="bg-white/80 backdrop-blur-xl rounded-[3rem] p-6 md:p-10 shadow-xl shadow-slate-200/50 border border-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-teal-50 rounded-full -mr-32 -mt-32 opacity-50"></div>
 
-                            {/* Interaction Icons */}
                             <div className="absolute top-6 right-8 flex gap-3 z-30">
                                 <button
                                     onClick={handleSaveClick}
@@ -143,15 +145,10 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             </div>
 
                             <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center md:items-start">
-                                {/*Profile Image */}
                                 <div className="relative group">
                                     <div className="w-52 h-52 md:w-64 md:h-64 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white relative z-10 transition-transform duration-500 group-hover:scale-[1.02]">
                                         {doctor.image_url ? (
-                                            <img
-                                                src={doctor.image_url}
-                                                alt={doctor.full_name || doctor.name}
-                                                className="w-full h-full object-cover"
-                                            />
+                                            <img src={doctor.image_url} alt={doctor.full_name || doctor.name} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full bg-teal-50 flex items-center justify-center">
                                                 <Stethoscope size={80} className="text-teal-200" />
@@ -163,7 +160,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                     </div>
                                 </div>
 
-                                {/* Profile Header Info */}
                                 <div className="flex-1 text-center md:text-left">
                                     <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-tight tracking-tight mb-4">
                                         {doctor.full_name || doctor.name}
@@ -196,7 +192,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                 </div>
                             </div>
 
-                            {/* Stats Summary Bar */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2 p-2 relative z-10">
                                 <div className="bg-slate-50/50 backdrop-blur-sm border border-slate-100 rounded-[1.5rem] p-4 text-center group hover:bg-white hover:shadow-md transition-all">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Experience</p>
@@ -207,10 +202,10 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Patient Rating</p>
                                     <div className="flex flex-col items-center justify-center mb-0.5">
                                         <div className="flex items-center justify-center gap-1.5 text-xl font-black text-slate-900">
-                                            <Star size={16} className="fill-amber-400 text-amber-400" />
+                                            <Star size={16} className="fill-teal-400 text-teal-500" />
                                             {Number(doctor.average_rating || 0).toFixed(1)}
                                         </div>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">{doctor.rating_count || 0} Reviews</p>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase">{totalRatingsCount} Rating{totalRatingsCount !== 1 ? 's' : ''}</p>
                                     </div>
                                 </div>
                                 <div className="bg-slate-50/50 backdrop-blur-sm border border-slate-100 rounded-[1.5rem] p-4 text-center group hover:bg-white hover:shadow-md transition-all">
@@ -221,7 +216,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             </div>
                         </div>
 
-                        {/* Professional Bio section */}
                         <section className="bg-white rounded-[2.5rem] p-10 shadow-lg border border-slate-100 overflow-hidden relative">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
                             <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-4 relative z-10">
@@ -237,7 +231,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             </div>
                         </section>
 
-                        {/* Qualifications / Hospital Affiliations */}
                         <section className="bg-white rounded-[2.5rem] p-10 shadow-lg border border-slate-100">
                             <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-4">
                                 <div className="p-3 bg-teal-50 rounded-2xl text-teal-500">
@@ -267,9 +260,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                         </section>
                     </div>
 
-                    {/* Right Side: Appointment & Second Opinion */}
                     <div className="lg:col-span-4 space-y-8">
-                        {/* Verified Status Card */}
                         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-lg text-center relative overflow-hidden group">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent opacity-30"></div>
                             <div className="w-20 h-20 bg-green-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-green-100 group-hover:scale-110 transition-transform duration-500">
@@ -284,7 +275,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                 <span className="text-slate-900 font-mono text-xs">{doctor.slmcNumber}</span>
                             </div>
                         </div>
-                        {/* Second Opnion Sidebar */}
+
                         <div className="sticky top-40 bg-teal-500 rounded-[3rem] p-8 text-white shadow-2xl overflow-hidden group">
                             <div className="absolute top-0 right-0 w-48 h-48 bg-teal-900 rounded-full -mr-24 -mt-24 blur-[60px] group-hover:bg-teal-500/30 transition-all duration-700"></div>
 
@@ -332,6 +323,107 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
 
                 {/* Rating and Reviews Section */}
                 <div className="mt-8 space-y-8">
+                    
+
+                    {/* two-card layout for ratings and reviews */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        {ratingsOnly.length > 0 && (
+                            <section className="bg-white rounded-[2.5rem] p-6 shadow-lg border border-slate-100 relative ">
+                                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                                    <div className="p-3 bg-teal-50 rounded-2xl text-teal-500">
+                                        <Star size={20} className="fill-teal-500" />
+                                    </div>
+                                    Patient Ratings ({ratingsOnly.length})
+                                </h3>
+                                <div
+                                    className={`space-y-4 ${
+                                        shouldScrollRatings
+                                            ? 'max-h-[500px] overflow-y-auto'
+                                            : ''
+                                    }`}
+                                >
+                                    {ratingsOnly.map((review) => (
+                                        <div key={review.id} className="p-4 bg-slate-50 rounded-xl border border-teal-500">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div>
+                                                    <h4 className="text-slate-800">Verified User</h4>
+                                                    <p className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                                <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                                    <span className="font-semibold text-slate-700">Communication:</span>
+                                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                                        <Star size={12} className="fill-teal-500" />
+                                                        {review.communication || '--'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                                    <span className="font-semibold text-slate-700">Punctuality:</span>
+                                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                                        <Star size={12} className="fill-teal-500" />
+                                                        {review.punctuality || '--'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                                    <span className="font-semibold text-slate-700">Treatment Plan:</span>
+                                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                                        <Star size={12} className="fill-teal-500" />
+                                                        {review.treatment_plan || '--'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between bg-teal-100 p-2 rounded-lg border border-teal-150">
+                                                    <span className="font-semibold text-slate-700">Overall Satisfaction:</span>
+                                                    <span className="flex items-center gap-1 text-teal-700 font-bold">
+                                                        <Star size={12} className="fill-teal-500" />
+                                                        {review.overall || '--'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {textReviews.length > 0 && (
+                            <section className="bg-white rounded-[2.5rem] p-6 shadow-lg border border-slate-100 relative ">
+                                <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+                                    <div className="p-3 bg-teal-50 rounded-2xl text-teal-500">
+                                        <Star size={20} className="fill-teal-500" />
+                                    </div>
+                                    Patient Reviews ({textReviews.length})
+                                </h3>
+                                <div
+                                    className={`space-y-4 ${
+                                        shouldScrollReviews
+                                            ? 'max-h-[500px] overflow-y-auto'
+                                            : ''
+                                    }`}
+                                >
+                                    {[5, 4, 3, 2, 1].map((star) => {
+                                        const group = textReviews.filter(r => Number(r.overall) === star);
+                                        if (group.length === 0) return null;
+                                        return (
+                                            <div key={star} className="space-y-3">
+                                                {group.map(review => (
+                                                    <div key={review.id} className="p-4 bg-teal-100 rounded-xl border border-teal-200">
+                                                        <div className="flex items-center justify-between text-xs">
+                                                            <div className="text-slate-600">
+                                                                <p className="font-medium">Verified User</p>
+                                                                <p className="text-slate-400 text-[11px]">{new Date(review.created_at).toLocaleDateString()}</p>
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-3 bg-white p-3 rounded-lg border-l-4 border-teal-400">{review.comment}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        )}
+                    </div>
                     <DoctorRating
                         doctorId={doctorId}
                         user={currentUser}
@@ -339,76 +431,46 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                         onNavigateLogin={onNavigateLogin}
                         onNavigateSignup={onNavigateSignupPage}
                     />
-
-                    {reviews.length > 0 && (
-                        <section className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-lg border border-slate-100 relative overflow-hidden">
-                            <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                                <div className="p-3 bg-teal-50 rounded-2xl text-teal-500">
-                                    <Star size={24} className="fill-teal-500" />
-                                </div>
-                                Patient Reviews ({reviews.length})
-                            </h3>
-                            <div className="space-y-6">
-                                {reviews.map((review) => (
-                                    <div key={review.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div>
-                                                <h4 className="font-bold text-slate-800">{review.user_name || 'Anonymous'}</h4>
-                                                <p className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
-                                            </div>
-                                            <div className="flex gap-1 text-amber-400 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
-                                                <Star className="fill-amber-400" size={16} />
-                                                <span className="font-bold text-amber-600 text-sm">{review.overall}</span>
-                                            </div>
-                                        </div>
-                                        {review.comment && (
-                                            <p className="text-slate-600 leading-relaxed text-sm italic">"{review.comment}"</p>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
                 </div>
-            </div>
 
-            {/* Login Prompt Modal */}
-            {showLoginPrompt && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-[2rem] p-8 max-w-md w-full text-center shadow-2xl relative">
-                        <button
-                            onClick={() => setShowLoginPrompt(false)}
-                            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-                        >
-                            <X size={20} />
-                        </button>
-
-                        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Heart size={36} className="text-red-500 fill-red-500" />
-                        </div>
-
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2">Login Required</h3>
-                        <p className="text-slate-500 mb-8 max-w-sm mx-auto">
-                            Please login or register to save doctors to your profile for easy access later.
-                        </p>
-
-                        <div className="space-y-3">
+                {/* Login Prompt Modal */}
+                {showLoginPrompt && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-[2rem] p-8 max-w-md w-full text-center shadow-2xl relative">
                             <button
-                                onClick={() => { setShowLoginPrompt(false); onNavigateLogin && onNavigateLogin(); }}
-                                className="w-full bg-teal-500 text-white font-bold py-4 rounded-xl hover:bg-teal-600 transition-colors shadow-lg active:scale-95"
+                                onClick={() => setShowLoginPrompt(false)}
+                                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                             >
-                                Login
+                                <X size={20} />
                             </button>
-                            <button
-                                onClick={() => { setShowLoginPrompt(false); onNavigateSignupPage && onNavigateSignupPage(); }}
-                                className="w-full bg-slate-50 text-slate-700 font-bold py-4 rounded-xl hover:bg-slate-100 transition-colors border border-slate-200 active:scale-95"
-                            >
-                                Register Now
-                            </button>
+
+                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Heart size={36} className="text-red-500 fill-red-500" />
+                            </div>
+
+                            <h3 className="text-2xl font-bold text-slate-900 mb-2">Login Required</h3>
+                            <p className="text-slate-500 mb-8 max-w-sm mx-auto">
+                                Please login or register to save doctors to your profile for easy access later.
+                            </p>
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => { setShowLoginPrompt(false); onNavigateLogin && onNavigateLogin(); }}
+                                    className="w-full bg-teal-500 text-white font-bold py-4 rounded-xl hover:bg-teal-600 transition-colors shadow-lg active:scale-95"
+                                >
+                                    Login
+                                </button>
+                                <button
+                                    onClick={() => { setShowLoginPrompt(false); onNavigateSignupPage && onNavigateSignupPage(); }}
+                                    className="w-full bg-slate-50 text-slate-700 font-bold py-4 rounded-xl hover:bg-slate-100 transition-colors border border-slate-200 active:scale-95"
+                                >
+                                    Register Now
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };
