@@ -28,7 +28,7 @@ import PatientViewProfile from './lib/PatientviewProfile';
 import EditProfileModal from './EditProfileModal';
 
 // Payment Modal Component
-const PaymentModal = ({ isOpen, onClose, onPaymentSuccess }) => {
+const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request' }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState('payment'); // payment, success
 
@@ -70,11 +70,11 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess }) => {
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
                 <div>
                   <p className="text-sm text-slate-500">Service</p>
-                  <p className="font-bold text-slate-800">Second Opinion Request</p>
+                  <p className="font-bold text-slate-800">{serviceName}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500">Amount</p>
-                  <p className="font-bold text-teal-600 text-lg">$50.00</p>
+                  <p className="font-bold text-teal-600 text-lg">{amount}</p>
                 </div>
               </div>
 
@@ -137,7 +137,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess }) => {
                 ) : (
                   <>
                     <CreditCard size={20} />
-                    Pay $50.00
+                    Pay {amount}
                   </>
                 )}
               </button>
@@ -181,6 +181,7 @@ const PatientDashboard = ({
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion' });
 
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -332,90 +333,90 @@ const PatientDashboard = ({
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-28 md:p-8 md:pt-32 grid grid-cols-1 lg:grid-cols-4 gap-8">
 
         {currentUser && (
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
-            <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
-              <User size={48} />
-              <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
-            </div>
-            <h2 className="text-2xl font-bold text-slate-800">{currentUser?.fullName || 'Patient Name'}</h2>
-            <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
-
-            {currentUser.bloodType && (
-              <div className="flex justify-center gap-2 mb-4">
-                <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
-                  Blood: {currentUser.bloodType}
-                </span>
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
+              <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
+                <User size={48} />
+                <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
               </div>
-            )}
+              <h2 className="text-2xl font-bold text-slate-800">{currentUser?.fullName || 'Patient Name'}</h2>
+              <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
 
-            <button
-              onClick={() => setIsEditProfileOpen(true)}
-              className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
-            >
-              <Settings size={18} /> Edit Profile
-            </button>
-            <button
-              onClick={onLogout}
-              className="w-full mt-3 py-3 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
-            >
-              <LogOut size={18} /> Logout
-            </button>
-          </div>
+              {currentUser.bloodType && (
+                <div className="flex justify-center gap-2 mb-4">
+                  <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
+                    Blood: {currentUser.bloodType}
+                  </span>
+                </div>
+              )}
 
-          <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <ShieldCheck size={20} /> Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <Star size={20} /> My Reviews
-              <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
-                {reviews.length}
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveTab('reports')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <FileText size={20} /> Medical Records
-              <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
-                {reports.length}
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <User size={20} /> View Profile
-            </button>
-            <button
-              onClick={() => setActiveTab('secondOpinion')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'secondOpinion' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <MessageSquare size={20} /> Second Opinion
-            </button>
-          </div>
-
-          <div className="bg-teal-600 rounded-[2rem] p-8 text-white shadow-lg shadow-teal-200/50 relative overflow-hidden">
-            <div className="relative z-10">
-              <h3 className="text-xl font-bold mb-2">Find Doctors</h3>
-              <p className="text-teal-100 text-sm mb-6">Search verified specialists in Sri Lanka.</p>
               <button
-                onClick={onNavigateDoctors}
-                className="bg-white text-teal-600 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all flex items-center gap-2 w-full justify-center"
+                onClick={() => setIsEditProfileOpen(true)}
+                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
               >
-                <Search size={18} /> Search Directory
+                <Settings size={18} /> Edit Profile
+              </button>
+              <button
+                onClick={onLogout}
+                className="w-full mt-3 py-3 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <LogOut size={18} /> Logout
               </button>
             </div>
-            <ShieldCheck className="absolute -bottom-4 -right-4 w-32 h-32 text-white/10 rotate-12" />
+
+            <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <ShieldCheck size={20} /> Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <Star size={20} /> My Reviews
+                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
+                  {reviews.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('reports')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <FileText size={20} /> Medical Records
+                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
+                  {reports.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <User size={20} /> View Profile
+              </button>
+              <button
+                onClick={() => setActiveTab('secondOpinion')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'secondOpinion' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <MessageSquare size={20} /> Second Opinion
+              </button>
+            </div>
+
+            <div className="bg-teal-600 rounded-[2rem] p-8 text-white shadow-lg shadow-teal-200/50 relative overflow-hidden">
+              <div className="relative z-10">
+                <h3 className="text-xl font-bold mb-2">Find Doctors</h3>
+                <p className="text-teal-100 text-sm mb-6">Search verified specialists in Sri Lanka.</p>
+                <button
+                  onClick={onNavigateDoctors}
+                  className="bg-white text-teal-600 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all flex items-center gap-2 w-full justify-center"
+                >
+                  <Search size={18} /> Search Directory
+                </button>
+              </div>
+              <ShieldCheck className="absolute -bottom-4 -right-4 w-32 h-32 text-white/10 rotate-12" />
+            </div>
           </div>
-        </div>
         )}
 
         <div className="lg:col-span-3 space-y-6">
@@ -554,13 +555,13 @@ const PatientDashboard = ({
 
               {/* filter buttons */}
               <div className="flex gap-2">
-                {['all','reviews','ratings'].map(opt => (
+                {['all', 'reviews', 'ratings'].map(opt => (
                   <button
                     key={opt}
                     onClick={() => setReviewFilter(opt)}
-                    className={`px-4 py-2 rounded-xl font-semibold transition-colors ${reviewFilter===opt ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    className={`px-4 py-2 rounded-xl font-semibold transition-colors ${reviewFilter === opt ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   >
-                    {opt==='all' ? 'All' : opt==='ratings' ? 'Ratings' : 'Reviews'}
+                    {opt === 'all' ? 'All' : opt === 'ratings' ? 'Ratings' : 'Reviews'}
                   </button>
                 ))}
               </div>
@@ -587,14 +588,14 @@ const PatientDashboard = ({
                           <div className="space-y-4">
                             <h4 className="text-xl font-semibold text-slate-800">Ratings</h4>
                             {ratingsOnly.map(review => (
-                              <div key={review.id} className={`bg-white border rounded-[2rem] p-4 shadow-sm hover:shadow-md transition-all relative ${review.status==='rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
+                              <div key={review.id} className={`bg-white border rounded-[2rem] p-4 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
                                 {/* Status Badge */}
                                 <div className="absolute top-4 right-4">
                                   <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
                                     {review.status}
                                   </span>
                                 </div>
-                                
+
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                   <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-lg">
@@ -612,7 +613,7 @@ const PatientDashboard = ({
                                     Proof: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">View</a>
                                   </div>
                                 )}
-                             
+
                                 <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                                   <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
                                     <span className="font-semibold text-slate-700">Communication:</span>
@@ -662,7 +663,7 @@ const PatientDashboard = ({
                           <div className="space-y-4">
                             <h4 className="text-xl font-semibold text-slate-800">Written Reviews</h4>
                             {textReviews.map(review => (
-                              <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status==='rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
+                              <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
                                 {/* Status Badge */}
                                 <div className="absolute top-1 right-8">
                                   <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
@@ -679,23 +680,23 @@ const PatientDashboard = ({
                                       <h4 className="font-bold text-lg text-slate-800">{review.doctor.name}</h4>
                                       <p className="text-slate-500">{review.doctor.specialty} at {review.doctor.hospital}</p>
                                       <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
-                                        <Calendar size={14}/> Posted on {review.createdAt}
+                                        <Calendar size={14} /> Posted on {review.createdAt}
                                       </div>
                                     </div>
                                   </div>
                                   <div className="space-y-5">
-                                <p className="text-slate-600 text-sm ">
-                                </p>
-                                {/* Rating Badge */}
-                                <div className="flex justify-start">
-                                  <div className="flex items-center gap-1 bg-teal-50 px-3 py-2 rounded-xl border border-teal-100 mr-2">
-                                    {renderStars(review.rating)}
-                                    <span className="ml-2 font-bold text-teal-600">
-                                      {review.rating}/5
-                                    </span>
+                                    <p className="text-slate-600 text-sm ">
+                                    </p>
+                                    {/* Rating Badge */}
+                                    <div className="flex justify-start">
+                                      <div className="flex items-center gap-1 bg-teal-50 px-3 py-2 rounded-xl border border-teal-100 mr-2">
+                                        {renderStars(review.rating)}
+                                        <span className="ml-2 font-bold text-teal-600">
+                                          {review.rating}/5
+                                        </span>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
                                 </div>
                                 <div className="bg-slate-50 rounded-2xl p-6 mb-4">
                                   <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-3 bg-white p-3 rounded-lg border-l-4 border-teal-400">{review.text}</p>
@@ -847,21 +848,63 @@ const PatientDashboard = ({
                 <p className="text-teal-100">Get expert advice from top specialists worldwide.</p>
               </div>
 
-              <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100 shadow-sm">
-                <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-6 flex items-center justify-center text-teal-600">
-                  <MessageSquare size={40} />
+              {/* Doctors & Pricing Card */}
+              <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-6">
+                <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Stethoscope className="text-teal-600" size={24} />
+                  Available Specialists & Pricing
+                </h3>
+                <div className="flex flex-col gap-4">
+                  {[
+                    { name: 'Dr. Sarah Smith', specialty: 'Neurology', rating: 4.8, price: 'Rs. 2500', exp: '15+ yrs' },
+                    { name: 'Dr. John Davis', specialty: 'Cardiology', rating: 4.9, price: 'Rs. 3000', exp: '20+ yrs' },
+                    { name: 'Dr. Emily Chen', specialty: 'Oncology', rating: 4.7, price: 'Rs. 3500', exp: '12+ yrs' }
+                  ].map((doc, idx) => (
+                    <div key={idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div
+                        className="cursor-pointer group flex items-center gap-4 flex-1"
+                        onClick={onNavigateDoctors}
+                      >
+                        <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl shrink-0 group-hover:bg-teal-200 transition-colors">
+                          {doc.name.split(' ')[1]?.charAt(0) || doc.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg text-slate-800 group-hover:text-teal-600 transition-colors">{doc.name}</h4>
+                          <p className="text-sm text-slate-500">{doc.specialty}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                            <div className="flex items-center gap-1">
+                              <Star size={16} className="text-teal-500 fill-teal-500" />
+                              <span className="font-semibold">{doc.rating}</span>
+                            </div>
+                            <span className="text-slate-300">•</span>
+                            <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-slate-200">
+                              {doc.exp}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between md:justify-end gap-6 md:min-w-[250px] border-t md:border-t-0 md:border-l border-slate-200/60 pt-4 md:pt-0 md:pl-6">
+                        <div>
+                          <p className="text-xs text-slate-500 mb-0.5">Consultation Fee</p>
+                          <p className="font-bold text-xl text-teal-600">{doc.price}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setPaymentDetails({ amount: doc.price, serviceName: `Second Opinion - ${doc.name}` });
+                            setIsPaymentModalOpen(true);
+                          }}
+                          className="px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors shrink-0"
+                        >
+                          Proceed to Payment
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-3">Request a Second Opinion</h3>
-                <p className="text-slate-500 max-w-lg mx-auto mb-8 leading-relaxed">
-                  Unsure about your diagnosis? Upload your medical reports and get a detailed second opinion from our network of verified specialists.
-                </p>
-                <button
-                  onClick={() => setIsPaymentModalOpen(true)}
-                  className="px-8 py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200 flex items-center gap-2 mx-auto"
-                >
-                  <Plus size={20} /> Start New Request
-                </button>
               </div>
+
+
             </div>
           )}
 
@@ -878,6 +921,8 @@ const PatientDashboard = ({
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
+        amount={paymentDetails.amount}
+        serviceName={paymentDetails.serviceName}
         onPaymentSuccess={() => {
           console.log("Payment successful, proceed to form");
         }}
