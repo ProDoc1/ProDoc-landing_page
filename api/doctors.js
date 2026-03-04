@@ -31,6 +31,7 @@ export default async function handler(req, res) {
             working_hospital as location,
             languages,
             educational_qualifications,
+            email_verified,
             (SELECT COALESCE(AVG(overall), 0) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status = 'pending' OR status IS NULL)) as average_rating,
             (SELECT COUNT(*) FROM doctor_ratings WHERE doctor_ratings.doctor_id = doctors.doctor_id::varchar AND (status = 'approved' OR status = 'pending' OR status IS NULL)) as rating_count
           FROM doctors 
@@ -180,7 +181,7 @@ export default async function handler(req, res) {
             }
 
             const updatedRes = await sql`
-        SELECT doctor_id as id, full_name as name, contact_email as email, specialty, slmc_number as "slmcNumber", image_url, bio, working_hospital as location, languages
+        SELECT doctor_id as id, full_name as name, contact_email as email, specialty, slmc_number as "slmcNumber", image_url, bio, working_hospital as location, languages, email_verified
         FROM doctors WHERE doctor_id = ${id}
       `;
             const updated = updatedRes?.rows ? updatedRes.rows[0] : updatedRes[0];

@@ -21,7 +21,8 @@ import {
   X,
   MessageSquare,
   CreditCard,
-  CheckCircle
+  CheckCircle,
+  Verified
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import PatientViewProfile from './lib/PatientviewProfile';
@@ -339,7 +340,12 @@ const PatientDashboard = ({
                 <User size={48} />
                 <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
               </div>
-              <h2 className="text-2xl font-bold text-slate-800">{currentUser?.fullName || 'Patient Name'}</h2>
+              <h2 className="text-2xl font-bold text-slate-800 flex items-center justify-center gap-1.5">
+                {currentUser?.fullName || 'Patient Name'}
+                {currentUser?.email_verified && (
+                  <Verified size={25} className="text-white fill-blue-500 mt-1" />
+                )}
+              </h2>
               <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
 
               {currentUser.bloodType && (

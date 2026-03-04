@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
             return res.status(200).json({
                 success: true,
-                user: { id: user.id, name: user.full_name, email: user.email },
+                user: { id: user.id, name: user.full_name, email: user.email, email_verified: user.email_verified },
                 token
             });
 
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
 
             return res.status(200).json({
                 success: true,
-                user: { ...doctor, id: doctor.doctor_id, name: doctor.full_name, email: doctor.contact_email },
+                user: { ...doctor, id: doctor.doctor_id, name: doctor.full_name, email: doctor.contact_email, email_verified: doctor.email_verified },
                 token
             });
         } else if (userType === 'admin') {

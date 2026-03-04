@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin, AlertTriangle } from 'lucide-react';
+import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin, AlertTriangle, X } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
 import AboutPage from './About';
@@ -332,6 +333,11 @@ export default function App() {
    const [currentUser, setCurrentUser] = useState(null);
    const [selectedDoctorId, setSelectedDoctorId] = useState(null);
    const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
+   const [showVerifyModal, setShowVerifyModal] = useState(false);
+   const [verifyStep, setVerifyStep] = useState('prompt');
+   const [verifyLoading, setVerifyLoading] = useState(false);
+   const [generatedCode, setGeneratedCode] = useState('');
+   const [inputCode, setInputCode] = useState('');
    const [adminUser, setAdminUser] = useState(() => {
       const savedAdmin = localStorage.getItem('adminUser');
       return savedAdmin ? JSON.parse(savedAdmin) : null;
@@ -356,9 +362,7 @@ export default function App() {
       }
    }, []);
 
-   // --- EFFECT FOR GOOGLE AUTH CALLBACK (LEGACY - REMOVED) ---
-   // The new Google Sign-In implementation uses a popup flow handled directly in patientLogin.jsx
-   // so we no longer need to process redirects here.
+  
 
    // --- EFFECT TO UPDATE PAGE TITLE AND URL ---
    useEffect(() => {
@@ -430,6 +434,95 @@ export default function App() {
       }
    };
 
+   useEffect(() => {
+      if (currentUser && currentUser.email_verified === false) {
+         const checkAndPrompt = () => {
+            const lastPrompt = localStorage.getItem('last_verify_prompt_time');
+            const now = new Date().getTime();
+            const ONE_HOUR = 60 * 60 * 1000; 
+
+            if (!lastPrompt || (now - parseInt(lastPrompt)) >= ONE_HOUR) {
+               setShowVerifyModal(true);
+            }
+         };
+
+        
+         checkAndPrompt();
+
+         
+         const intervalId = setInterval(checkAndPrompt, 60 * 1000);
+         return () => clearInterval(intervalId);
+      } else {
+         setShowVerifyModal(false);
+      }
+   }, [currentUser]);
+
+   const handleSkipVerify = () => {
+      setShowVerifyModal(false);
+      localStorage.setItem('last_verify_prompt_time', new Date().getTime().toString());
+   };
+
+   const handleSendVerificationCode = async () => {
+      setVerifyLoading(true);
+      try {
+         const code = Math.floor(100000 + Math.random() * 900000).toString();
+         setGeneratedCode(code);
+
+         const serviceId = 'service_jajwzgf';
+         const templateId = 'template_o75vnnp';
+         const publicKey = 'LUysmcNbwO0ok5GAV';
+
+         const templateParams = {
+            from_name: "ProDoc Support",
+            to_name: currentUser.name || "User",
+            to_email: currentUser.email,
+            subject: "Verify Your Email - ProDoc",
+            message: `Your verification code is: ${code}`,
+            code: code,
+         };
+
+         await emailjs.send(serviceId, templateId, templateParams, publicKey);
+         setVerifyStep('code');
+      } catch (err) {
+         console.error('Error sending code:', err);
+         alert("Failed to send code. Please check your connection.");
+      } finally {
+         setVerifyLoading(false);
+      }
+   };
+
+   const handleVerifyConfirm = async () => {
+      if (inputCode !== generatedCode) {
+         alert("Invalid verification code. Please try again.");
+         return;
+      }
+
+      setVerifyLoading(true);
+      try {
+         const role = localStorage.getItem('userRole');
+         const response = await fetch('/api/verify-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: currentUser.email, role })
+         });
+         const data = await response.json();
+
+         if (data.success) {
+            const updatedUser = { ...currentUser, email_verified: true };
+            setCurrentUser(updatedUser);
+            localStorage.setItem('prodoc_user', JSON.stringify(updatedUser));
+            setVerifyStep('success');
+         } else {
+            alert(data.error || "Verification failed");
+         }
+      } catch (err) {
+         console.error('Verify error:', err);
+         alert("System Error. Verification failed.");
+      } finally {
+         setVerifyLoading(false);
+      }
+   };
+
    const handleAdminLogin = (adminData) => {
       setAdminUser(adminData);
       navigateTo('admin');
@@ -466,10 +559,10 @@ export default function App() {
 
    // --- EFFECT FOR INACTIVITY SESSION TIMEOUT ---
    useEffect(() => {
-      if (!currentUser && !adminUser) return; // Only track inactivity when logged in
+      if (!currentUser && !adminUser) return; 
 
       let timeoutId;
-      const TIMEOUT_DURATION = 1 * 60 * 1000; // 60 minutes
+      const TIMEOUT_DURATION = 1 * 60 * 1000; //60
 
       const resetTimer = () => {
          if (timeoutId) clearTimeout(timeoutId);
@@ -480,10 +573,10 @@ export default function App() {
          }, TIMEOUT_DURATION);
       };
 
-      // Initialize the timer
+   
       resetTimer();
 
-      // Listen for activity
+     
       const events = ['mousemove', 'keydown', 'scroll', 'click'];
       const handleActivity = () => resetTimer();
 
@@ -497,7 +590,7 @@ export default function App() {
             window.removeEventListener(event, handleActivity);
          });
       };
-   }, [currentUser, adminUser]); // handleLogout is recreated but since it uses state setters, we can omit it or ignore the linter
+   }, [currentUser, adminUser]); 
 
    const navigateToSection = (sectionId) => {
       setCurrentPage('home');
@@ -659,6 +752,88 @@ export default function App() {
                   >
                      Go to Home Page
                   </button>
+               </div>
+            </div>
+         )}
+
+         {/* --- EMAIL VERIFICATION MODAL --- */}
+         {showVerifyModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in text-slate-800">
+               <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+               <div className="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl relative z-10 flex flex-col items-center animate-slide-up border border-teal-100">
+                  <button
+                     onClick={handleSkipVerify}
+                     className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                     <X size={20} />
+                  </button>
+
+                  <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center mb-6">
+                     <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                        <Mail size={24} />
+                     </div>
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-2">Verify Your Email</h3>
+
+                  {verifyStep === 'prompt' ? (
+                     <>
+                        <p className="text-slate-500 text-sm mb-2 text-center">
+                           Your email <span className="font-bold text-slate-700">{currentUser?.email}</span> is not verified. Let's verify it to secure your account.
+                        </p>
+                        <button
+                           disabled={verifyLoading}
+                           onClick={handleSendVerificationCode}
+                           className="w-full mt-6 bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all transform active:scale-[0.98] disabled:opacity-50"
+                        >
+                           {verifyLoading ? "Sending Code..." : "Send Verification Code"}
+                        </button>
+                        <button
+                           onClick={handleSkipVerify}
+                           className="w-full mt-3 bg-slate-50 hover:bg-slate-100 text-slate-500 font-bold py-3.5 rounded-xl transition-all"
+                        >
+                           Skip for now
+                        </button>
+                     </>
+                  ) : verifyStep === 'success' ? (
+                     <div className="flex flex-col items-center">
+                        <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-6">
+                           <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                              <CheckCircle size={24} />
+                           </div>
+                        </div>
+                        <p className="text-slate-500 text-sm mb-6 text-center">
+                           Your email has been verified successfully! Thank you for securing your account.
+                        </p>
+                        <button
+                           onClick={() => setShowVerifyModal(false)}
+                           className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all transform active:scale-[0.98]"
+                        >
+                           Continue to Dashboard
+                        </button>
+                     </div>
+                  ) : (
+                     <>
+                        <p className="text-slate-500 text-sm mb-6 text-center">
+                           We sent a 6-digit code to your email.
+                        </p>
+                        <input
+                           type="text"
+                           placeholder="Enter 6-digit Code"
+                           maxLength="6"
+                           value={inputCode}
+                           onChange={(e) => setInputCode(e.target.value)}
+                           className="w-full text-center bg-slate-50 border border-slate-200 rounded-xl py-4 text-lg font-mono tracking-widest focus:outline-none focus:border-teal-500 transition-all mb-4"
+                        />
+                        <button
+                           disabled={verifyLoading || inputCode.length < 6}
+                           onClick={handleVerifyConfirm}
+                           className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all transform active:scale-[0.98] disabled:opacity-50"
+                        >
+                           {verifyLoading ? "Verifying..." : "Verify Code"}
+                        </button>
+                     </>
+                  )}
                </div>
             </div>
          )}

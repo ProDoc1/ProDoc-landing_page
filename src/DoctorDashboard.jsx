@@ -81,7 +81,8 @@ const DoctorDashboard = ({
     location: 'Colombo, Sri Lanka',
     image: user?.image_url || DoctorImg,
     average_rating: user?.average_rating || 0,
-    rating_count: user?.rating_count || 0
+    rating_count: user?.rating_count || 0,
+    email_verified: user?.email_verified || false
   });
 
   useEffect(() => {
@@ -96,7 +97,8 @@ const DoctorDashboard = ({
         slmcNumber: user.slmcNumber || prev.slmcNumber,
         location: user.location || prev.location,
         languages: user.languages || prev.languages,
-        image: user.image_url || prev.image
+        image: user.image_url || prev.image,
+        email_verified: user.email_verified !== undefined ? user.email_verified : prev.email_verified
       }));
       // Also update second opinion state if present in user prop (though likely not)
       if (user.second_opinion_available !== undefined) {
@@ -132,7 +134,8 @@ const DoctorDashboard = ({
               languages: data.languages || prev.languages,
               image: data.image_url || prev.image,
               average_rating: data.average_rating || 0,
-              rating_count: data.rating_count || 0
+              rating_count: data.rating_count || 0,
+              email_verified: data.email_verified !== undefined ? data.email_verified : prev.email_verified
             }));
             // Initialize Second Opinion state from fetched data
             if (data.second_opinion_available !== undefined) {
@@ -510,7 +513,12 @@ const DoctorDashboard = ({
                     </div>
                   </div>
                   <div className="flex-1 text-center md:text-left text-white">
-                    <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight">{localUser.fullName}</h1>
+                    <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight flex items-center justify-center md:justify-start gap-3">
+                      {localUser.fullName}
+                      {localUser.email_verified && (
+                        <Verified size={32} className="text-white fill-blue-500 mt-2" />
+                      )}
+                    </h1>
                     <div className="flex flex-col items-center md:items-start gap-4 md:gap-6 mb-4">
                       <div className="flex flex-wrap justify-center md:justify-start gap-3">
                         <span className="bg-cyan-500/20 backdrop-blur-md border border-cyan-400/30 text-cyan-100 px-4 py-1.5 rounded-full text-sm font-semibold">
@@ -732,13 +740,13 @@ const DoctorDashboard = ({
                   <>
                     {/* filter controls */}
                     <div className="flex gap-2 mb-6">
-                      {['all','ratings','reviews'].map(opt => (
+                      {['all', 'ratings', 'reviews'].map(opt => (
                         <button
                           key={opt}
                           onClick={() => setReviewFilter(opt)}
-                          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${reviewFilter===opt ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${reviewFilter === opt ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                         >
-                          {opt==='all' ? 'All' : opt==='ratings' ? 'Ratings' : 'Reviews'}
+                          {opt === 'all' ? 'All' : opt === 'ratings' ? 'Ratings' : 'Reviews'}
                         </button>
                       ))}
                     </div>
@@ -804,7 +812,7 @@ const DoctorDashboard = ({
                                         </span>
                                       </div>
                                     </div>
-                                    
+
                                     {/* report button */}
                                     <div className="text-right">
                                       <button onClick={() => handleReport(review.id)} className="text-rose-600 text-sm font-semibold">Report</button>
@@ -818,7 +826,7 @@ const DoctorDashboard = ({
                                 <h4 className="text-xl font-semibold text-slate-800">Reviews</h4>
                                 {textReviews.map(review => (
                                   <div key={review.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative">
-                                    
+
                                     {review.status && (
                                       <div className="absolute top-4 right-4">
                                         <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
@@ -865,9 +873,9 @@ const DoctorDashboard = ({
                                           <Star size={12} className="fill-teal-400" />
                                           {review.overall || '--'}
                                         </span>
+                                      </div>
                                     </div>
-                                    </div>
-                                    
+
                                     {/* comment text */}
                                     {review.comment && (
                                       <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-3 bg-white p-3 rounded-lg border-l-4 border-teal-400">{review.comment}</p>
