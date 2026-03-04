@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin, AlertTriangle } from 'lucide-react';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
 import AboutPage from './About';
@@ -331,6 +331,7 @@ export default function App() {
    });
    const [currentUser, setCurrentUser] = useState(null);
    const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
    const [adminUser, setAdminUser] = useState(() => {
       const savedAdmin = localStorage.getItem('adminUser');
       return savedAdmin ? JSON.parse(savedAdmin) : null;
@@ -434,7 +435,20 @@ export default function App() {
       navigateTo('admin');
    };
 
-   const handleLogout = () => {
+   const handleLogout = async () => {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken');
+      if (token) {
+         try {
+            await fetch('/api/logout', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ token })
+            });
+         } catch (error) {
+            console.error('Logout API failed:', error);
+         }
+      }
+
       // Clear all session data
       localStorage.removeItem('prodoc_user');
       localStorage.removeItem('userRole');
@@ -442,10 +456,48 @@ export default function App() {
       localStorage.removeItem('patientId');
       localStorage.removeItem('currentPage');
       localStorage.removeItem('authToken');
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
 
       setCurrentUser(null);
+      setAdminUser(null);
       navigateTo('home');
    };
+
+   // --- EFFECT FOR INACTIVITY SESSION TIMEOUT ---
+   useEffect(() => {
+      if (!currentUser && !adminUser) return; // Only track inactivity when logged in
+
+      let timeoutId;
+      const TIMEOUT_DURATION = 1 * 60 * 1000; // 60 minutes
+
+      const resetTimer = () => {
+         if (timeoutId) clearTimeout(timeoutId);
+         timeoutId = setTimeout(() => {
+            console.log('User idle for 60 minutes. Logging out.');
+            setShowSessionExpiredModal(true);
+            handleLogout();
+         }, TIMEOUT_DURATION);
+      };
+
+      // Initialize the timer
+      resetTimer();
+
+      // Listen for activity
+      const events = ['mousemove', 'keydown', 'scroll', 'click'];
+      const handleActivity = () => resetTimer();
+
+      events.forEach(event => {
+         window.addEventListener(event, handleActivity);
+      });
+
+      return () => {
+         if (timeoutId) clearTimeout(timeoutId);
+         events.forEach(event => {
+            window.removeEventListener(event, handleActivity);
+         });
+      };
+   }, [currentUser, adminUser]); // handleLogout is recreated but since it uses state setters, we can omit it or ignore the linter
 
    const navigateToSection = (sectionId) => {
       setCurrentPage('home');
@@ -574,12 +626,7 @@ export default function App() {
             <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F0F8F8] text-teal-800 font-medium">Loading...</div>}>
                {adminUser ? (
                   <AdminDashboard
-                     onBack={() => {
-                        localStorage.removeItem('adminToken');
-                        localStorage.removeItem('adminUser');
-                        setAdminUser(null);
-                        navigateTo('home');
-                     }}
+                     onBack={handleLogout}
                   />
                ) : (
                   <AdminLogin
@@ -587,6 +634,33 @@ export default function App() {
                   />
                )}
             </Suspense>
+         )}
+
+         {/* --- SESSION EXPIRED MODAL --- */}
+         {showSessionExpiredModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
+               <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowSessionExpiredModal(false)}></div>
+               <div className="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl relative z-10 flex flex-col items-center text-center animate-slide-up border border-orange-100">
+                  <div className="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center mb-6">
+                     <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                        <AlertTriangle size={24} />
+                     </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-2">Session Expired</h3>
+                  <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+                     Your session has expired due to inactivity. For your security, you have been automatically logged out.
+                  </p>
+                  <button
+                     onClick={() => {
+                        setShowSessionExpiredModal(false);
+                        navigateTo('home');
+                     }}
+                     className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all transform active:scale-[0.98]"
+                  >
+                     Go to Home Page
+                  </button>
+               </div>
+            </div>
          )}
       </main>
    );
