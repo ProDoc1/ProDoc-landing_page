@@ -50,6 +50,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
         const data = await response.json();
         if (response.ok && data.success) {
           localStorage.setItem('userRole', data.role);
+          if (data.token) localStorage.setItem('authToken', data.token);
           if (data.user && data.user.id) {
             localStorage.setItem(data.role === 'doctor' ? 'doctorId' : 'patientId', data.user.id);
           }
@@ -97,6 +98,7 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
 
       if (response.ok) {
         localStorage.setItem('userRole', userType);
+        if (data.token) localStorage.setItem('authToken', data.token);
         if (data.user && data.user.id) {
           localStorage.setItem(userType === 'doctor' ? 'doctorId' : 'patientId', data.user.id);
         }
