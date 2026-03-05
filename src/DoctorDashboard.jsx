@@ -25,7 +25,8 @@ import {
   User,
   Award,
   Briefcase,
-  Save
+  Save,
+  AlertCircle
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Plasma from './components/Plasma';
@@ -217,8 +218,14 @@ const DoctorDashboard = ({
         languages: localUser.languages,
         educational_qualifications: localUser.qualifications,
         years_of_experience: localUser.experience,
-        associated_hospitals: JSON.stringify(Array.isArray(localUser.associatedHospitals) ? localUser.associatedHospitals : localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean)),
-        image_url: localUser.image, // Assuming your backend accepts base64 or URL
+        associated_hospitals: JSON.stringify(
+          Array.isArray(localUser.associatedHospitals)
+            ? localUser.associatedHospitals.map(h => typeof h === 'object' ? h : { name: h, type: "Consulting Physician" })
+            : typeof localUser.associatedHospitals === 'string'
+              ? localUser.associatedHospitals.split(',').filter(Boolean).map(h => ({ name: h.trim(), type: "Consulting Physician" }))
+              : []
+        ),
+        image_url: localUser.image,
         bio: localUser.bio
       };
 
@@ -415,7 +422,7 @@ const DoctorDashboard = ({
   ];
 
   return (
-    <div className="min-h-screen w-full relative flex flex-col font-sans text-slate-700 bg-slate-50">
+    <div className="h-screen w-full relative flex flex-col font-sans text-slate-700 bg-slate-50 overflow-hidden">
       {/* Background Effect */}
       <div className="fixed inset-0 z-0 h-screen w-screen opacity-30 pointer-events-none">
         <Plasma color="#0f766e" speed={0.2} scale={1.5} opacity={0.4} />
@@ -434,7 +441,7 @@ const DoctorDashboard = ({
         onNavigateContentHub={onNavigateContentHub}
       />
 
-      <div className="flex flex-1 pt-24 md:pt-32 relative z-10 overflow-hidden">
+      <div className="flex flex-1 relative z-10 overflow-hidden">
         {/* Sidebar Overlay */}
         {isMobileMenuOpen && (
           <div
@@ -444,16 +451,29 @@ const DoctorDashboard = ({
         )}
 
         {/* Sidebar Navigation */}
-        <aside className={`fixed md:relative z-40 w-64 h-[calc(100vh-theme(spacing.32))] bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-          <div className="p-4 md:hidden">
-            <button onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 text-slate-500 font-bold mb-4">
-              <X size={20} /> Close Menu
+        <aside className={`fixed md:relative z-50 w-72 bg-white/80 backdrop-blur-2xl flex flex-col transition-all duration-300 ease-in-out 
+          h-full border-r border-slate-200/60 pt-20 
+          md:h-[calc(100vh-9.5rem)] md:mt-32 md:mb-6 md:ml-6 md:rounded-[2.5rem] md:border md:shadow-xl md:shadow-slate-200/50 md:pt-2 
+          ${isMobileMenuOpen ? 'translate-x-0 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]' : '-translate-x-full md:translate-x-0'}`}
+        >
+          <div className="p-6 md:hidden flex justify-between items-center border-b border-slate-100/50 bg-white/50">
+            <h2 className="font-bold text-slate-800 tracking-tight">Navigation</h2>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2.5 bg-slate-100 rounded-2xl text-slate-500 hover:text-slate-800 transition-colors">
+              <X size={18} />
             </button>
           </div>
 
-          <nav className="flex-1 px-4 space-y-2 mt-4">
+          <div className="px-8 pt-8 pb-4 hidden md:block">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Doctor Portal</p>
+            </div>
+            <h2 className="text-xl font-black text-slate-800">Main Menu</h2>
+          </div>
+
+          <nav className="flex-1 px-5 space-y-2 mt-4 md:mt-2 overflow-y-auto no-scrollbar pb-6">
             <NavItem
-              icon={<Activity size={20} />}
+              icon={<Activity size={18} />}
               label="Dashboard"
               active={activeTab === 'Dashboard'}
               onClick={() => {
@@ -462,13 +482,13 @@ const DoctorDashboard = ({
               }}
             />
             <NavItem
-              icon={<FileText size={20} />}
+              icon={<FileText size={18} />}
               label="Second Opinions"
               badge={3}
               onClick={() => setIsMobileMenuOpen(false)}
             />
             <NavItem
-              icon={<Star size={20} />}
+              icon={<Star size={18} />}
               label="Reviews"
               active={activeTab === 'Reviews'}
               onClick={() => {
@@ -477,7 +497,7 @@ const DoctorDashboard = ({
               }}
             />
             <NavItem
-              icon={<ShieldCheck size={20} />}
+              icon={<ShieldCheck size={18} />}
               label="Credential Vault"
               active={activeTab === 'Credential Vault'}
               onClick={() => {
@@ -486,7 +506,7 @@ const DoctorDashboard = ({
               }}
             />
             <NavItem
-              icon={<PlusSquare size={20} />}
+              icon={<PlusSquare size={18} />}
               label="Create"
               active={activeTab === 'Create'}
               onClick={() => {
@@ -495,7 +515,7 @@ const DoctorDashboard = ({
               }}
             />
             <NavItem
-              icon={<Newspaper size={20} />}
+              icon={<Newspaper size={18} />}
               label="Articles"
               active={activeTab === 'Articles'}
               onClick={() => {
@@ -505,9 +525,9 @@ const DoctorDashboard = ({
             />
           </nav>
 
-          <div className="p-4 border-t border-slate-100">
-            <button onClick={onLogout} className="flex items-center gap-3 w-full px-4 py-3 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all font-medium">
-              <LogOut size={20} /> Logout
+          <div className="p-6 border-t border-slate-100/60 bg-slate-50/40">
+            <button onClick={onLogout} className="group flex items-center justify-center gap-3 w-full px-4 py-4 bg-white border border-red-100 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all font-bold shadow-sm shadow-red-100/50">
+              <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" /> Secure Logout
             </button>
           </div>
         </aside>
@@ -521,100 +541,198 @@ const DoctorDashboard = ({
         </button>
 
         {/* Main Dashboard Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 pt-32 md:pt-40">
           {activeTab === 'Dashboard' ? (
             <div className="animate-fadeIn">
-              {/* Profile Header */}
-              <div className="relative mb-6 md:mb-10 rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-xl bg-gradient-to-br from-teal-900 to-teal-600">
-                <div className="relative z-10 p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
-                  <div className="relative group">
-                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-slate-200">
+              {/* --- Profile Header --- */}
+              <div className="relative w-full rounded-[3rem] overflow-hidden shadow-xl mb-12 group border border-teal-100">
+                {/* Dynamic Background */}
+                <div className="absolute inset-0 z-0 bg-gradient-to-br from-teal-500 via-teal-500 to-teal-500/50">
+                  <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-400 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+                  <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-300 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+                </div>
+
+                {/* Content Overlay */}
+                <div className="relative z-10 p-6 md:p-10 flex flex-col lg:flex-row items-center lg:items-end gap-6 lg:gap-10">
+
+                  {/* Avatar Section */}
+                  <div className="relative shrink-0 group/avatar">
+                    <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-white shadow-2xl overflow-hidden bg-slate-100 relative group-hover/avatar:border-teal-200 group-hover/avatar:scale-105 transition-all duration-500 ease-out z-10">
                       <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-teal-900/20 to-transparent"></div>
+                    </div>
+
+                    <div className="absolute -bottom-4 -right-4 bg-teal-500 p-3 rounded-2xl shadow-xl z-20 shadow-teal-500/30 border border-teal-400">
+                      <Verified size={24} className="text-white fill-white/20" />
                     </div>
                   </div>
-                  <div className="flex-1 text-center md:text-left text-white">
-                    <h1 className="text-3xl md:text-5xl font-bold mb-2 tracking-tight flex items-center justify-center md:justify-start gap-3">
-                      {localUser.fullName}
-                      {localUser.email_verified && (
-                        <Verified size={32} className="text-white fill-blue-500 mt-2" />
-                      )}
-                    </h1>
-                    <div className="flex flex-col items-center md:items-start gap-4 md:gap-6 mb-4">
-                      <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                        <span className="bg-cyan-500/20 backdrop-blur-md border border-cyan-400/30 text-cyan-100 px-4 py-1.5 rounded-full text-sm font-semibold">
-                          {localUser.specialty}
-                        </span>
-                        <span className="bg-teal-950/40 backdrop-blur-md border border-teal-700/50 text-emerald-100 px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2">
-                          <Verified size={14} className="text-cyan-400" />
-                          SLMC Reg: {localUser.slmcNumber}
-                        </span>
+
+                  {/* Text & Info Section */}
+                  <div className="flex-1 text-center lg:text-left flex flex-col justify-end w-full lg:mb-1">
+                    <div className="flex flex-col md:flex-row items-center lg:items-center gap-4 mb-4">
+                      <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-teal-950 drop-shadow-sm">
+                        {localUser.fullName}
+                      </h1>
+                      <div className="hidden md:block w-2 h-2 rounded-full bg-teal-400/50 mt-1 md:mt-2"></div>
+                      <span className="md:mt-2 px-3 py-1 bg-teal-100 border border-teal-200 text-teal-800 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest shadow-sm">
+                        {localUser.specialty}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row items-center lg:items-stretch justify-center lg:justify-start gap-4">
+                      {/* SLMC Reg Badge */}
+                      <div className="bg-white backdrop-blur-md border border-teal-100 shadow-sm px-5 py-3 rounded-2xl flex items-center justify-center gap-4">
+                        <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600 group-hover/slmc:scale-110 transition-transform">
+                          <Award size={24} />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-[10px] text-teal-500 font-black uppercase tracking-[0.2em] mb-0.5">SLMC Reg</p>
+                          <p className="text-lg md:text-xl text-teal-950 font-black tracking-wider leading-none">{localUser.slmcNumber}</p>
+                        </div>
                       </div>
 
-                      <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm md:text-base text-teal-50/90 font-medium">
-                        <div className="flex items-center gap-2.5">
-                          <MapPin size={22} className="text-cyan-300" />
-                          <span>{Array.isArray(localUser.associatedHospitals) ? localUser.associatedHospitals.join(', ') : (localUser.associatedHospitals || 'No Hospitals Listed')}</span>
-                        </div>
-                        <div className="w-px h-6 bg-teal-500/40 hidden md:block"></div>
-                        <div className="flex items-center gap-2.5">
-                          <Globe size={22} className="text-cyan-300" />
-                          <span>{localUser.languages}</span>
+                      {/* Languages Badge */}
+                      <div className="bg-white backdrop-blur-md border border-teal-100 shadow-sm px-5 py-3 rounded-2xl flex flex-row lg:flex-col items-center lg:items-start justify-center gap-2">
+                        <div className="flex flex-col justify-center text-center lg:text-left">
+                          <p className="text-[10px] text-teal-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-1.5 justify-center lg:justify-start">
+                            <Globe size={14} className="text-teal-500" /> Languages
+                          </p>
+                          <p className="text-sm md:text-base text-teal-900 font-bold">{localUser.languages}</p>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[170px]">
-                    <button onClick={() => setIsEditingProfile(true)} className="group px-6 py-3 bg-white hover:bg-teal-50 text-teal-900 rounded-full transition-all text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-900/20">
-                      <Pencil size={16} className="text-teal-600" /> Edit Details
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-row lg:flex-col gap-3 w-full lg:w-auto shrink-0 justify-center">
+                    <button
+                      onClick={() => setIsEditingProfile(true)}
+                      className="group/btn flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-2xl font-black text-sm transition-all hover:bg-teal-700 hover:shadow-[0_0_2rem_-0.5rem_rgba(13,148,136,0.6)] hover:-translate-y-1 active:scale-95 whitespace-nowrap"
+                    >
+                      <Pencil size={18} className="group-hover/btn:rotate-12 transition-transform" /> Edit Profile
                     </button>
-                    <button className="group px-6 py-3 bg-white/10 hover:bg-white/20 text-teal-50 rounded-full transition-all text-sm font-medium flex items-center justify-center gap-2 backdrop-blur-sm border border-white/10">
-                      <Share2 size={16} className="text-cyan-300" /> Share Profile
+                    <button className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-teal-100 shadow-sm text-teal-800 rounded-2xl font-bold text-sm transition-all hover:border-teal-300 hover:shadow hover:-translate-y-1 active:scale-95 whitespace-nowrap">
+                      <Share2 size={18} /> Share Focus
                     </button>
                   </div>
                 </div>
               </div>
-
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                 {professionalStats.map((stat, i) => (
-                  <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-500 text-sm font-medium">{stat.label}</p>
-                      <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                  <div key={i} className="group bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-1 transition-all duration-300 flex items-center justify-between overflow-hidden relative">
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-teal-50 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="relative z-10">
+                      <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1 dropdown-shadow">{stat.label}</p>
+                      <p className="text-3xl font-black text-slate-800 tracking-tight">{stat.value}</p>
                     </div>
-                    <div className={`h-12 w-12 rounded-2xl ${stat.color} flex items-center justify-center`}>{stat.icon}</div>
+                    <div className={`relative z-10 h-14 w-14 rounded-2xl ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                      {stat.icon}
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+              {/* Associated Hospitals Card */}
+              <div className="bg-white rounded-[2rem] p-8 md:p-10 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 transition-all border border-slate-100 mb-12">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shadow-inner">
+                      <MapPin size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-slate-800 tracking-tight">Working Hospitals</h3>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Practice Locations</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsEditingProfile(true)} className="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-bold text-sm transition-colors">
+                    <PlusSquare size={16} /> Add
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {(() => {
+                    let hospitals = [];
+                    if (Array.isArray(localUser.associatedHospitals)) {
+                      hospitals = localUser.associatedHospitals;
+                    } else if (typeof localUser.associatedHospitals === 'string') {
+                      try {
+                        const parsed = JSON.parse(localUser.associatedHospitals);
+                        if (Array.isArray(parsed)) hospitals = parsed;
+                        else hospitals = localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean);
+                      } catch (e) {
+                        hospitals = localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean);
+                      }
+                    }
+
+                    return hospitals.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {hospitals.map((hospital, i) => (
+                          <div key={i} className="group relative overflow-hidden flex items-start gap-4 p-5 bg-white rounded-[1.5rem] border border-slate-200 hover:border-teal-200 hover:shadow-lg hover:shadow-teal-500/10 transition-all duration-300">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-teal-500 transform -translate-x-full group-hover:translate-x-0 transition-transform"></div>
+                            <div className="p-2.5 bg-teal-50/50 rounded-xl text-teal-500 shrink-0">
+                              <MapPin size={20} />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                              <h4 className="font-bold text-slate-800 text-sm leading-tight group-hover:text-teal-700 transition-colors">
+                                {typeof hospital === 'object' ? (hospital.name || hospital.hospital || 'Hospital') : hospital}
+                              </h4>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1.5">
+                                {typeof hospital === 'object' && hospital.type ? hospital.type : "Consulting Physician"}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                        <MapPin size={40} className="text-slate-300 mx-auto mb-4" />
+                        <h4 className="text-slate-700 font-bold mb-1">No Practice Locations</h4>
+                        <p className="text-slate-500 text-sm mb-4">You haven't added any associated hospitals yet.</p>
+                        <button onClick={() => setIsEditingProfile(true)} className="px-6 py-2.5 bg-white border border-slate-200 shadow-sm rounded-xl text-sm font-bold text-teal-600 hover:text-teal-700 hover:border-teal-200 transition-all">
+                          Add Your First Hospital
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
                 {/* Professional Brief - Main Column */}
                 <div className="lg:col-span-2 space-y-8">
-                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 h-full">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl">
-                        <FileText size={20} />
+                  <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 transition-all border border-slate-100 h-full flex flex-col">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shadow-inner">
+                        <FileText size={24} />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-800">Professional Brief</h3>
+                      <div>
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight">Professional Brief</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Background & Expertise</p>
+                      </div>
                     </div>
 
-                    <div className="space-y-6">
-                      <section>
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">About / Bio</h4>
-                        <p className="text-slate-600 leading-relaxed text-sm md:text-base bg-slate-50/50 p-4 rounded-2xl border border-slate-100/50 italic">
-                          {localUser.bio || "No bio added yet. Click 'Edit Details' to add your professional background."}
+                    <div className="space-y-8 flex-1">
+                      <section className="bg-slate-50/50 rounded-[2rem] p-6 md:p-8 border border-slate-100">
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <User size={14} /> About / Bio
+                        </h4>
+                        <p className="text-slate-600 leading-relaxed text-sm md:text-base font-medium">
+                          {localUser.bio || <span className="italic text-slate-400">No bio added yet. Provide details about your career journey.</span>}
                         </p>
                       </section>
 
-                      <section>
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Qualifications & Expertise</h4>
-                        <div className="flex flex-wrap gap-2">
+                      <section className="bg-slate-50/50 rounded-[2rem] p-6 md:p-8 border border-slate-100">
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <Award size={14} /> Qualifications & Credentials
+                        </h4>
+                        <div className="flex flex-wrap gap-2.5">
                           {localUser.qualifications ? localUser.qualifications.split(',').map((q, i) => (
-                            <span key={i} className="px-4 py-2 bg-teal-50 text-teal-700 rounded-xl text-sm font-semibold border border-teal-100">
+                            <span key={i} className="px-4 py-2 bg-white text-teal-700 rounded-xl text-sm font-bold border border-teal-100/50 shadow-sm hover:border-teal-300 transition-colors cursor-default">
                               {q.trim()}
                             </span>
                           )) : (
-                            <span className="text-slate-400 text-sm italic">No qualifications listed.</span>
+                            <span className="text-slate-400 text-sm italic font-medium">No qualifications listed.</span>
                           )}
                         </div>
                       </section>
@@ -624,13 +742,21 @@ const DoctorDashboard = ({
 
                 {/* Sidebar - Settings & Status */}
                 <div className="space-y-8">
-                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
-                          <Activity size={20} />
+                  {/* Second Opinion Widget */}
+                  <div className="bg-white rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 transition-all border border-slate-100 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+
+                    <div className="flex justify-between items-start mb-6 relative z-10">
+                      <div className="flex gap-4">
+                        <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shadow-inner shrink-0">
+                          <Activity size={24} />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-800">Second Opinion</h3>
+                        <div>
+                          <h3 className="text-xl font-black text-slate-800 tracking-tight">Second Opinion</h3>
+                          <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isSecondOpinionEnabled ? 'text-teal-500' : 'text-slate-400'}`}>
+                            {isSecondOpinionEnabled ? 'Active & Receiving' : 'Currently Paused'}
+                          </p>
+                        </div>
                       </div>
                       <button
                         onClick={() => {
@@ -638,42 +764,36 @@ const DoctorDashboard = ({
                           setIsSecondOpinionEnabled(newValue);
                           updateSecondOpinionSettings({ second_opinion_available: newValue });
                         }}
-                        className={`w-12 h-7 rounded-full p-1 transition-colors duration-300 ease-in-out ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
+                        className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out shrink-0 ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
                       >
                         <div
-                          className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-5' : 'translate-x-0'}`}
+                          className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-6' : 'translate-x-0'}`}
                         />
                       </button>
                     </div>
 
-                    <p className="text-sm text-slate-500 mb-6">
-                      {isSecondOpinionEnabled
-                        ? "Open for digital consultations."
-                        : "Digital consultations are currently paused."}
-                    </p>
-
                     {isSecondOpinionEnabled && (
-                      <div className="space-y-4 animate-scaleIn">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                          Available Days
+                      <div className="mt-6 pt-6 border-t border-slate-100 animate-scaleIn relative z-10">
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">
+                          Consultation Days
                         </label>
                         <div className="flex gap-2">
                           <div className="relative flex-1">
-                            <Calendar className="absolute left-3 top-3 text-slate-400" size={16} />
+                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             <input
                               type="text"
                               value={availability}
                               onChange={(e) => setAvailability(e.target.value)}
-                              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-700 transition-all font-medium"
+                              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white text-slate-700 transition-all font-bold"
                               placeholder="e.g. Mon, Wed"
                             />
                           </div>
                           <button
                             onClick={handleDateSave}
                             disabled={dateSaveStatus === 'saving'}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all min-w-[70px] flex items-center justify-center ${dateSaveStatus === 'success'
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-teal-600 text-white hover:bg-teal-700'
+                            className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all min-w-[80px] flex items-center justify-center ${dateSaveStatus === 'success'
+                              ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
+                              : 'bg-teal-500 text-white hover:bg-teal-600 border border-teal-500'
                               } disabled:opacity-50`}
                           >
                             {dateSaveStatus === 'saving' ? <Loader2 size={16} className="animate-spin" /> : dateSaveStatus === 'success' ? 'Saved' : 'Save'}
@@ -683,17 +803,44 @@ const DoctorDashboard = ({
                     )}
                   </div>
 
-                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-                        <ShieldCheck size={20} />
+                  {/* Verification Widget */}
+                  <div className="bg-white rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all border border-slate-100 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+
+                    <div className="flex items-center gap-4 mb-8 relative z-10">
+                      <div className="p-3 bg-blue-50 text-teal-500 rounded-2xl shadow-inner shrink-0">
+                        <ShieldCheck size={24} />
                       </div>
-                      <h3 className="text-xl font-bold text-slate-800">Verification</h3>
+                      <div>
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight">Trust & Verify</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Platform Status</p>
+                      </div>
                     </div>
-                    <div className="space-y-6">
-                      <Step icon={<CheckCircle className="text-teal-500" />} title="Identity" desc="National ID verified" completed />
-                      <Step icon={<CheckCircle className="text-teal-500" />} title="Medical License" desc="SLMC Reg verified" completed />
-                      <Step icon={<Clock className="text-amber-500" />} title="Secondary Audit" desc="Pending final review" />
+
+                    <div className="space-y-6 relative z-10">
+                      <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <CheckCircle className="text-teal-500 shrink-0 mt-0.5" size={20} />
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">Identity</p>
+                          <p className="text-xs font-medium text-slate-500 mt-0.5">National ID verified</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <CheckCircle className="text-teal-500 shrink-0 mt-0.5" size={20} />
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">Medical License</p>
+                          <p className="text-xs font-medium text-slate-500 mt-0.5">SLMC Registration verified</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-4 p-4 bg-amber-50/50 rounded-2xl border border-amber-100/50">
+                        <Clock className="text-amber-500 shrink-0 mt-0.5" size={20} />
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">Secondary Audit</p>
+                          <p className="text-xs font-medium text-amber-700/70 mt-0.5">Pending final review</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1187,14 +1334,85 @@ const DoctorDashboard = ({
                         <SectionTitle icon={<Award size={20} className="text-amber-600" />} title="Professional Credentials" />
 
                         <div className="space-y-6">
-                          <InputField
-                            label="Associated Hospitals"
-                            name="associatedHospitals"
-                            value={Array.isArray(localUser.associatedHospitals) ? localUser.associatedHospitals.join(', ') : localUser.associatedHospitals}
-                            onChange={(v) => setLocalUser({ ...localUser, associatedHospitals: v.split(',').map(h => h.trim()) })}
-                            disabled={isSaving}
-                            placeholder="e.g. Asiri Hospital, Lanka Hospital"
-                          />
+                          <div className="w-full">
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Working Hospitals</label>
+                            <div className="space-y-3">
+                              {(() => {
+                                let hospitalsList = [];
+                                if (Array.isArray(localUser.associatedHospitals)) {
+                                  hospitalsList = localUser.associatedHospitals;
+                                } else if (typeof localUser.associatedHospitals === 'string') {
+                                  try {
+                                    const parsed = JSON.parse(localUser.associatedHospitals);
+                                    if (Array.isArray(parsed)) hospitalsList = parsed;
+                                    else hospitalsList = localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean).map(name => ({ name, type: 'Consulting Physician' }));
+                                  } catch {
+                                    hospitalsList = localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean).map(name => ({ name, type: 'Consulting Physician' }));
+                                  }
+                                }
+
+                                return (
+                                  <>
+                                    {hospitalsList.map((hospital, index) => (
+                                      <div key={index} className="flex flex-col md:flex-row gap-2">
+                                        <div className="flex-1 relative">
+                                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                          <input
+                                            type="text"
+                                            value={typeof hospital === 'object' ? (hospital.name || hospital.hospital || '') : hospital}
+                                            onChange={(e) => {
+                                              const newHospitals = [...hospitalsList];
+                                              newHospitals[index] = { ...(typeof newHospitals[index] === 'object' ? newHospitals[index] : { name: newHospitals[index], type: 'Consulting Physician' }), name: e.target.value };
+                                              setLocalUser({ ...localUser, associatedHospitals: newHospitals });
+                                            }}
+                                            placeholder="Hospital Name (e.g. Asiri Hospital)"
+                                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all font-medium text-slate-700"
+                                            disabled={isSaving}
+                                          />
+                                        </div>
+                                        <div className="flex-[0.8] relative flex gap-2">
+                                          <div className="flex-1 relative">
+                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                            <input
+                                              type="text"
+                                              value={typeof hospital === 'object' ? (hospital.type || '') : 'Consulting Physician'}
+                                              onChange={(e) => {
+                                                const newHospitals = [...hospitalsList];
+                                                newHospitals[index] = { ...(typeof newHospitals[index] === 'object' ? newHospitals[index] : { name: newHospitals[index] }), type: e.target.value };
+                                                setLocalUser({ ...localUser, associatedHospitals: newHospitals });
+                                              }}
+                                              placeholder="Type (e.g. Private)"
+                                              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all font-medium text-slate-700 text-sm"
+                                              disabled={isSaving}
+                                            />
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const newHospitals = hospitalsList.filter((_, i) => i !== index);
+                                              setLocalUser({ ...localUser, associatedHospitals: newHospitals });
+                                            }}
+                                            disabled={isSaving}
+                                            className="px-4 py-3 bg-red-50 text-red-400 hover:bg-red-500 hover:text-white rounded-2xl transition-colors border border-red-100 active:scale-95"
+                                          >
+                                            <X size={20} />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    <button
+                                      type="button"
+                                      onClick={() => setLocalUser({ ...localUser, associatedHospitals: [...hospitalsList, { name: '', type: '' }] })}
+                                      disabled={isSaving}
+                                      className="w-full py-4 mt-2 border-2 border-dashed border-teal-200 text-teal-600 hover:border-teal-400 hover:bg-teal-50 rounded-2xl transition-all font-bold text-sm flex items-center justify-center gap-2"
+                                    >
+                                      <PlusSquare size={18} /> Add Practice Location
+                                    </button>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
                           <InputField
                             label="Educational Qualifications"
                             name="qualifications"
@@ -1343,15 +1561,22 @@ const InputField = ({ label, value, onChange, disabled, placeholder, type = "tex
 );
 
 const NavItem = ({ icon, label, active = false, badge, onClick }) => (
-  <div
+  <button
     onClick={onClick}
-    className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all font-medium ${active ? 'bg-teal-500 hover:bg-teal-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-100'}`}
+    className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl cursor-pointer transition-all duration-300 group border ${active ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20 border-teal-400' : 'bg-transparent text-slate-500 border-transparent hover:bg-slate-50 hover:border-slate-100 hover:text-slate-800'}`}
   >
-    <div className="flex items-center gap-3">
-      {icon} <span>{label}</span>
+    <div className="flex items-center gap-3 w-full">
+      <div className={`p-2 rounded-xl transition-all ${active ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-teal-600 group-hover:shadow-sm'}`}>
+        {icon}
+      </div>
+      <span className={`font-semibold text-sm ${active ? 'text-white' : ''}`}>{label}</span>
     </div>
-    {badge && <span className="bg-teal-100 text-teal-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{badge}</span>}
-  </div>
+    {badge && (
+      <span className={`flex-shrink-0 text-[10px] font-black px-2.5 py-1 rounded-full ${active ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600 group-hover:bg-rose-500 group-hover:text-white transition-colors'}`}>
+        {badge}
+      </span>
+    )}
+  </button>
 );
 
 const Step = ({ icon, title, desc, completed = false }) => (
