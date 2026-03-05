@@ -176,7 +176,8 @@ const PatientDashboard = ({
   onNavigateAbout,
   onNavigateLogin,
   onNavigateSignupPage,
-  onNavigateDashboard
+  onNavigateDashboard,
+  onNavigateContentHub
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
@@ -329,6 +330,7 @@ const PatientDashboard = ({
         onNavigateSignupPage={onNavigateSignupPage}
         onLogout={onLogout}
         onNavigateDashboard={onNavigateDashboard}
+        onNavigateContentHub={onNavigateContentHub}
       />
 
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-28 md:p-8 md:pt-32 grid grid-cols-1 lg:grid-cols-4 gap-8">

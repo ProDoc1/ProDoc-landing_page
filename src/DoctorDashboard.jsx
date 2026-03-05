@@ -39,7 +39,8 @@ const DoctorDashboard = ({
   onNavigateHome,
   onNavigateLogin,
   onNavigateSignupPage,
-  onNavigateDoctors
+  onNavigateDoctors,
+  onNavigateContentHub
 }) => {
   // Navigation State
   const [activeTab, setActiveTab] = useState('Dashboard');
@@ -430,6 +431,7 @@ const DoctorDashboard = ({
         onNavigateLogin={onNavigateLogin}
         onNavigateSignupPage={onNavigateSignupPage}
         onNavigateDashboard={() => setActiveTab('Dashboard')}
+        onNavigateContentHub={onNavigateContentHub}
       />
 
       <div className="flex flex-1 pt-24 md:pt-32 relative z-10 overflow-hidden">

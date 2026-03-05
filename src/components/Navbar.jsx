@@ -28,33 +28,12 @@ const Navbar = ({
   onNavigatePrivacy,
   onNavigateTerms,
   adminUser,
-  onNavigateAdmin
+  onNavigateAdmin,
+  scrolled,
+  hideNavbar
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [hideNavbar, setHideNavbar] = useState(false);
-
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setScrolled(currentScrollY > 20);
-
-      if (currentPage === 'doctor-view') {
-        if (currentScrollY > lastScrollY && currentScrollY > 100) {
-          setHideNavbar(true);
-        } else {
-          setHideNavbar(false);
-        }
-        setLastScrollY(currentScrollY);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrolled]);
 
   const baseWrapper = "fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50 rounded-2xl transition-all duration-300 border";
 
@@ -176,7 +155,7 @@ const Navbar = ({
   const isDoctor = userRole === 'doctor' || currentUser?.user_type === 'doctor' || currentUser?.role === 'doctor';
 
   return (
-    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-transform duration-300 ${currentPage === 'doctor-view' && hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`} >
+    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-transform duration-300 ${(['doctor-view', 'content-hub'].includes(currentPage)) && hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`} >
       <div className="flex items-center justify-between">
 
         {/* Logo Section */}

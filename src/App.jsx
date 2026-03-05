@@ -343,6 +343,33 @@ export default function App() {
       return savedAdmin ? JSON.parse(savedAdmin) : null;
    });
 
+   // --- NAVBAR VISIBILITY LOGIC ---
+   const [scrolled, setScrolled] = useState(false);
+   const [hideNavbar, setHideNavbar] = useState(false);
+   const lastScrollYRef = React.useRef(0);
+
+   useEffect(() => {
+      const handleScroll = () => {
+         const currentScrollY = window.scrollY;
+         setScrolled(currentScrollY > 20);
+
+         const hideablePages = ['doctor-view', 'content-hub'];
+         if (hideablePages.includes(currentPage)) {
+            if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
+               setHideNavbar(true);
+            } else {
+               setHideNavbar(false);
+            }
+         } else {
+            setHideNavbar(false);
+         }
+         lastScrollYRef.current = currentScrollY;
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+   }, [currentPage]);
+
    // --- EFFECT FOR PERSISTENT LOGIN ---
    // This runs once when the component mounts to check for a saved session.
    useEffect(() => {
@@ -606,6 +633,8 @@ export default function App() {
             <Navbar
                currentPage={currentPage}
                currentUser={currentUser}
+               scrolled={scrolled}
+               hideNavbar={hideNavbar}
                onNavigateHome={() => navigateTo('home')}
                onNavigateAbout={() => navigateTo('about')}
                onNavigateDoctors={() => navigateTo('doctors')}
@@ -688,6 +717,7 @@ export default function App() {
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
                onNavigateDashboard={() => navigateTo('dashboard')}
+               onNavigateContentHub={() => navigateTo('content-hub')}
             />
          )}
 
@@ -700,6 +730,7 @@ export default function App() {
                onNavigateDoctors={() => navigateTo('doctors')}
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
+               onNavigateContentHub={() => navigateTo('content-hub')}
             />
          )}
 
@@ -707,6 +738,7 @@ export default function App() {
             <ContentHub
                user={currentUser}
                userRole={localStorage.getItem('userRole')}
+               hideNavbar={hideNavbar}
                onNavigateHome={() => navigateTo('home')}
                onNavigateDoctors={() => navigateTo('doctors')}
                onViewProfile={(id) => navigateTo('doctor-view', id)}

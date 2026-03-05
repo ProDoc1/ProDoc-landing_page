@@ -16,8 +16,9 @@ import {
     X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MicroExpander } from './components/ui/micro-expander';
 
-const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onViewProfile, user, userRole }) => {
+const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onViewProfile, user, userRole, hideNavbar }) => {
     const [posts, setPosts] = useState([]);
     const [suggestedDoctors, setSuggestedDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -262,10 +263,10 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
     const displayedPosts = getFilteredPosts();
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pt-36 pb-8 px-4">
+        <div className={`min-h-screen bg-slate-50 font-sans text-slate-900 pb-8 px-4 transition-all duration-300 ${hideNavbar ? 'pt-16' : 'pt-36'}`}>
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-36 h-fit">
+                <aside className={`hidden lg:block lg:col-span-3 space-y-6 sticky transition-all duration-300 h-fit ${hideNavbar ? 'top-10' : 'top-36'}`}>
                     <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                         <div className="flex flex-col gap-2">
                             {['Doctor Articles', 'Popular', 'Saved'].map(tab => (
@@ -509,21 +510,23 @@ const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onView
 
                                         {/* Post Actions */}
                                         <div className="p-3 px-6 flex items-center justify-between border-t border-slate-50 bg-slate-50/30">
-                                            <div className="flex items-center gap-6">
-                                                <button
+                                            <div className="flex items-center gap-3">
+                                                <MicroExpander
+                                                    text={`Like (${post.likes})`}
+                                                    variant="ghost"
+                                                    icon={<ThumbsUp size={18} className={post.isLiked ? 'fill-teal-600 stroke-teal-600' : ''} />}
+                                                    className={post.isLiked ? 'text-teal-600 bg-teal-50' : 'hover:text-teal-600 hover:bg-teal-50'}
                                                     onClick={() => handleLike(post.id)}
-                                                    className={`flex items-center gap-2 text-xs font-bold transition-all ${post.isLiked ? 'text-teal-600 scale-105' : 'text-slate-500 hover:text-slate-800'}`}
-                                                >
-                                                    <ThumbsUp size={18} className={post.isLiked ? 'fill-teal-600 stroke-teal-600' : ''} />
-                                                    {post.likes}
-                                                </button>
-                                                <button
+                                                    style={{ height: '40px' }} // Slightly smaller than default 48px
+                                                />
+                                                <MicroExpander
+                                                    text={`Share (${post.shares})`}
+                                                    variant="ghost"
+                                                    icon={<Share2 size={18} />}
+                                                    className="hover:text-blue-600 hover:bg-blue-50"
                                                     onClick={() => handleShare(post.id)}
-                                                    className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
-                                                >
-                                                    <Share2 size={18} />
-                                                    {post.shares}
-                                                </button>
+                                                    style={{ height: '40px' }}
+                                                />
                                             </div>
                                             <button
                                                 onClick={() => handleBookmark(post.id)}
