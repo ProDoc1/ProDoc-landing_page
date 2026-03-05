@@ -21,7 +21,11 @@ import {
   UploadCloud,
   Trash2,
   Newspaper,
-  Loader2 // Imported Loader icon for saving state
+  Loader2,
+  User,
+  Award,
+  Briefcase,
+  Save
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Plasma from './components/Plasma';
@@ -45,6 +49,7 @@ const DoctorDashboard = ({
   const [isSecondOpinionEnabled, setIsSecondOpinionEnabled] = useState(true);
   const [availability, setAvailability] = useState("Mon, Wed, Fri");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [activeEditSection, setActiveEditSection] = useState('Personal');
 
   // Save Data State (New)
   const [isSaving, setIsSaving] = useState(false);
@@ -78,7 +83,11 @@ const DoctorDashboard = ({
     specialty: user?.specialty,
     bio: user?.bio,
     slmcNumber: user?.slmcNumber,
-    location: 'Colombo, Sri Lanka',
+    location: user?.working_hospital || user?.location || 'Colombo, Sri Lanka',
+    languages: user?.languages || '',
+    qualifications: user?.educational_qualifications || '',
+    experience: user?.years_of_experience || '',
+    associatedHospitals: user?.associated_hospitals || [],
     image: user?.image_url || DoctorImg,
     average_rating: user?.average_rating || 0,
     rating_count: user?.rating_count || 0,
@@ -95,8 +104,11 @@ const DoctorDashboard = ({
         specialty: user.specialty || prev.specialty,
         bio: user.bio || prev.bio,
         slmcNumber: user.slmcNumber || prev.slmcNumber,
-        location: user.location || prev.location,
+        location: user.location || user.working_hospital || prev.location,
         languages: user.languages || prev.languages,
+        qualifications: user.educational_qualifications || prev.qualifications,
+        experience: user.years_of_experience || prev.experience,
+        associatedHospitals: user.associated_hospitals || prev.associatedHospitals,
         image: user.image_url || prev.image,
         email_verified: user.email_verified !== undefined ? user.email_verified : prev.email_verified
       }));
@@ -130,8 +142,11 @@ const DoctorDashboard = ({
               specialty: data.specialty || prev.specialty,
               bio: data.bio || prev.bio,
               slmcNumber: data.slmcNumber || prev.slmcNumber,
-              location: data.location || prev.location,
+              location: data.location || data.working_hospital || prev.location,
               languages: data.languages || prev.languages,
+              qualifications: data.educational_qualifications || prev.qualifications,
+              experience: data.years_of_experience || prev.experience,
+              associatedHospitals: data.associated_hospitals || prev.associatedHospitals,
               image: data.image_url || prev.image,
               average_rating: data.average_rating || 0,
               rating_count: data.rating_count || 0,
@@ -199,6 +214,9 @@ const DoctorDashboard = ({
         slmcNumber: localUser.slmcNumber,
         location: localUser.location,
         languages: localUser.languages,
+        educational_qualifications: localUser.qualifications,
+        years_of_experience: localUser.experience,
+        associated_hospitals: JSON.stringify(Array.isArray(localUser.associatedHospitals) ? localUser.associatedHospitals : localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean)),
         image_url: localUser.image, // Assuming your backend accepts base64 or URL
         bio: localUser.bio
       };
@@ -533,7 +551,7 @@ const DoctorDashboard = ({
                       <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm md:text-base text-teal-50/90 font-medium">
                         <div className="flex items-center gap-2.5">
                           <MapPin size={22} className="text-cyan-300" />
-                          <span>{localUser.location}</span>
+                          <span>{Array.isArray(localUser.associatedHospitals) ? localUser.associatedHospitals.join(', ') : (localUser.associatedHospitals || 'No Hospitals Listed')}</span>
                         </div>
                         <div className="w-px h-6 bg-teal-500/40 hidden md:block"></div>
                         <div className="flex items-center gap-2.5">
@@ -567,27 +585,50 @@ const DoctorDashboard = ({
                 ))}
               </div>
 
-              {/* Content Split */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                  <h3 className="text-xl font-bold text-slate-800 mb-6">Verification Progress</h3>
-                  <div className="space-y-6">
-                    <Step icon={<CheckCircle className="text-teal-500" />} title="Identity Verified" desc="National ID verified" completed />
-                    <Step icon={<CheckCircle className="text-teal-500" />} title="Medical License" desc="SLMC Registration verified" completed />
-                    <Step icon={<Clock className="text-amber-500" />} title="Surgical History" desc="Pending secondary audit" />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                {/* Professional Brief - Main Column */}
+                <div className="lg:col-span-2 space-y-8">
+                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 h-full">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl">
+                        <FileText size={20} />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800">Professional Brief</h3>
+                    </div>
+
+                    <div className="space-y-6">
+                      <section>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">About / Bio</h4>
+                        <p className="text-slate-600 leading-relaxed text-sm md:text-base bg-slate-50/50 p-4 rounded-2xl border border-slate-100/50 italic">
+                          {localUser.bio || "No bio added yet. Click 'Edit Details' to add your professional background."}
+                        </p>
+                      </section>
+
+                      <section>
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Qualifications & Expertise</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {localUser.qualifications ? localUser.qualifications.split(',').map((q, i) => (
+                            <span key={i} className="px-4 py-2 bg-teal-50 text-teal-700 rounded-xl text-sm font-semibold border border-teal-100">
+                              {q.trim()}
+                            </span>
+                          )) : (
+                            <span className="text-slate-400 text-sm italic">No qualifications listed.</span>
+                          )}
+                        </div>
+                      </section>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
+                {/* Sidebar - Settings & Status */}
+                <div className="space-y-8">
+                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                          <Activity size={20} />
+                        </div>
                         <h3 className="text-xl font-bold text-slate-800">Second Opinion</h3>
-                        <p className="text-sm text-slate-500 mt-1">
-                          {isSecondOpinionEnabled
-                            ? "Patients can message you for consultations."
-                            : "Currently unavailable for new opinions."}
-                        </p>
                       </div>
                       <button
                         onClick={() => {
@@ -595,18 +636,24 @@ const DoctorDashboard = ({
                           setIsSecondOpinionEnabled(newValue);
                           updateSecondOpinionSettings({ second_opinion_available: newValue });
                         }}
-                        className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
+                        className={`w-12 h-7 rounded-full p-1 transition-colors duration-300 ease-in-out ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
                       >
                         <div
-                          className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-6' : 'translate-x-0'}`}
+                          className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-5' : 'translate-x-0'}`}
                         />
                       </button>
                     </div>
 
+                    <p className="text-sm text-slate-500 mb-6">
+                      {isSecondOpinionEnabled
+                        ? "Open for digital consultations."
+                        : "Digital consultations are currently paused."}
+                    </p>
+
                     {isSecondOpinionEnabled && (
-                      <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100 animate-fadeIn">
+                      <div className="space-y-4 animate-scaleIn">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                          Available Dates
+                          Available Days
                         </label>
                         <div className="flex gap-2">
                           <div className="relative flex-1">
@@ -615,36 +662,37 @@ const DoctorDashboard = ({
                               type="text"
                               value={availability}
                               onChange={(e) => setAvailability(e.target.value)}
-                              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-700"
-                              placeholder="e.g. Mon, Wed, Fri"
+                              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-700 transition-all font-medium"
+                              placeholder="e.g. Mon, Wed"
                             />
                           </div>
                           <button
                             onClick={handleDateSave}
                             disabled={dateSaveStatus === 'saving'}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 min-w-[80px] justify-center ${dateSaveStatus === 'success'
-                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                              : dateSaveStatus === 'error'
-                                ? 'bg-red-500 text-white hover:bg-red-600'
-                                : 'bg-teal-500 hover:bg-teal-600 text-white'
-                              } ${dateSaveStatus === 'saving' ? 'opacity-70 cursor-wait' : ''}`}
+                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all min-w-[70px] flex items-center justify-center ${dateSaveStatus === 'success'
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-teal-600 text-white hover:bg-teal-700'
+                              } disabled:opacity-50`}
                           >
-                            {dateSaveStatus === 'saving' ? (
-                              <Loader2 className="animate-spin" size={16} />
-                            ) : dateSaveStatus === 'success' ? (
-                              <>
-                                <CheckCircle size={16} /> Saved
-                              </>
-                            ) : dateSaveStatus === 'error' ? (
-                              'Retry'
-                            ) : (
-                              'Save'
-                            )}
+                            {dateSaveStatus === 'saving' ? <Loader2 size={16} className="animate-spin" /> : dateSaveStatus === 'success' ? 'Saved' : 'Save'}
                           </button>
                         </div>
-                        <p className="text-xs text-slate-400 mt-2">These are the dates patients see when booking.</p>
                       </div>
                     )}
+                  </div>
+
+                  <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                        <ShieldCheck size={20} />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800">Verification</h3>
+                    </div>
+                    <div className="space-y-6">
+                      <Step icon={<CheckCircle className="text-teal-500" />} title="Identity" desc="National ID verified" completed />
+                      <Step icon={<CheckCircle className="text-teal-500" />} title="Medical License" desc="SLMC Reg verified" completed />
+                      <Step icon={<Clock className="text-amber-500" />} title="Secondary Audit" desc="Pending final review" />
+                    </div>
                   </div>
                 </div>
               </div>            </div>
@@ -1035,80 +1083,234 @@ const DoctorDashboard = ({
 
       {/* Edit Profile Modal */}
       {isEditingProfile && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl md:rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-xl font-bold text-slate-800">Edit Profile</h3>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fadeIn">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+            {/* Header */}
+            <div className="p-6 md:p-8 bg-gradient-to-r from-teal-700 to-teal-600 flex justify-between items-center shrink-0">
+              <div className="text-white">
+                <h3 className="text-2xl font-bold">Edit Professional Profile</h3>
+                <p className="text-teal-100/80 text-sm">Update your public information and credentials</p>
+              </div>
               <button
                 onClick={() => setIsEditingProfile(false)}
                 disabled={isSaving}
-                className="p-2 hover:bg-slate-200 rounded-full transition-colors"
+                className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all"
               >
-                <X size={20} />
+                <X size={24} />
               </button>
             </div>
-            <form onSubmit={handleProfileSave} className="p-6 space-y-4">
-              <div className="flex flex-col items-center mb-6">
-                <div className="relative group cursor-pointer" onClick={() => !isSaving && fileInputRef.current.click()}>
-                  <div className="w-24 h-24 rounded-full border-2 border-teal-500 overflow-hidden bg-slate-100 flex items-center justify-center">
-                    <img src={localUser.image} alt="Profile Preview" className="w-full h-full object-cover" />
+
+            <div className="flex flex-1 overflow-hidden">
+              {/* Sidebar Tabs */}
+              <div className="w-56 bg-slate-50 border-r border-slate-100 p-4 space-y-2 hidden md:block">
+                {[
+                  { id: 'Personal', icon: <User size={18} />, label: 'Identity' },
+                  { id: 'Credentials', icon: <Award size={18} />, label: 'Credentials' },
+                  { id: 'Presence', icon: <Globe size={18} />, label: 'Presence' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveEditSection(tab.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl font-bold transition-all ${activeEditSection === tab.id
+                      ? 'bg-white text-teal-600 shadow-sm border border-slate-200'
+                      : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100/50'
+                      }`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+
+                <div className="mt-8 p-4 bg-teal-50/50 rounded-2xl border border-teal-100">
+                  <p className="text-[10px] text-teal-700 font-bold uppercase tracking-widest mb-1">Status</p>
+                  <div className="flex items-center gap-2 text-xs text-indigo-700 font-medium">
+                    <Verified size={12} className="text-teal-500" />
+                    Verified Provider
                   </div>
-                  <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="text-white" size={24} />
+                </div>
+              </div>
+
+              {/* Form Content */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-10">
+                {/* Mobile Tab Selector */}
+                <div className="md:hidden flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+                  {['Personal', 'Credentials', 'Presence'].map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveEditSection(tab)}
+                      className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${activeEditSection === tab ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-500'
+                        }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+
+                <form onSubmit={handleProfileSave} className="space-y-8 h-full flex flex-col">
+                  <div className="flex-1 space-y-8">
+                    {activeEditSection === 'Personal' && (
+                      <div className="animate-slideUp space-y-6">
+                        <SectionTitle icon={<User size={20} className="text-teal-600" />} title="Personal Identity" />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField
+                            label="Full Name"
+                            name="fullName"
+                            value={localUser.fullName}
+                            onChange={(v) => setLocalUser({ ...localUser, fullName: v })}
+                            disabled={isSaving}
+                            placeholder="Dr. John Doe"
+                          />
+                          <InputField
+                            label="Specialty"
+                            name="specialty"
+                            value={localUser.specialty}
+                            onChange={(v) => setLocalUser({ ...localUser, specialty: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. Cardiologist"
+                          />
+                          <InputField
+                            label="SLMC Registration Number"
+                            name="slmcNumber"
+                            value={localUser.slmcNumber}
+                            onChange={(v) => setLocalUser({ ...localUser, slmcNumber: v })}
+                            disabled={isSaving}
+                            placeholder="REG-12345"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {activeEditSection === 'Credentials' && (
+                      <div className="animate-slideUp space-y-6">
+                        <SectionTitle icon={<Award size={20} className="text-amber-600" />} title="Professional Credentials" />
+
+                        <div className="space-y-6">
+                          <InputField
+                            label="Associated Hospitals"
+                            name="associatedHospitals"
+                            value={Array.isArray(localUser.associatedHospitals) ? localUser.associatedHospitals.join(', ') : localUser.associatedHospitals}
+                            onChange={(v) => setLocalUser({ ...localUser, associatedHospitals: v.split(',').map(h => h.trim()) })}
+                            disabled={isSaving}
+                            placeholder="e.g. Asiri Hospital, Lanka Hospital"
+                          />
+                          <InputField
+                            label="Educational Qualifications"
+                            name="qualifications"
+                            value={localUser.qualifications}
+                            onChange={(v) => setLocalUser({ ...localUser, qualifications: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. MBBS, MD (Surgery)"
+                          />
+                          <div className="w-full">
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Years of Experience</label>
+                            <div className="relative">
+                              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                              <input
+                                type="number"
+                                value={localUser.experience}
+                                onChange={(e) => setLocalUser({ ...localUser, experience: e.target.value })}
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all font-medium text-slate-700"
+                                disabled={isSaving}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeEditSection === 'Presence' && (
+                      <div className="animate-slideUp space-y-6">
+                        <SectionTitle icon={<Globe size={20} className="text-blue-600" />} title="Public Presence" />
+
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div className="relative group cursor-pointer" onClick={() => !isSaving && fileInputRef.current.click()}>
+                              <div className="w-24 h-24 rounded-3xl border-2 border-white shadow-xl overflow-hidden bg-white">
+                                <img src={localUser.image} alt="Profile Preview" className="w-full h-full object-cover" />
+                              </div>
+                              <div className="absolute inset-0 bg-teal-600/60 rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px]">
+                                <Camera className="text-white" size={24} />
+                              </div>
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-800">Profile Photo</h4>
+                              <p className="text-sm text-slate-500 mb-2">Recommended: 400x400px</p>
+                              <button
+                                type="button"
+                                onClick={() => fileInputRef.current.click()}
+                                className="text-xs font-bold text-teal-600 hover:text-teal-700 underline"
+                              >
+                                Replace Image
+                              </button>
+                            </div>
+                            <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
+                          </div>
+
+                          <InputField
+                            label="Languages Spoken"
+                            name="languages"
+                            value={localUser.languages}
+                            onChange={(v) => setLocalUser({ ...localUser, languages: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. English, Sinhala"
+                          />
+
+                          <div className="w-full">
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Professional Bio</label>
+                            <textarea
+                              value={localUser.bio}
+                              onChange={(e) => setLocalUser({ ...localUser, bio: e.target.value })}
+                              className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all min-h-[140px] text-slate-700 leading-relaxed font-medium"
+                              placeholder="Describe your medical journey and expertise..."
+                              disabled={isSaving}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
-                <p className="text-xs text-slate-400 mt-2">Click to change photo</p>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-                <input type="text" value={localUser.fullName} onChange={(e) => setLocalUser({ ...localUser, fullName: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Specialty</label>
-                  <input type="text" value={localUser.specialty} onChange={(e) => setLocalUser({ ...localUser, specialty: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">SLMC Reg</label>
-                  <input type="text" value={localUser.slmcNumber} onChange={(e) => setLocalUser({ ...localUser, slmcNumber: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
-                <input type="text" value={localUser.location} onChange={(e) => setLocalUser({ ...localUser, location: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" disabled={isSaving} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Languages</label>
-                <input type="text" value={localUser.languages} onChange={(e) => setLocalUser({ ...localUser, languages: e.target.value })} className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" placeholder="e.g. English, Sinhala" disabled={isSaving} />
-              </div>
+                  {/* Footer & Feedback */}
+                  <div className="shrink-0 pt-6">
+                    {saveStatus.message && (
+                      <div className={`p-4 rounded-2xl text-sm font-bold flex items-center gap-3 mb-6 animate-fadeIn ${saveStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'
+                        }`}>
+                        {saveStatus.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                        {saveStatus.message}
+                      </div>
+                    )}
 
-              {saveStatus.message && (
-                <div className={`p-3 rounded-xl text-sm flex items-center gap-2 ${saveStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
-                  {saveStatus.type === 'success' ? <CheckCircle size={16} /> : <X size={16} />}
-                  {saveStatus.message}
-                </div>
-              )}
-
-              <div className="pt-2 flex gap-3">
-                <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors" disabled={isSaving}>Cancel</button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="flex-1 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="animate-spin" size={18} />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingProfile(false)}
+                        className="flex-1 px-8 py-4 border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all font-bold"
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="flex-[2] px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl shadow-xl shadow-teal-900/10 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:grayscale"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="animate-spin" size={20} />
+                            Applying Changes...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={20} />
+                            Save Profile
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </form>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
@@ -1117,6 +1319,27 @@ const DoctorDashboard = ({
 };
 
 // Helper Components
+const SectionTitle = ({ icon, title }) => (
+  <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+    {icon}
+    <h4 className="text-xl font-bold text-slate-800">{title}</h4>
+  </div>
+);
+
+const InputField = ({ label, value, onChange, disabled, placeholder, type = "text" }) => (
+  <div className="w-full">
+    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all font-medium text-slate-700"
+      disabled={disabled}
+      placeholder={placeholder}
+    />
+  </div>
+);
+
 const NavItem = ({ icon, label, active = false, badge, onClick }) => (
   <div
     onClick={onClick}

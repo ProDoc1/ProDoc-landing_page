@@ -236,7 +236,7 @@ const PatientDashboard = ({
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
 
   const handleSaveProfile = async (formData) => {
-    console.log('Saving profile:', formData);
+    // console.log('Saving profile:', formData);
     await new Promise(resolve => setTimeout(resolve, 1000));
     setCurrentUser(prev => ({ ...prev, ...formData }));
   };
@@ -930,7 +930,7 @@ const PatientDashboard = ({
         amount={paymentDetails.amount}
         serviceName={paymentDetails.serviceName}
         onPaymentSuccess={() => {
-          console.log("Payment successful, proceed to form");
+          // console.log("Payment successful, proceed to form");
         }}
       />
     </div>

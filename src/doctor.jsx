@@ -71,7 +71,6 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
 
         // --- FIX 2: Strictly check if data is an Array before setting ---
         if (Array.isArray(data) && data.length > 0) {
-          console.log("Doctors loaded from database:", data);
           setDoctors(data);
         } else {
           console.warn("API returned non-array data, using mock.");

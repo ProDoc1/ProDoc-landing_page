@@ -362,7 +362,7 @@ export default function App() {
       }
    }, []);
 
-  
+
 
    // --- EFFECT TO UPDATE PAGE TITLE AND URL ---
    useEffect(() => {
@@ -439,17 +439,17 @@ export default function App() {
          const checkAndPrompt = () => {
             const lastPrompt = localStorage.getItem('last_verify_prompt_time');
             const now = new Date().getTime();
-            const ONE_HOUR = 60 * 60 * 1000; 
+            const ONE_HOUR = 60 * 60 * 1000;
 
             if (!lastPrompt || (now - parseInt(lastPrompt)) >= ONE_HOUR) {
                setShowVerifyModal(true);
             }
          };
 
-        
+
          checkAndPrompt();
 
-         
+
          const intervalId = setInterval(checkAndPrompt, 60 * 1000);
          return () => clearInterval(intervalId);
       } else {
@@ -559,24 +559,22 @@ export default function App() {
 
    // --- EFFECT FOR INACTIVITY SESSION TIMEOUT ---
    useEffect(() => {
-      if (!currentUser && !adminUser) return; 
+      if (!currentUser && !adminUser) return;
 
       let timeoutId;
-      const TIMEOUT_DURATION = 1 * 60 * 1000; //60
+      const TIMEOUT_DURATION = 10 * 60 * 1000; //60
 
       const resetTimer = () => {
          if (timeoutId) clearTimeout(timeoutId);
          timeoutId = setTimeout(() => {
-            console.log('User idle for 60 minutes. Logging out.');
             setShowSessionExpiredModal(true);
             handleLogout();
          }, TIMEOUT_DURATION);
       };
 
-   
       resetTimer();
 
-     
+
       const events = ['mousemove', 'keydown', 'scroll', 'click'];
       const handleActivity = () => resetTimer();
 
@@ -590,7 +588,7 @@ export default function App() {
             window.removeEventListener(event, handleActivity);
          });
       };
-   }, [currentUser, adminUser]); 
+   }, [currentUser, adminUser]);
 
    const navigateToSection = (sectionId) => {
       setCurrentPage('home');
