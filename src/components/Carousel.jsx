@@ -72,14 +72,14 @@ function CarouselItem({ item, index, itemWidth, round, trackItemOffset, x, trans
 
 export default function Carousel({
   items = ITEMS,
-  baseWidth = 350,
+  baseWidth = 400,
   autoplay = true,
   autoplayDelay = 4000,
   pauseOnHover = true,
   loop = true,
   round = false
 }) {
-  const containerPadding = 16;
+  const containerPadding = 40;
   const itemWidth = baseWidth - containerPadding * 2;
   const trackItemOffset = itemWidth + GAP;
   const itemsForRender = useMemo(() => {
@@ -195,11 +195,11 @@ export default function Carousel({
   const dragProps = loop
     ? {}
     : {
-        dragConstraints: {
-          left: -trackItemOffset * Math.max(itemsForRender.length - 1, 0),
-          right: 0
-        }
-      };
+      dragConstraints: {
+        left: -trackItemOffset * Math.max(itemsForRender.length - 1, 0),
+        right: 0
+      }
+    };
 
   const activeIndex =
     items.length === 0 ? 0 : loop ? (position - 1 + items.length) % items.length : Math.min(position, items.length - 1);
