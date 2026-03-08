@@ -92,7 +92,15 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const specialties = ['All', 'Cardiologist', 'Neurologist', 'Pediatrician', 'Dermatologist', 'Orthopedic Surgeon', 'General Surgeon', 'Oncologist'];
+  const availableSpecialties = (doctors || []).reduce((acc, doc) => {
+    const spec = doc?.specialty?.trim();
+    if (spec && !acc.find(existing => existing.toLowerCase() === spec.toLowerCase())) {
+      acc.push(spec);
+    }
+    return acc;
+  }, []);
+
+  const specialties = ['All', ...availableSpecialties.sort()];
 
   const availableHospitals = (doctors || []).reduce((acc, doc) => {
     const docHospitals = doc?.associated_hospitals || [];
@@ -106,7 +114,7 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
   }, []);
 
   const hospitalSuggestions = filters.hospitalSearch.trim() === ''
-    ? []
+    ? availableHospitals
     : availableHospitals.filter(h =>
       h.toLowerCase().includes(filters.hospitalSearch.toLowerCase()) &&
       filters.hospitalSearch.toLowerCase() !== h.toLowerCase()
