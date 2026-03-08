@@ -1,0 +1,5 @@
+{
+  "name": "MedBot - AI Medical Assistant",
+  "description": "A medical chatbot that recommends doctors based on patient symptoms and provides quick medical advice. The chatbot can communicate in English, Sinhala, and Tamil.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,195 @@
+[
+  {
+    "id": 0,
+    "author": "user",
+    "payload": {
+      "type": "text",
+      "text": "A medical chatbot which would recommend the user a doctor based on the patients symptoms and has the ability to response in sinhala, tamil and english and sometimes would give advice to the user based on what would the user ask about medical situations quick responses with straight foward answering ",
+      "files": [],
+      "fileUploads": [],
+      "cMarkNode": {}
+    },
+    "createdTimestamp": {
+      "seconds": 1769979050,
+      "nanos": 654000000
+    }
+  },
+  {
+    "id": 1,
+    "author": "model",
+    "payload": {
+      "type": "thinking",
+      "text": "**Defining the Project Scope**\n\nOkay, I'm defining the project scope for this React medical chatbot. The key features will be symptom-based doctor recommendations and multi-lingual support, specifically for Sinhala, Tamil, and English.\n\n\n**Outlining Architecture and Tech**\n\nI'm now outlining the React application's architecture. The core functionality centers around symptom-based doctor recommendations and multi-lingual support (Sinhala, Tamil, and English) with medical advice and a chat interface. React 18+ with TypeScript is the framework, Tailwind CSS for styling, and Gemini API for the backend. I'm focusing on React Hooks for state management and an organized project structure to streamline development.\n\n\n**Refining Gemini Prompt Engineering**\n\nI'm now honing the Gemini API strategy, particularly the system instruction. I've defined the chatbot's persona as an empathetic medical assistant. The core task is to understand symptoms, recommend doctors, and offer general advice, with strict multi-lingual support (English, Sinhala, and Tamil). It will respond in the chosen language. I have added a disclaimer. I'm focusing on crafting a precise prompt to ensure accurate and helpful responses.\n\n\n**Defining the Bot's Features**\n\nI am now focusing on the core bot features: symptom-based doctor recommendations, multi-lingual support (English, Sinhala, Tamil), medical advice, and a chat interface. I need to define the technical stack, including React 18+ with TypeScript, Tailwind CSS, Gemini API, and React Hooks. I will then work on the project structure, including the `index.html`, `index.tsx`, `App.tsx`, and component and service files. I'm focusing on parsing doctor recommendations.\n\n\n**Defining Chatbot Functionality**\n\nI'm now zeroing in on defining the chatbot functionality. It will feature symptom-based doctor recommendations, multi-lingual capability (English, Sinhala, Tamil), medical advice, and a clean chat interface. The tech stack will use React 18+, TypeScript, Tailwind CSS, Gemini API, and React Hooks. I will then define the project structure, including the core components and services. I'm focusing on parsing doctor recommendations. I plan to use the `gemini-3-flash-preview` model. I have also designed a disclaimer, and language selector for user's use.\n\n\n\n**Defining Chatbot Implementation**\n\nI'm now fully immersed in the coding phase. I'm focusing on the `App.tsx` component and the `handleSendMessage` function, particularly the logic for parsing Gemini's responses. I'm implementing the UI and handling state for messages, loading indicators, and the selected language. My focus is on ensuring the chat interface is intuitive, with proper scrolling and responsive design using Tailwind. The `geminiService.ts` for API interactions is also taking shape.\n\n\n\n**Defining Implementation Steps**\n\nI'm now deep in defining the coding steps. I'm focusing on the `handleSendMessage` function and the logic for the system prompt. I'll need to define how to handle Gemini's responses, particularly for doctor recommendations. The goal is to build the chat UI with appropriate messages, loading indicators, the language selector, and scrolling using the latest features. The `geminiService.ts` for API interaction is also taking shape.\n\n\n\n**Refining API Interactions**\n\nI'm now integrating the Gemini API, focusing on the `geminiService.ts` function. I'm prioritizing the `sendMessageToBot` function, which needs to use `sendMessageStream` to provide a better user experience and handle chunking the response. I'm also preparing to create the `handleSendMessage` function.\n\n\n\n**Defining App and Logic**\n\nI'm now implementing the `App.tsx` component, including `handleSendMessage` and the language selector. I've built the message display using `ChatMessage` and I'm integrating the `geminiService.ts` for API calls. I am now working on parsing the response. I'm focusing on handling `DOCTOR_RECOMMENDATION::` to format the recommended doctors to display. I am also working on the scrolling, and loading features.\n\n\n**Refining Chatbot Implementation**\n\nI'm now deep in implementing `App.tsx`, and integrating the logic for the symptom-based doctor recommendations, and UI elements. I'm focusing on the `handleSendMessage` function for chat message handling, and ensuring doctor recommendations parse correctly. The disclaimer is also implemented to ensure user safety.\n\n\n",
+      "cMarkNode": {}
+    },
+    "createdTimestamp": {
+      "seconds": 1769979050,
+      "nanos": 655000000
+    },
+    "doneTimestamp": {
+      "seconds": 1769979074,
+      "nanos": 910000000
+    }
+  },
+  {
+    "id": 2,
+    "author": "model",
+    "payload": {
+      "type": "generationTable",
+      "entries": [
+        {
+          "path": "metadata.json",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Create metadata file for the MedBot application.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\n{\n  \"name\": \"MedBot - AI Medical Assistant\",\n  \"description\": \"A medical chatbot that recommends doctors based on patient symptoms and provides quick medical advice. The chatbot can communicate in English, Sinhala, and Tamil.\"\n}\n"
+            }
+          ]
+        },
+        {
+          "path": "index.html",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Create the main HTML file with Tailwind CSS and a root element for the React app.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\n<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <link rel=\"icon\" type=\"image/svg+xml\" href=\"/vite.svg\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>MedBot - AI Medical Assistant</title>\n    <script src=\"https://cdn.tailwindcss.com\"></script>\n    <link href=\"https://cdnjs.cloudflare.com/ajax/libs/heroicons/2.1.3/24/outline/heroicons.min.css\" rel=\"stylesheet\">\n  </head>\n  <body class=\"bg-gray-100 dark:bg-gray-900\">\n    <div id=\"root\"></div>\n    <script type=\"module\" src=\"/index.tsx\"></script>\n  </body>\n</html>\n"
+            }
+          ]
+        },
+        {
+          "path": "index.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Create the entry point for the React application, rendering the App component.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport App from './App';\n\nconst rootElement = document.getElementById('root');\nif (!rootElement) {\n  throw new Error(\"Could not find root element to mount to\");\n}\n\nconst root = ReactDOM.createRoot(rootElement);\nroot.render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);\n"
+            }
+          ]
+        },
+        {
+          "path": "App.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "The main application component, managing chat state, language selection, and interaction with the Gemini API.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React, { useState, useEffect, useRef, useCallback } from 'react';\nimport { GoogleGenAI, Chat, GenerateContentResponse } from '@google/genai';\nimport { Language, Message, Doctor } from './types';\nimport { SYSTEM_PROMPT_TEMPLATE, LANGUAGE_OPTIONS, INITIAL_GREETINGS } from './constants';\nimport ChatMessage from './components/ChatMessage';\nimport ChatInput from './components/ChatInput';\nimport LanguageSelector from './components/LanguageSelector';\nimport Header from './components/Header';\nimport Disclaimer from './components/Disclaimer';\n\nconst App: React.FC = () => {\n  const [messages, setMessages] = useState<Message[]>([]);\n  const [language, setLanguage] = useState<Language>(Language.EN);\n  const [isLoading, setIsLoading] = useState<boolean>(false);\n  const [chat, setChat] = useState<Chat | null>(null);\n  const chatContainerRef = useRef<HTMLDivElement>(null);\n\n  useEffect(() => {\n    // Scroll to the bottom of the chat container when messages change\n    if (chatContainerRef.current) {\n      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;\n    }\n  }, [messages]);\n  \n  const initializeChat = useCallback(() => {\n    try {\n      if (!process.env.API_KEY) {\n        throw new Error(\"API_KEY environment variable not set\");\n      }\n      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });\n      const systemInstruction = SYSTEM_PROMPT_TEMPLATE.replace('{language}', language);\n      \n      const newChat = ai.chats.create({\n        model: 'gemini-3-flash-preview',\n        config: {\n          systemInstruction: systemInstruction,\n        },\n      });\n      setChat(newChat);\n\n      const greeting = INITIAL_GREETINGS[language];\n\n      setMessages([\n        {\n          id: 'initial-greeting',\n          role: 'bot',\n          text: greeting,\n        }\n      ]);\n    } catch (error) {\n       console.error(\"Failed to initialize chat:\", error);\n       setMessages([{ id: 'error-init', role: 'bot', text: 'Error: Could not initialize AI chat. Please check the API key and refresh.' }]);\n    }\n  }, [language]);\n  \n  useEffect(() => {\n    initializeChat();\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [language]);\n\n  const handleSendMessage = async (inputText: string) => {\n    if (!inputText.trim() || isLoading || !chat) return;\n\n    const userMessage: Message = {\n      id: Date.now().toString(),\n      role: 'user',\n      text: inputText,\n    };\n    setMessages((prevMessages) => [...prevMessages, userMessage]);\n    setIsLoading(true);\n\n    let fullResponseText = '';\n    const botMessageId = (Date.now() + 1).toString();\n\n    try {\n      const stream = await chat.sendMessageStream({ message: inputText });\n\n      // Create a placeholder for the bot's message\n      setMessages((prev) => [...prev, { id: botMessageId, role: 'bot', text: '...' }]);\n\n      for await (const chunk of stream) {\n        const c = chunk as GenerateContentResponse;\n        fullResponseText += c.text;\n        \n        // Update the bot's message in real-time\n        setMessages((prev) =>\n          prev.map((msg) =>\n            msg.id === botMessageId ? { ...msg, text: fullResponseText } : msg\n          )\n        );\n      }\n      \n      const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';\n      let doctor: Doctor | undefined;\n      let finalText = fullResponseText;\n\n      if (fullResponseText.startsWith(recommendationPrefix)) {\n          const jsonString = fullResponseText.substring(recommendationPrefix.length);\n          try {\n              const doctorData: Doctor = JSON.parse(jsonString);\n              doctor = doctorData;\n              finalText = `${doctorData.reason}`;\n          } catch (e) {\n              console.error(\"Failed to parse doctor recommendation JSON:\", e);\n              finalText = fullResponseText; // Fallback to showing raw response\n          }\n      }\n\n      setMessages((prev) =>\n        prev.map((msg) =>\n          msg.id === botMessageId ? { ...msg, text: finalText, doctor } : msg\n        )\n      );\n\n    } catch (error) {\n      console.error('Error sending message:', error);\n      const errorMessage = 'Sorry, I encountered an error. Please try again.';\n      setMessages((prev) => \n         prev.map((msg) => msg.id === botMessageId ? {...msg, text: errorMessage} : msg)\n      );\n    } finally {\n      setIsLoading(false);\n    }\n  };\n\n  return (\n    <div className=\"flex flex-col h-screen font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200\">\n      <Header />\n      <LanguageSelector\n        selectedLanguage={language}\n        onLanguageChange={(lang: Language) => {\n          setLanguage(lang);\n        }}\n        languages={LANGUAGE_OPTIONS}\n      />\n      <Disclaimer />\n      <div\n        ref={chatContainerRef}\n        className=\"flex-1 overflow-y-auto p-4 space-y-4\"\n      >\n        {messages.map((msg) => (\n          <ChatMessage key={msg.id} message={msg} />\n        ))}\n        {isLoading && messages[messages.length-1].role === 'user' && (\n           <ChatMessage key=\"loading\" message={{id: 'loading', role: 'bot', text: '...'}} />\n        )}\n      </div>\n      <div className=\"p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700\">\n        <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />\n      </div>\n    </div>\n  );\n};\n\nexport default App;\n"
+            }
+          ]
+        },
+        {
+          "path": "types.ts",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Define shared TypeScript types and enums for the application.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nexport enum Language {\n  EN = 'English',\n  SI = 'Sinhala',\n  TA = 'Tamil',\n}\n\nexport type Role = 'user' | 'bot';\n\nexport interface Doctor {\n  specialty: string;\n  reason: string;\n}\n\nexport interface Message {\n  id: string;\n  role: Role;\n  text: string;\n  doctor?: Doctor;\n}\n"
+            }
+          ]
+        },
+        {
+          "path": "constants.ts",
+          "generationType": 0,
+          "isDone": true,
+          "description": "Define constants for system prompts, language options, and initial greetings.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport { Language } from './types';\n\nexport const LANGUAGE_OPTIONS: { value: Language; label: string, shortLabel: string }[] = [\n  { value: Language.EN, label: 'English', shortLabel: 'EN' },\n  { value: Language.SI, label: 'Sinhala (සිංහල)', shortLabel: 'SI' },\n  { value: Language.TA, label: 'Tamil (தமிழ்)', shortLabel: 'TA' },\n];\n\nexport const SYSTEM_PROMPT_TEMPLATE = `\nYou are MedBot, a helpful and empathetic AI medical assistant. \nYour primary goal is to understand a user's medical symptoms and recommend a type of doctor (e.g., Cardiologist, Dermatologist, General Practitioner).\nYou must converse fluently in the user's chosen language, which is currently set to: {language}.\n\nRULES:\n1.  When you identify a clear need for a specific doctor, you MUST format your response with a special prefix: \\`DOCTOR_RECOMMENDATION::\\`. This prefix must be followed by a single, valid JSON object with two keys: \"specialty\" (string) and \"reason\" (string).\n    Example: DOCTOR_RECOMMENDATION::{\"specialty\": \"Cardiologist\", \"reason\": \"Based on your symptoms of chest pain and shortness of breath, a cardiologist is the appropriate specialist to consult.\"}\n2.  For all other queries, provide general, non-emergency medical advice. Keep your answers quick, straightforward, and easy to understand.\n3.  Do NOT diagnose any condition. You are not a doctor.\n4.  CRITICAL SAFETY WARNING: Always include a disclaimer that the user should consult a real medical professional for diagnosis and treatment. If symptoms sound severe or like an emergency, strongly advise them to contact local emergency services immediately. Your advice is for informational purposes only.\n5.  Always respond in {language}.\n`;\n\nexport const INITIAL_GREETINGS: Record<Language, string> = {\n  [Language.EN]: \"Hello! I'm MedBot, your AI medical assistant. How can I help you today? Please describe your symptoms.\",\n  [Language.SI]: \"ආයුබෝවන්! මම මෙඩ්බොට්, ඔබේ AI වෛද්‍ය සහායක. අද ඔබට උදව් කළ හැක්කේ කෙසේද? කරුණාකර ඔබේ රෝග ලක්ෂණ විස්තර කරන්න.\",\n  [Language.TA]: \"வணக்கம்! நான் மெட்பாட், உங்கள் AI மருத்துவ உதவியாளர். இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்? உங்கள் அறிகுறிகளை விவரிக்கவும்.\",\n};\n"
+            }
+          ]
+        },
+        {
+          "path": "components/ChatMessage.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "A reusable component to display a single chat message, differentiating between user and bot roles.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React from 'react';\nimport { Message } from '../types';\nimport DoctorCard from './DoctorCard';\n\ninterface ChatMessageProps {\n  message: Message;\n}\n\nconst ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {\n  const isUser = message.role === 'user';\n  const isTyping = message.text === '...';\n\n  const wrapperClasses = `flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`;\n  const bubbleClasses = `max-w-md lg:max-w-2xl px-4 py-3 rounded-2xl break-words ${\n    isUser\n      ? 'bg-blue-600 text-white rounded-br-none'\n      : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-none'\n  }`;\n\n  return (\n    <div className={wrapperClasses}>\n      {!isUser && (\n        <div className=\"flex-shrink-0 w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-sm\">\n          AI\n        </div>\n      )}\n      <div className=\"flex flex-col\">\n        <div className={bubbleClasses}>\n            {isTyping ? (\n                 <div className=\"flex items-center justify-center space-x-1\">\n                    <div className=\"w-2 h-2 bg-gray-400 rounded-full animate-bounce\" style={{animationDelay: '0.1s'}}></div>\n                    <div className=\"w-2 h-2 bg-gray-400 rounded-full animate-bounce\" style={{animationDelay: '0.2s'}}></div>\n                    <div className=\"w-2 h-2 bg-gray-400 rounded-full animate-bounce\" style={{animationDelay: '0.3s'}}></div>\n                 </div>\n            ) : (\n                <p className=\"whitespace-pre-wrap\">{message.text}</p>\n            )}\n        </div>\n        {message.doctor && (\n            <div className=\"mt-2\">\n                <DoctorCard doctor={message.doctor} />\n            </div>\n        )}\n      </div>\n    </div>\n  );\n};\n\nexport default ChatMessage;\n"
+            }
+          ]
+        },
+        {
+          "path": "components/ChatInput.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "A component for user text input, including a send button and handling for loading states.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React, { useState, useRef } from 'react';\n\ninterface ChatInputProps {\n  onSendMessage: (message: string) => void;\n  isLoading: boolean;\n}\n\nconst ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {\n  const [text, setText] = useState('');\n  const textareaRef = useRef<HTMLTextAreaElement>(null);\n\n  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {\n    setText(e.target.value);\n    // Auto-resize textarea\n    if (textareaRef.current) {\n        textareaRef.current.style.height = 'auto';\n        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;\n    }\n  };\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (text.trim() && !isLoading) {\n      onSendMessage(text);\n      setText('');\n      if (textareaRef.current) {\n        textareaRef.current.style.height = 'auto';\n      }\n    }\n  };\n\n  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {\n    if (e.key === 'Enter' && !e.shiftKey) {\n      e.preventDefault();\n      handleSubmit(e as unknown as React.FormEvent);\n    }\n  };\n\n  return (\n    <form onSubmit={handleSubmit} className=\"flex items-center space-x-3\">\n      <textarea\n        ref={textareaRef}\n        value={text}\n        onChange={handleInputChange}\n        onKeyDown={handleKeyPress}\n        placeholder=\"Type your symptoms here...\"\n        className=\"flex-1 p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 resize-none max-h-40\"\n        rows={1}\n        disabled={isLoading}\n      />\n      <button\n        type=\"submit\"\n        disabled={isLoading || !text.trim()}\n        className=\"px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center\"\n      >\n        {isLoading ? (\n          <svg className=\"animate-spin h-5 w-5 text-white\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\">\n            <circle className=\"opacity-25\" cx=\"12\" cy=\"12\" r=\"10\" stroke=\"currentColor\" strokeWidth=\"4\"></circle>\n            <path className=\"opacity-75\" fill=\"currentColor\" d=\"M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z\"></path>\n          </svg>\n        ) : (\n          <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" strokeWidth={1.5} stroke=\"currentColor\" className=\"w-6 h-6\">\n            <path strokeLinecap=\"round\" strokeLinejoin=\"round\" d=\"M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5\" />\n          </svg>\n        )}\n      </button>\n    </form>\n  );\n};\n\nexport default ChatInput;\n"
+            }
+          ]
+        },
+        {
+          "path": "components/LanguageSelector.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "A component that allows the user to switch the chat language between English, Sinhala, and Tamil.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React from 'react';\nimport { Language } from '../types';\n\ninterface LanguageSelectorProps {\n  selectedLanguage: Language;\n  onLanguageChange: (language: Language) => void;\n  languages: { value: Language; label: string; shortLabel: string }[];\n}\n\nconst LanguageSelector: React.FC<LanguageSelectorProps> = ({ selectedLanguage, onLanguageChange, languages }) => {\n  return (\n    <div className=\"flex justify-center p-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700\">\n      <div className=\"flex space-x-2 bg-white dark:bg-gray-900 p-1 rounded-lg shadow-sm\">\n        {languages.map(({ value, label, shortLabel }) => (\n          <button\n            key={value}\n            onClick={() => onLanguageChange(value)}\n            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${\n              selectedLanguage === value\n                ? 'bg-blue-600 text-white shadow'\n                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'\n            }`}\n            aria-pressed={selectedLanguage === value}\n            title={`Switch to ${label}`}\n          >\n           <span className=\"sm:hidden\">{shortLabel}</span>\n           <span className=\"hidden sm:inline\">{label}</span>\n          </button>\n        ))}\n      </div>\n    </div>\n  );\n};\n\nexport default LanguageSelector;\n"
+            }
+          ]
+        },
+        {
+          "path": "components/DoctorCard.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "A component to display a structured doctor recommendation within a chat message.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React from 'react';\nimport { Doctor } from '../types';\n\ninterface DoctorCardProps {\n  doctor: Doctor;\n}\n\nconst DoctorCard: React.FC<DoctorCardProps> = ({ doctor }) => {\n  return (\n    <div className=\"max-w-md bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-2\">\n      <div className=\"flex items-center space-x-3\">\n        <div className=\"flex-shrink-0 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full p-2\">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" strokeWidth={1.5} stroke=\"currentColor\" className=\"w-6 h-6\">\n            <path strokeLinecap=\"round\" strokeLinejoin=\"round\" d=\"M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z\" />\n          </svg>\n        </div>\n        <div>\n          <p className=\"text-sm text-blue-600 dark:text-blue-300 font-semibold\">Recommendation</p>\n          <h3 className=\"text-lg font-bold text-gray-800 dark:text-gray-100\">{doctor.specialty}</h3>\n        </div>\n      </div>\n    </div>\n  );\n};\n\nexport default DoctorCard;\n"
+            }
+          ]
+        },
+        {
+          "path": "components/Header.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "A simple header component for the application title.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React from 'react';\n\nconst Header: React.FC = () => {\n  return (\n    <header className=\"p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm\">\n      <div className=\"flex items-center space-x-3\">\n        <div className=\"p-2 bg-blue-600 rounded-full\">\n            <svg xmlns=\"http://www.w3.org/2000/svg\" className=\"h-6 w-6 text-white\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n                <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth=\"2\" d=\"M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z\" />\n            </svg>\n        </div>\n        <h1 className=\"text-xl font-bold text-gray-800 dark:text-white\">MedBot AI Assistant</h1>\n      </div>\n    </header>\n  );\n};\n\nexport default Header;\n"
+            }
+          ]
+        },
+        {
+          "path": "components/Disclaimer.tsx",
+          "generationType": 0,
+          "isDone": true,
+          "description": "A component to display a critical medical disclaimer to the user.",
+          "diffs": [
+            {
+              "target": "",
+              "replacement": "\nimport React from 'react';\n\nconst Disclaimer: React.FC = () => {\n  return (\n    <div className=\"p-2 bg-yellow-100 dark:bg-yellow-900/30 border-b border-yellow-200 dark:border-yellow-800 text-center\">\n      <p className=\"text-xs text-yellow-800 dark:text-yellow-200\">\n        <span className=\"font-bold\">Disclaimer:</span> MedBot is an AI assistant and not a substitute for professional medical advice. Always consult a doctor for diagnosis. In case of an emergency, call your local emergency services.\n      </p>\n    </div>\n  );\n};\n\nexport default Disclaimer;\n"
+            }
+          ]
+        }
+      ]
+    },
+    "createdTimestamp": {
+      "seconds": 1769979074,
+      "nanos": 910000000
+    },
+    "doneTimestamp": {
+      "seconds": 1769979077,
+      "nanos": 297000000
+    }
+  }
+]
