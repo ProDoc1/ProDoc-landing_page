@@ -272,11 +272,62 @@ const PatientDashboard = ({
     { id: 2, name: "Dr. Sunil Jayawardena", specialty: "Neurologist", status: "Pending Update", lastActive: "1 day ago" },
   ];
 
-  const handleSaveProfile = async (formData) => {
-    console.log('Saving profile:', formData);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCurrentUser(prev => ({ ...prev, ...formData }));
-  };
+  // Add useEffect to fetch user data on mount
+useEffect(() => {
+  fetchUserData();
+}, []);
+
+const fetchUserData = async () => {
+  try {
+    // Replace with actual patient ID from auth context or props
+    const patientId = currentUser.id || 'PT-2024-001';
+    const response = await fetch(`/api/patient/profile?patientId=${patientId}`);
+    if (response.ok) {
+      const data = await response.json();
+      setCurrentUser(prev => ({ ...prev, ...data }));
+    }
+  } catch (error) {
+    console.error('Failed to fetch user data:', error);
+  }
+};
+
+const handleSaveProfile = async (formData) => {
+  setIsLoading(true);
+  try {
+    const patientId = currentUser.id || 'PT-2024-001';
+    
+    const response = await fetch('/api/patient/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        patientId,
+        ...formData
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save profile');
+    }
+
+    const result = await response.json();
+    
+    // Update local state with saved data
+    setCurrentUser(prev => ({ 
+      ...prev, 
+      ...formData,
+      id: result.patient.id 
+    }));
+    
+    console.log('Profile saved successfully');
+  } catch (error) {
+    console.error('Failed to save profile:', error);
+    throw error; // Re-throw to let modal handle error
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const getReportIcon = (type) => {
     switch (type) {

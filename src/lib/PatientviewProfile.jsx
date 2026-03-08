@@ -61,13 +61,45 @@ const PatientViewProfile = ({
         { id: 3, date: "2023-05-20", type: "Prescription", doctor: "Dr. Sarah Perera", notes: "Medication refill.", status: "Dispensed" },
     ]);
 
-    const handleSave = async (formData) => {
-        if (onSaveProfile) {
-            await onSaveProfile(formData);
-        }
-        setPatient(prev => ({ ...prev, ...formData }));
-    };
+   useEffect(() => {
+  if (user) {
+    setPatient(user);
+  }
+}, [user]);
 
+const handleSave = async (formData) => {
+  try {
+    const patientId = patient.id;
+    
+    const response = await fetch('/api/patient/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        patientId,
+        ...formData
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save profile');
+    }
+
+    const result = await response.json();
+    
+    // Update local state
+    setPatient(prev => ({ ...prev, ...formData }));
+    
+    // Notify parent component
+    if (onSaveProfile) {
+      await onSaveProfile(formData);
+    }
+  } catch (error) {
+    console.error('Failed to save:', error);
+    throw error;
+  }
+};
     // Clickable Info Row Component
     const ClickableInfoRow = ({ label, value, icon: Icon, highlight }) => {
         const isEmpty = !value || value === '';
