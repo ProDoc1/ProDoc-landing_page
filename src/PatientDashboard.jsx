@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   User,
   Settings,
@@ -19,22 +19,17 @@ import {
   Plus,
   Share,
   X,
-  Mail,
-  Phone,
-  MapPin,
-  Camera,
-  Save,
-  AlertCircle,
   MessageSquare,
   CreditCard,
-  CheckCircle
+  CheckCircle,
+  Verified
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import PatientViewProfile from './lib/PatientviewProfile';
 import EditProfileModal from './EditProfileModal';
 
 // Payment Modal Component
-const PaymentModal = ({ isOpen, onClose, onPaymentSuccess }) => {
+const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request' }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState('payment'); // payment, success
 
@@ -76,11 +71,11 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess }) => {
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
                 <div>
                   <p className="text-sm text-slate-500">Service</p>
-                  <p className="font-bold text-slate-800">Second Opinion Request</p>
+                  <p className="font-bold text-slate-800">{serviceName}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-slate-500">Amount</p>
-                  <p className="font-bold text-teal-600 text-lg">$50.00</p>
+                  <p className="font-bold text-teal-600 text-lg">{amount}</p>
                 </div>
               </div>
 
@@ -143,7 +138,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess }) => {
                 ) : (
                   <>
                     <CreditCard size={20} />
-                    Pay $50.00
+                    Pay {amount}
                   </>
                 )}
               </button>
@@ -181,153 +176,147 @@ const PatientDashboard = ({
   onNavigateAbout,
   onNavigateLogin,
   onNavigateSignupPage,
-  onNavigateDashboard
+  onNavigateDashboard,
+  onNavigateContentHub
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion' });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState(user || {
-    fullName: 'John Doe',
-    email: 'john@example.com',
-    phone: '+94 77 123 4567',
-    dateOfBirth: '1990-05-15',
-    gender: 'Male',
-    address: '123 Galle Road, Colombo 03',
-    emergencyContact: 'Jane Doe: +94 77 987 6543',
-    bloodType: 'O+',
-    allergies: ['Penicillin', 'Peanuts'],
-    chronicConditions: ['Hypertension']
+  const [currentUser, setCurrentUser] = useState({
+    id: null,
+    fullName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
+    emergencyContact: '',
+    bloodType: '',
+    allergies: [],
+    chronicConditions: [],
+    email_verified: false
   });
 
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      doctor: { name: "Dr. Sarah Perera", specialty: "Cardiologist", hospital: "Asiri Hospital" },
-      rating: 5,
-      text: "Excellent doctor, very thorough and caring. Highly recommend for cardiac issues.",
-      visitDate: "2024-01-15",
-      createdAt: "2024-01-16"
-    },
-    {
-      id: 2,
-      doctor: { name: "Dr. Sunil Jayawardena", specialty: "Neurologist", hospital: "Nawaloka Hospital" },
-      rating: 4,
-      text: "Very knowledgeable, but waiting time was a bit long. Good experience overall.",
-      visitDate: "2023-12-20",
-      createdAt: "2023-12-21"
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState('all');
+
+  // Fetch user data on mount and when user prop changes
+  useEffect(() => {
+    if (user && (user.id || user.uid)) {
+      setCurrentUser(prev => ({ ...prev, ...user }));
+      fetchUserData(user.id || user.uid);
+    } else {
+      // Try to get from localStorage if no user prop
+      const storedPatientId = localStorage.getItem('patientId');
+      if (storedPatientId) {
+        fetchUserData(storedPatientId);
+      }
     }
-  ]);
+  }, [user]);
 
-  const [reports, setReports] = useState([
-    {
-      id: 1,
-      title: "Blood Test Report - January 2024",
-      type: "lab",
-      reportDate: "2024-01-15",
-      doctorName: "Dr. Sarah Perera",
-      hospital: "Asiri Hospital",
-      fileSize: "2.4 MB",
-      isConfidential: false,
-      description: "Complete blood count, lipid profile, and liver function tests"
-    },
-    {
-      id: 2,
-      title: "ECG Report",
-      type: "scan",
-      reportDate: "2024-01-15",
-      doctorName: "Dr. Sarah Perera",
-      hospital: "Asiri Hospital",
-      fileSize: "1.8 MB",
-      isConfidential: false,
-      description: "Resting ECG - Normal sinus rhythm"
-    },
-    {
-      id: 3,
-      title: "Prescription - Amoxicillin",
-      type: "prescription",
-      reportDate: "2024-01-15",
-      doctorName: "Dr. Sarah Perera",
-      hospital: "Asiri Hospital",
-      fileSize: "156 KB",
-      isConfidential: false,
-      description: "7-day course for respiratory infection"
-    },
-    {
-      id: 4,
-      title: "COVID-19 Vaccination Certificate",
-      type: "vaccination",
-      reportDate: "2023-06-10",
-      doctorName: null,
-      hospital: "National Hospital Colombo",
-      fileSize: "890 KB",
-      isConfidential: false,
-      description: "Second dose completion certificate"
+  useEffect(() => {
+    if (currentUser && currentUser.id) {
+      setReviewsLoading(true);
+      const userId = currentUser.id;
+      fetch(`/api/reviews?userId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const formattedReviews = data.map(r => ({
+              id: r.id,
+              doctor: {
+                name: r.doctor_name || 'Doctor',
+                specialty: r.specialty || 'General',
+                hospital: "Verified Institution"
+              },
+              rating: r.rating,
+              communication: r.communication,
+              punctuality: r.punctuality,
+              treatment_plan: r.treatment_plan,
+              proof: r.proof_url || '',
+              text: r.text || '',
+              status: r.status || 'approved',
+              visitDate: r.visitdate || new Date().toLocaleDateString(),
+              createdAt: r.createdat || new Date().toLocaleDateString()
+            }));
+            setReviews(formattedReviews);
+          }
+        })
+        .catch(err => console.error("Error fetching patient reviews:", err))
+        .finally(() => setReviewsLoading(false));
     }
-  ]);
+  }, [currentUser?.id]);
 
-  const watchlist = [
-    { id: 1, name: "Dr. Sarah Perera", specialty: "Cardiologist", status: "SLMC Verified", lastActive: "2 hours ago" },
-    { id: 2, name: "Dr. Sunil Jayawardena", specialty: "Neurologist", status: "Pending Update", lastActive: "1 day ago" },
-  ];
+  const [reports, setReports] = useState([]);
+  const [watchlist, setWatchlist] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
 
-  // Add useEffect to fetch user data on mount
-useEffect(() => {
-  fetchUserData();
-}, []);
-
-const fetchUserData = async () => {
-  try {
-    // Replace with actual patient ID from auth context or props
-    const patientId = currentUser.id || 'PT-2024-001';
-    const response = await fetch(`/api/patient/profile?patientId=${patientId}`);
-    if (response.ok) {
-      const data = await response.json();
-      setCurrentUser(prev => ({ ...prev, ...data }));
+  // Fetch patient profile from API
+  const fetchUserData = async (patientId) => {
+    try {
+      const response = await fetch(`/api/patient/profile?patientId=${patientId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(prev => ({ ...prev, ...data }));
+        // Store patientId in localStorage for persistence
+        localStorage.setItem('patientId', data.id);
+      } else {
+        console.error('Failed to fetch user data:', await response.text());
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
     }
-  } catch (error) {
-    console.error('Failed to fetch user data:', error);
-  }
-};
+  };
 
-const handleSaveProfile = async (formData) => {
-  setIsLoading(true);
-  try {
-    const patientId = currentUser.id || 'PT-2024-001';
-    
-    const response = await fetch('/api/patient/profile', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        patientId,
-        ...formData
-      }),
-    });
+  // Save profile to database
+  const handleSaveProfile = async (formData) => {
+    setIsLoading(true);
+    try {
+      const patientId = currentUser?.id || localStorage.getItem('patientId');
+      
+      if (!patientId) {
+        throw new Error('No patient ID found');
+      }
 
-    if (!response.ok) {
-      throw new Error('Failed to save profile');
+      const response = await fetch('/api/patient/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientId,
+          ...formData
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save profile');
+      }
+
+      const result = await response.json();
+      
+      // Update local state with saved data
+      setCurrentUser(prev => ({ 
+        ...prev, 
+        ...formData,
+        id: result.patient?.id || prev.id
+      }));
+      
+      console.log('Profile saved successfully');
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      throw error; // Re-throw to let modal handle error
+    } finally {
+      setIsLoading(false);
     }
-
-    const result = await response.json();
-    
-    // Update local state with saved data
-    setCurrentUser(prev => ({ 
-      ...prev, 
-      ...formData,
-      id: result.patient.id 
-    }));
-    
-    console.log('Profile saved successfully');
-  } catch (error) {
-    console.error('Failed to save profile:', error);
-    throw error; // Re-throw to let modal handle error
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const getReportIcon = (type) => {
     switch (type) {
@@ -355,13 +344,58 @@ const handleSaveProfile = async (formData) => {
       <Star
         key={i}
         size={16}
-        className={i < rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
+        className={i < rating ? "text-teal-400 fill-teal-400" : "text-slate-300"}
       />
     ));
   };
 
+  const performDelete = async (reviewId) => {
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setReviews(prev => prev.filter(r => r.id !== reviewId));
+      } else {
+        console.error('Failed to delete review', data);
+      }
+    } catch (err) {
+      console.error('Error deleting review', err);
+    }
+  };
+
+  const confirmDelete = (reviewId) => {
+    setDeleteConfirm({ show: true, id: reviewId });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ show: false, id: null });
+  };
+
+  const handleDeleteReview = () => {
+    if (deleteConfirm.show && deleteConfirm.id) {
+      performDelete(deleteConfirm.id);
+      setDeleteConfirm({ show: false, id: null });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-sm w-full space-y-4">
+            <h3 className="text-lg font-bold text-slate-800">Confirm deletion</h3>
+            <p className="text-slate-600">Are you sure you want to delete this review or rating? This action cannot be undone.</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={cancelDelete} className="px-4 py-2 bg-slate-200 rounded-lg">Cancel</button>
+              <button onClick={handleDeleteReview} className="px-4 py-2 bg-red-500 text-white rounded-lg">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Navbar
         currentPage="dashboard"
         currentUser={currentUser}
@@ -372,94 +406,102 @@ const handleSaveProfile = async (formData) => {
         onNavigateSignupPage={onNavigateSignupPage}
         onLogout={onLogout}
         onNavigateDashboard={onNavigateDashboard}
+        onNavigateContentHub={onNavigateContentHub}
       />
 
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-28 md:p-8 md:pt-32 grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
-            <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
-              <User size={48} />
-              <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
-            </div>
-            <h2 className="text-2xl font-bold text-slate-800">{currentUser?.fullName || 'Patient Name'}</h2>
-            <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
-
-            {currentUser.bloodType && (
-              <div className="flex justify-center gap-2 mb-4">
-                <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
-                  Blood: {currentUser.bloodType}
-                </span>
+        {currentUser && (
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
+              <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
+                <User size={48} />
+                <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
               </div>
-            )}
+              <h2 className="text-2xl font-bold text-slate-800 flex items-center justify-center gap-1.5">
+                {currentUser?.fullName || 'Patient Name'}
+                {currentUser?.email_verified && (
+                  <Verified size={25} className="text-white fill-blue-500 mt-1" />
+                )}
+              </h2>
+              <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
 
-            <button
-              onClick={() => setIsEditProfileOpen(true)}
-              className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
-            >
-              <Settings size={18} /> Edit Profile
-            </button>
-            <button
-              onClick={onLogout}
-              className="w-full mt-3 py-3 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
-            >
-              <LogOut size={18} /> Logout
-            </button>
-          </div>
+              {currentUser.bloodType && (
+                <div className="flex justify-center gap-2 mb-4">
+                  <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
+                    Blood: {currentUser.bloodType}
+                  </span>
+                </div>
+              )}
 
-          <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <ShieldCheck size={20} /> Overview
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <Star size={20} /> My Reviews
-              <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
-                {reviews.length}
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveTab('reports')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <FileText size={20} /> Medical Records
-              <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
-                {reports.length}
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <User size={20} /> View Profile
-            </button>
-            <button
-              onClick={() => setActiveTab('secondOpinion')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'secondOpinion' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-            >
-              <MessageSquare size={20} /> Second Opinion
-            </button>
-          </div>
-
-          <div className="bg-teal-600 rounded-[2rem] p-8 text-white shadow-lg shadow-teal-200/50 relative overflow-hidden">
-            <div className="relative z-10">
-              <h3 className="text-xl font-bold mb-2">Find Doctors</h3>
-              <p className="text-teal-100 text-sm mb-6">Search verified specialists in Sri Lanka.</p>
               <button
-                onClick={onNavigateDoctors}
-                className="bg-white text-teal-600 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all flex items-center gap-2 w-full justify-center"
+                onClick={() => setIsEditProfileOpen(true)}
+                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
               >
-                <Search size={18} /> Search Directory
+                <Settings size={18} /> Edit Profile
+              </button>
+              <button
+                onClick={onLogout}
+                className="w-full mt-3 py-3 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <LogOut size={18} /> Logout
               </button>
             </div>
-            <ShieldCheck className="absolute -bottom-4 -right-4 w-32 h-32 text-white/10 rotate-12" />
+
+            <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'overview' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <ShieldCheck size={20} /> Overview
+              </button>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <Star size={20} /> My Reviews
+                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
+                  {reviews.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('reports')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <FileText size={20} /> Medical Records
+                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
+                  {reports.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <User size={20} /> View Profile
+              </button>
+              <button
+                onClick={() => setActiveTab('secondOpinion')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'secondOpinion' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <MessageSquare size={20} /> Second Opinion
+              </button>
+            </div>
+
+            <div className="bg-teal-600 rounded-[2rem] p-8 text-white shadow-lg shadow-teal-200/50 relative overflow-hidden">
+              <div className="relative z-10">
+                <h3 className="text-xl font-bold mb-2">Find Doctors</h3>
+                <p className="text-teal-100 text-sm mb-6">Search verified specialists in Sri Lanka.</p>
+                <button
+                  onClick={onNavigateDoctors}
+                  className="bg-white text-teal-600 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all flex items-center gap-2 w-full justify-center"
+                >
+                  <Search size={18} /> Search Directory
+                </button>
+              </div>
+              <ShieldCheck className="absolute -bottom-4 -right-4 w-32 h-32 text-white/10 rotate-12" />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="lg:col-span-3 space-y-6">
 
@@ -591,63 +633,179 @@ const handleSaveProfile = async (formData) => {
 
           {activeTab === 'reviews' && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold text-slate-800">My Reviews</h3>
-                <button className="px-4 py-2 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center gap-2">
-                  <Plus size={18} /> Write a Review
-                </button>
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h3 className="text-2xl font-bold text-slate-800">My Reviews & Ratings</h3>
+              </div>
+
+              {/* filter buttons */}
+              <div className="flex gap-2">
+                {['all', 'reviews', 'ratings'].map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => setReviewFilter(opt)}
+                    className={`px-4 py-2 rounded-xl font-semibold transition-colors ${reviewFilter === opt ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {opt === 'all' ? 'All' : opt === 'ratings' ? 'Ratings' : 'Reviews'}
+                  </button>
+                ))}
               </div>
 
               {reviews.length === 0 ? (
                 <div className="bg-white rounded-[2rem] p-12 text-center text-slate-400 border border-slate-100 shadow-sm">
                   <Star size={48} className="mx-auto mb-4 opacity-20" />
-                  <h4 className="text-lg font-bold text-slate-600 mb-2">No reviews yet</h4>
+                  <h4 className="text-lg font-bold text-slate-600 mb-2">No reviews or ratings yet</h4>
                   <p className="mb-6">Share your experience with doctors to help others.</p>
                   <button className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors">
                     Write Your First Review
                   </button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {reviews.map(review => (
-                    <div key={review.id} className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm hover:shadow-md transition-all">
-                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl">
-                            {review.doctor.name.charAt(0)}
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-lg text-slate-800">{review.doctor.name}</h4>
-                            <p className="text-slate-500">{review.doctor.specialty} at {review.doctor.hospital}</p>
-                            <div className="flex items-center gap-2 mt-1 text-sm text-slate-400">
-                              <Calendar size={14} /> Visited on {review.visitDate}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 bg-amber-50 px-3 py-2 rounded-xl">
-                          {renderStars(review.rating)}
-                          <span className="ml-2 font-bold text-amber-700">{review.rating}/5</span>
-                        </div>
-                      </div>
+                <>
+                  {(() => {
+                    const ratingsOnly = reviews.filter(r => !r.text || r.text.trim() === '');
+                    const textReviews = reviews.filter(r => r.text && r.text.trim() !== '');
+                    const showRatings = reviewFilter === 'all' || reviewFilter === 'ratings';
+                    const showText = reviewFilter === 'all' || reviewFilter === 'reviews';
+                    return (
+                      <div className="space-y-6">
+                        {showRatings && ratingsOnly.length > 0 && (
+                          <div className="space-y-4">
+                            <h4 className="text-xl font-semibold text-slate-800">Ratings</h4>
+                            {ratingsOnly.map(review => (
+                              <div key={review.id} className={`bg-white border rounded-[2rem] p-4 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
+                                {/* Status Badge */}
+                                <div className="absolute top-4 right-4">
+                                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    {review.status}
+                                  </span>
+                                </div>
 
-                      <div className="bg-slate-50 rounded-2xl p-6 mb-4">
-                        <p className="text-slate-700 leading-relaxed text-lg">"{review.text}"</p>
-                      </div>
+                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-lg">
+                                      {review.doctor.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <h4 className="font-bold text-md text-slate-800">{review.doctor.name}</h4>
+                                      <p className="text-slate-500 text-sm">{review.doctor.specialty} at {review.doctor.hospital}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* proof link */}
+                                {review.proof && (
+                                  <div className="mb-4 text-sm">
+                                    Proof: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">View</a>
+                                  </div>
+                                )}
 
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-400">Posted on {review.createdAt}</span>
-                        <div className="flex gap-3">
-                          <button className="text-teal-600 hover:text-teal-700 font-bold px-4 py-2 rounded-xl hover:bg-teal-50 transition-colors">
-                            Edit
-                          </button>
-                          <button className="text-red-500 hover:text-red-600 font-bold px-4 py-2 rounded-xl hover:bg-red-50 transition-colors">
-                            Delete
-                          </button>
-                        </div>
+                                <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                                  <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                    <span className="font-semibold text-slate-700">Communication:</span>
+                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.communication || '--'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                    <span className="font-semibold text-slate-700">Punctuality:</span>
+                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.punctuality || '--'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
+                                    <span className="font-semibold text-slate-700">Treatment Plan:</span>
+                                    <span className="flex items-center gap-1 text-teal-600 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.treatment_plan || '--'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between bg-teal-50 p-2 rounded-lg border border-teal-100">
+                                    <span className="font-semibold text-slate-700">Overall Satisfaction:</span>
+                                    <span className="flex items-center gap-1 text-teal-700 font-bold">
+                                      <Star size={12} className="fill-teal-400" />
+                                      {review.rating || '--'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-slate-400 text-sm">
+                                  <span>Posted on {review.createdAt}</span>
+                                </div>
+                                <div className="flex justify-end mt-2">
+                                  <button
+                                    onClick={() => confirmDelete(review.id)}
+                                    className="text-sm text-red-500 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {showText && textReviews.length > 0 && (
+                          <div className="space-y-4">
+                            <h4 className="text-xl font-semibold text-slate-800">Written Reviews</h4>
+                            {textReviews.map(review => (
+                              <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
+                                {/* Status Badge */}
+                                <div className="absolute top-1 right-8">
+                                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    {review.status}
+                                  </span>
+                                </div>
+                                {/* Delete button moved below */}
+                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl">
+                                      {review.doctor.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <h4 className="font-bold text-lg text-slate-800">{review.doctor.name}</h4>
+                                      <p className="text-slate-500">{review.doctor.specialty} at {review.doctor.hospital}</p>
+                                      <div className="flex items-center gap-2 mt-1 text-sm text-slate-500">
+                                        <Calendar size={14} /> Posted on {review.createdAt}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-5">
+                                    <p className="text-slate-600 text-sm ">
+                                    </p>
+                                    {/* Rating Badge */}
+                                    <div className="flex justify-start">
+                                      <div className="flex items-center gap-1 bg-teal-50 px-3 py-2 rounded-xl border border-teal-100 mr-2">
+                                        {renderStars(review.rating)}
+                                        <span className="ml-2 font-bold text-teal-600">
+                                          {review.rating}/5
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="bg-slate-50 rounded-2xl p-6 mb-4">
+                                  <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-3 bg-white p-3 rounded-lg border-l-4 border-teal-400">{review.text}</p>
+                                </div>
+                                {review.proof && (
+                                  <div className="mb-4 text-sm">
+                                    Proof of visit: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">View</a>
+                                  </div>
+                                )}
+                                <div className="flex justify-end mt-2">
+                                  <button
+                                    onClick={() => confirmDelete(review.id)}
+                                    className="text-sm text-red-500 hover:text-red-700"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    );
+                  })()}
+                </>
               )}
             </div>
           )}
@@ -701,7 +859,7 @@ const handleSaveProfile = async (formData) => {
                         <div>
                           <h4 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
                             {report.title}
-                            {report.isConfidential && <Lock size={16} className="text-amber-500" />}
+                            {report.isConfidential && <Lock size={16} className="text-teal-500" />}
                           </h4>
                           <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
                             <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">
@@ -759,7 +917,7 @@ const handleSaveProfile = async (formData) => {
 
           {activeTab === 'profile' && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <PatientViewProfile 
+              <PatientViewProfile
                 user={currentUser}
                 onBack={() => setActiveTab('overview')}
                 onSaveProfile={handleSaveProfile}
@@ -774,21 +932,63 @@ const handleSaveProfile = async (formData) => {
                 <p className="text-teal-100">Get expert advice from top specialists worldwide.</p>
               </div>
 
-              <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100 shadow-sm">
-                <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-6 flex items-center justify-center text-teal-600">
-                  <MessageSquare size={40} />
+              {/* Doctors & Pricing Card */}
+              <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-6">
+                <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Stethoscope className="text-teal-600" size={24} />
+                  Available Specialists & Pricing
+                </h3>
+                <div className="flex flex-col gap-4">
+                  {[
+                    { name: 'Dr. Sarah Smith', specialty: 'Neurology', rating: 4.8, price: 'Rs. 2500', exp: '15+ yrs' },
+                    { name: 'Dr. John Davis', specialty: 'Cardiology', rating: 4.9, price: 'Rs. 3000', exp: '20+ yrs' },
+                    { name: 'Dr. Emily Chen', specialty: 'Oncology', rating: 4.7, price: 'Rs. 3500', exp: '12+ yrs' }
+                  ].map((doc, idx) => (
+                    <div key={idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div
+                        className="cursor-pointer group flex items-center gap-4 flex-1"
+                        onClick={onNavigateDoctors}
+                      >
+                        <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl shrink-0 group-hover:bg-teal-200 transition-colors">
+                          {doc.name.split(' ')[1]?.charAt(0) || doc.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg text-slate-800 group-hover:text-teal-600 transition-colors">{doc.name}</h4>
+                          <p className="text-sm text-slate-500">{doc.specialty}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                            <div className="flex items-center gap-1">
+                              <Star size={16} className="text-teal-500 fill-teal-500" />
+                              <span className="font-semibold">{doc.rating}</span>
+                            </div>
+                            <span className="text-slate-300">•</span>
+                            <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-slate-200">
+                              {doc.exp}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between md:justify-end gap-6 md:min-w-[250px] border-t md:border-t-0 md:border-l border-slate-200/60 pt-4 md:pt-0 md:pl-6">
+                        <div>
+                          <p className="text-xs text-slate-500 mb-0.5">Consultation Fee</p>
+                          <p className="font-bold text-xl text-teal-600">{doc.price}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setPaymentDetails({ amount: doc.price, serviceName: `Second Opinion - ${doc.name}` });
+                            setIsPaymentModalOpen(true);
+                          }}
+                          className="px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors shrink-0"
+                        >
+                          Proceed to Payment
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-3">Request a Second Opinion</h3>
-                <p className="text-slate-500 max-w-lg mx-auto mb-8 leading-relaxed">
-                  Unsure about your diagnosis? Upload your medical reports and get a detailed second opinion from our network of verified specialists.
-                </p>
-                <button
-                  onClick={() => setIsPaymentModalOpen(true)}
-                  className="px-8 py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200 flex items-center gap-2 mx-auto"
-                >
-                  <Plus size={20} /> Start New Request
-                </button>
               </div>
+
+
             </div>
           )}
 
@@ -800,13 +1000,16 @@ const handleSaveProfile = async (formData) => {
         onClose={() => setIsEditProfileOpen(false)}
         user={currentUser}
         onSave={handleSaveProfile}
+        isLoading={isLoading}
       />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
+        amount={paymentDetails.amount}
+        serviceName={paymentDetails.serviceName}
         onPaymentSuccess={() => {
-          console.log("Payment successful, proceed to form");
+          // console.log("Payment successful, proceed to form");
         }}
       />
     </div>
