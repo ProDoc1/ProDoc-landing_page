@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     User,
     Phone,
@@ -17,9 +17,10 @@ import {
     Plus,
     Stethoscope,
     Edit,
-    ChevronRight
+    ChevronRight,
+    Loader2
 } from 'lucide-react';
-import EditProfileModal from '../EditProfileModal';  // Fixed import path
+import EditProfileModal from '../EditProfileModal';
 
 const PatientViewProfile = ({ 
     user, 
@@ -28,23 +29,79 @@ const PatientViewProfile = ({
     onSaveProfile 
 }) => {
     const [isEditMode, setIsEditMode] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     
-    // Use the same data structure as PatientDashboard
-    const [patient, setPatient] = useState(user || {
-        id: "PT-2024-001",
-        fullName: "John Doe",
-        dateOfBirth: "1990-05-15",
-        age: 34,
-        gender: "Male",
-        email: "john@example.com",
-        phone: "+94 77 123 4567",
-        address: "123 Galle Road, Colombo 03",
-        bloodType: "O+",
-        emergencyContact: "Jane Doe: +94 77 987 6543",
-        allergies: ["Penicillin", "Peanuts"],
-        chronicConditions: ["Hypertension"],
-        status: "Active"
+    // Initialize with user prop or defaults
+    const [patient, setPatient] = useState({
+        id: null,
+        fullName: '',
+        dateOfBirth: '',
+        age: null,
+        gender: '',
+        email: '',
+        phone: '',
+        address: '',
+        bloodType: '',
+        emergencyContact: '',
+        allergies: [],
+        chronicConditions: [],
+        status: 'Active'
     });
+
+    // Sync with user prop when it changes
+    useEffect(() => {
+        if (user) {
+            setPatient(prev => ({
+                ...prev,
+                ...user,
+                // Ensure arrays are properly set
+                allergies: user.allergies || [],
+                chronicConditions: user.chronicConditions || []
+            }));
+        }
+    }, [user]);
+
+    // Fetch patient data on mount if user prop doesn't have ID
+    useEffect(() => {
+        if (!patient.id) {
+            fetchPatientData();
+        }
+    }, []);
+
+    const fetchPatientData = async () => {
+        setIsLoading(true);
+        try {
+            const patientId = localStorage.getItem('patientId') || 'PT-2024-001';
+            const response = await fetch(`/api/patient/profile?patientId=${patientId}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                setPatient(prev => ({
+                    ...prev,
+                    ...data,
+                    age: calculateAge(data.dateOfBirth)
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to fetch patient data:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Calculate age from date of birth
+    const calculateAge = (dateOfBirth) => {
+        if (!dateOfBirth) return null;
+        const today = new Date();
+        const birthDate = new Date(dateOfBirth);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
 
     const [vitals] = useState({
         height: "175 cm",
@@ -62,10 +119,45 @@ const PatientViewProfile = ({
     ]);
 
     const handleSave = async (formData) => {
-        if (onSaveProfile) {
-            await onSaveProfile(formData);
+        setIsSaving(true);
+        try {
+            // Call parent's onSaveProfile which handles the API call
+            if (onSaveProfile) {
+                await onSaveProfile(formData);
+            } else {
+                // Fallback: call API directly if no parent handler
+                const patientId = patient.id || localStorage.getItem('patientId');
+                
+                const response = await fetch('/api/patient/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        patientId,
+                        ...formData
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save profile');
+                }
+            }
+
+            // Update local state with saved data
+            setPatient(prev => ({ 
+                ...prev, 
+                ...formData,
+                age: calculateAge(formData.dateOfBirth || prev.dateOfBirth)
+            }));
+            
+            setIsEditMode(false);
+        } catch (error) {
+            console.error('Failed to save profile:', error);
+            // Error handling - you might want to show an error toast here
+        } finally {
+            setIsSaving(false);
         }
-        setPatient(prev => ({ ...prev, ...formData }));
     };
 
     // Clickable Info Row Component
@@ -119,6 +211,17 @@ const PatientViewProfile = ({
         </div>
     );
 
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+                <div className="flex items-center gap-3 text-slate-500">
+                    <Loader2 className="animate-spin" size={24} />
+                    <span className="font-medium">Loading profile...</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#F8FAFC] font-sans">
             <EditProfileModal
@@ -126,6 +229,7 @@ const PatientViewProfile = ({
                 onClose={() => setIsEditMode(false)}
                 user={patient}
                 onSave={handleSave}
+                isLoading={isSaving}
             />
 
             {/* Header Section */}
@@ -140,16 +244,22 @@ const PatientViewProfile = ({
                         </button>
                         <div>
                             <h1 className="text-2xl font-bold text-slate-800">My Profile</h1>
-                            <p className="text-slate-500 text-sm">ID: {patient.id}</p>
+                            <p className="text-slate-500 text-sm">ID: {patient.id || 'Loading...'}</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={() => setIsEditMode(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-200"
+                            disabled={isSaving}
+                            className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg shadow-teal-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Edit size={18} /> Edit Profile
+                            {isSaving ? (
+                                <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                                <Edit size={18} />
+                            )}
+                            {isSaving ? 'Saving...' : 'Edit Profile'}
                         </button>
                     </div>
                 </div>
@@ -170,18 +280,25 @@ const PatientViewProfile = ({
                             </div>
                             <button 
                                 onClick={() => setIsEditMode(true)}
-                                className="absolute bottom-2 right-1/2 translate-x-12 bg-teal-600 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg"
+                                disabled={isSaving}
+                                className="absolute bottom-2 right-1/2 translate-x-12 bg-teal-600 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Edit size={14} className="text-white" />
+                                {isSaving ? (
+                                    <Loader2 size={14} className="text-white animate-spin" />
+                                ) : (
+                                    <Edit size={14} className="text-white" />
+                                )}
                             </button>
                         </div>
 
-                        <h2 className="text-2xl font-bold text-slate-800">{patient.fullName}</h2>
-                        <p className="text-slate-500 mb-4">{patient.age} Years • {patient.gender}</p>
+                        <h2 className="text-2xl font-bold text-slate-800">{patient.fullName || 'Patient Name'}</h2>
+                        <p className="text-slate-500 mb-4">
+                            {patient.age ? `${patient.age} Years` : '--'} • {patient.gender || '--'}
+                        </p>
 
-                        <div className="flex justify-center gap-2 mb-6">
+                        <div className="flex justify-center gap-2 mb-6 flex-wrap">
                             <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-xs font-bold flex items-center gap-1">
-                                <Activity size={12} /> {patient.status}
+                                <Activity size={12} /> {patient.status || 'Active'}
                             </span>
                             {patient.bloodType ? (
                                 <span className="px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold">
@@ -190,7 +307,8 @@ const PatientViewProfile = ({
                             ) : (
                                 <button 
                                     onClick={() => setIsEditMode(true)}
-                                    className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold flex items-center gap-1 hover:bg-teal-100 hover:text-teal-700 transition-colors"
+                                    disabled={isSaving}
+                                    className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold flex items-center gap-1 hover:bg-teal-100 hover:text-teal-700 transition-colors disabled:opacity-50"
                                 >
                                     <Plus size={12} /> Add
                                 </button>
@@ -199,9 +317,15 @@ const PatientViewProfile = ({
 
                         <button 
                             onClick={() => setIsEditMode(true)}
-                            className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-200"
+                            disabled={isSaving}
+                            className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-teal-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Edit size={18} /> Update Profile
+                            {isSaving ? (
+                                <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                                <Edit size={18} />
+                            )}
+                            {isSaving ? 'Saving...' : 'Update Profile'}
                         </button>
                     </div>
 
@@ -214,7 +338,8 @@ const PatientViewProfile = ({
                             </h3>
                             <button 
                                 onClick={() => setIsEditMode(true)}
-                                className="text-teal-600 text-sm font-bold hover:underline"
+                                disabled={isSaving}
+                                className="text-teal-600 text-sm font-bold hover:underline disabled:opacity-50"
                             >
                                 Edit
                             </button>
@@ -222,7 +347,7 @@ const PatientViewProfile = ({
 
                         <div className="mb-4">
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Known Allergies</p>
-                            {patient.allergies.length > 0 ? (
+                            {patient.allergies && patient.allergies.length > 0 ? (
                                 <div className="flex flex-wrap gap-2">
                                     {patient.allergies.map((allergy, idx) => (
                                         <span key={idx} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-medium">
@@ -233,7 +358,8 @@ const PatientViewProfile = ({
                             ) : (
                                 <button 
                                     onClick={() => setIsEditMode(true)}
-                                    className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2"
+                                    disabled={isSaving}
+                                    className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     <Plus size={16} /> Add allergies
                                 </button>
@@ -242,7 +368,7 @@ const PatientViewProfile = ({
 
                         <div>
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Chronic Conditions</p>
-                            {patient.chronicConditions.length > 0 ? (
+                            {patient.chronicConditions && patient.chronicConditions.length > 0 ? (
                                 <div className="flex flex-wrap gap-2">
                                     {patient.chronicConditions.map((condition, idx) => (
                                         <span key={idx} className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-lg text-sm font-medium">
@@ -253,7 +379,8 @@ const PatientViewProfile = ({
                             ) : (
                                 <button 
                                     onClick={() => setIsEditMode(true)}
-                                    className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2"
+                                    disabled={isSaving}
+                                    className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     <Plus size={16} /> Add conditions
                                 </button>
@@ -292,7 +419,8 @@ const PatientViewProfile = ({
                             </h3>
                             <button 
                                 onClick={() => setIsEditMode(true)}
-                                className="text-teal-600 font-bold text-sm hover:underline flex items-center gap-1"
+                                disabled={isSaving}
+                                className="text-teal-600 font-bold text-sm hover:underline flex items-center gap-1 disabled:opacity-50"
                             >
                                 <Edit size={14} /> Edit All
                             </button>

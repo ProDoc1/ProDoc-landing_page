@@ -184,24 +184,45 @@ const PatientDashboard = ({
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion' });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState({
+    id: null,
+    fullName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
+    emergencyContact: '',
+    bloodType: '',
+    allergies: [],
+    chronicConditions: [],
+    email_verified: false
+  });
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewFilter, setReviewFilter] = useState('all');
 
-  // Sync user prop to currentUser only if valid
+  // Fetch user data on mount and when user prop changes
   useEffect(() => {
     if (user && (user.id || user.uid)) {
-      setCurrentUser(user);
+      setCurrentUser(prev => ({ ...prev, ...user }));
+      fetchUserData(user.id || user.uid);
+    } else {
+      // Try to get from localStorage if no user prop
+      const storedPatientId = localStorage.getItem('patientId');
+      if (storedPatientId) {
+        fetchUserData(storedPatientId);
+      }
     }
   }, [user]);
 
   useEffect(() => {
-    if (user && (user.id || user.uid)) {
+    if (currentUser && currentUser.id) {
       setReviewsLoading(true);
-      const userId = user.id || user.uid;
+      const userId = currentUser.id;
       fetch(`/api/reviews?userId=${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -229,17 +250,72 @@ const PatientDashboard = ({
         .catch(err => console.error("Error fetching patient reviews:", err))
         .finally(() => setReviewsLoading(false));
     }
-  }, [user]);
+  }, [currentUser?.id]);
 
   const [reports, setReports] = useState([]);
-
   const [watchlist, setWatchlist] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
 
+  // Fetch patient profile from API
+  const fetchUserData = async (patientId) => {
+    try {
+      const response = await fetch(`/api/patient/profile?patientId=${patientId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(prev => ({ ...prev, ...data }));
+        // Store patientId in localStorage for persistence
+        localStorage.setItem('patientId', data.id);
+      } else {
+        console.error('Failed to fetch user data:', await response.text());
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
+  };
+
+  // Save profile to database
   const handleSaveProfile = async (formData) => {
-    // console.log('Saving profile:', formData);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCurrentUser(prev => ({ ...prev, ...formData }));
+    setIsLoading(true);
+    try {
+      const patientId = currentUser?.id || localStorage.getItem('patientId');
+      
+      if (!patientId) {
+        throw new Error('No patient ID found');
+      }
+
+      const response = await fetch('/api/patient/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientId,
+          ...formData
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save profile');
+      }
+
+      const result = await response.json();
+      
+      // Update local state with saved data
+      setCurrentUser(prev => ({ 
+        ...prev, 
+        ...formData,
+        id: result.patient?.id || prev.id
+      }));
+      
+      console.log('Profile saved successfully');
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      throw error; // Re-throw to let modal handle error
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getReportIcon = (type) => {
@@ -924,6 +1000,7 @@ const PatientDashboard = ({
         onClose={() => setIsEditProfileOpen(false)}
         user={currentUser}
         onSave={handleSaveProfile}
+        isLoading={isLoading}
       />
 
       <PaymentModal
