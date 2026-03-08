@@ -22,23 +22,58 @@ import {
   MessageSquare,
   CreditCard,
   CheckCircle,
-  Verified
+  Verified,
+  Phone,
+  Mail,
+  MapPin,
+  AlertCircle,
+  Clock,
+  Edit,
+  Activity
 } from 'lucide-react';
+
+// Make sure these paths match where your Dashboard file is located!
 import Navbar from './components/Navbar';
-import PatientViewProfile from './lib/PatientviewProfile';
 import EditProfileModal from './EditProfileModal';
+
+// Reusable Clickable Row Component for Personal Info
+const ClickableInfoRow = ({ label, value, icon: Icon, highlight, onClick }) => {
+  const isEmpty = !value || value === '';
+  
+  return (
+    <div 
+      onClick={onClick}
+      className="group flex items-start gap-3 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition-all border border-transparent hover:border-slate-200"
+    >
+      <div className={`p-2 rounded-lg ${highlight ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500 group-hover:bg-teal-100 group-hover:text-teal-600'} transition-colors`}>
+        <Icon size={18} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+        {isEmpty ? (
+          <div className="flex items-center gap-2 text-teal-600 font-medium">
+            <Plus size={16} />
+            <span className="text-sm">Add {label.toLowerCase()}</span>
+          </div>
+        ) : (
+          <p className={`text-sm font-medium truncate ${highlight ? 'text-amber-900' : 'text-slate-700'}`}>{value}</p>
+        )}
+      </div>
+      <ChevronRight size={18} className="text-slate-300 group-hover:text-teal-500 opacity-0 group-hover:opacity-100 transition-all shrink-0" />
+    </div>
+  );
+};
 
 // Payment Modal Component
 const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request' }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState('payment'); // payment, success
+  const [step, setStep] = useState('payment'); 
 
   if (!isOpen) return null;
 
   const handlePayment = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
-    // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsProcessing(false);
     setStep('success');
@@ -46,21 +81,14 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
-
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-xl font-bold">Secure Payment</h2>
             <p className="text-teal-100 text-sm mt-1">Complete payment to proceed</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -84,62 +112,32 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
                   <label className="text-sm font-bold text-slate-700">Card Number</label>
                   <div className="relative">
                     <CreditCard size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                      placeholder="0000 0000 0000 0000"
-                      required
-                    />
+                    <input type="text" className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="0000 0000 0000 0000" required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Expiry Date</label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                      placeholder="MM/YY"
-                      required
-                    />
+                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="MM/YY" required />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">CVV</label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                      placeholder="123"
-                      required
-                    />
+                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="123" required />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Cardholder Name</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                    placeholder="John Doe"
-                    required
-                  />
+                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="John Doe" required />
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-teal-200"
-              >
+              <button type="submit" disabled={isProcessing} className="w-full py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-teal-200">
                 {isProcessing ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Processing...
-                  </>
+                  <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
                 ) : (
-                  <>
-                    <CreditCard size={20} />
-                    Pay {amount}
-                  </>
+                  <><CreditCard size={20} /> Pay {amount}</>
                 )}
               </button>
             </form>
@@ -182,6 +180,7 @@ const PatientDashboard = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [editProfileSection, setEditProfileSection] = useState('personal'); // Added state for tracking section
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion' });
   const [isLoading, setIsLoading] = useState(false);
@@ -204,14 +203,22 @@ const PatientDashboard = ({
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewFilter, setReviewFilter] = useState('all');
+  const [reports, setReports] = useState([]);
+  const [watchlist, setWatchlist] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
 
-  // Fetch user data on mount and when user prop changes
+  // Mock Medical History Data
+  const [medicalHistory] = useState([
+    { id: 1, date: "2023-10-15", type: "Consultation", doctor: "Dr. Sarah Perera", notes: "Routine checkup. BP slightly elevated.", status: "Completed" },
+    { id: 2, date: "2023-08-10", type: "Lab Report", doctor: "Dr. Sunil Jayawardena", notes: "Full Blood Count - Normal Range.", status: "Reviewed" },
+    { id: 3, date: "2023-05-20", type: "Prescription", doctor: "Dr. Sarah Perera", notes: "Medication refill.", status: "Dispensed" },
+  ]);
+
   useEffect(() => {
     if (user && (user.id || user.uid)) {
       setCurrentUser(prev => ({ ...prev, ...user }));
       fetchUserData(user.id || user.uid);
     } else {
-      // Try to get from localStorage if no user prop
       const storedPatientId = localStorage.getItem('patientId');
       if (storedPatientId) {
         fetchUserData(storedPatientId);
@@ -252,19 +259,12 @@ const PatientDashboard = ({
     }
   }, [currentUser?.id]);
 
-  const [reports, setReports] = useState([]);
-  const [watchlist, setWatchlist] = useState([]);
-  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
-
-  // Fetch patient profile from API
   const fetchUserData = async (patientId) => {
     try {
       const response = await fetch(`/api/patient/profile?patientId=${patientId}`);
-      
       if (response.ok) {
         const data = await response.json();
         setCurrentUser(prev => ({ ...prev, ...data }));
-        // Store patientId in localStorage for persistence
         localStorage.setItem('patientId', data.id);
       } else {
         console.error('Failed to fetch user data:', await response.text());
@@ -274,25 +274,16 @@ const PatientDashboard = ({
     }
   };
 
-  // Save profile to database
   const handleSaveProfile = async (formData) => {
     setIsLoading(true);
     try {
       const patientId = currentUser?.id || localStorage.getItem('patientId');
-      
-      if (!patientId) {
-        throw new Error('No patient ID found');
-      }
+      if (!patientId) throw new Error('No patient ID found');
 
       const response = await fetch('/api/patient/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          patientId,
-          ...formData
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId, ...formData }),
       });
 
       if (!response.ok) {
@@ -301,21 +292,25 @@ const PatientDashboard = ({
       }
 
       const result = await response.json();
-      
-      // Update local state with saved data
       setCurrentUser(prev => ({ 
         ...prev, 
         ...formData,
         id: result.patient?.id || prev.id
       }));
       
-      console.log('Profile saved successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
-      throw error; // Re-throw to let modal handle error
+      throw error;
     } finally {
       setIsLoading(false);
+      setIsEditProfileOpen(false);
     }
+  };
+
+  // Added helper function to open the modal with specific section
+  const openEditProfile = (section = 'personal') => {
+    setEditProfileSection(section);
+    setIsEditProfileOpen(true);
   };
 
   const getReportIcon = (type) => {
@@ -329,23 +324,13 @@ const PatientDashboard = ({
   };
 
   const getReportTypeLabel = (type) => {
-    const labels = {
-      lab: 'Laboratory',
-      scan: 'Imaging/Scan',
-      prescription: 'Prescription',
-      vaccination: 'Vaccination',
-      discharge_summary: 'Discharge Summary'
-    };
+    const labels = { lab: 'Laboratory', scan: 'Imaging/Scan', prescription: 'Prescription', vaccination: 'Vaccination', discharge_summary: 'Discharge Summary' };
     return labels[type] || 'Document';
   };
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        size={16}
-        className={i < rating ? "text-teal-400 fill-teal-400" : "text-slate-300"}
-      />
+      <Star key={i} size={16} className={i < rating ? "text-teal-400 fill-teal-400" : "text-slate-300"} />
     ));
   };
 
@@ -356,25 +341,16 @@ const PatientDashboard = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reviewId })
       });
-      const data = await res.json();
       if (res.ok) {
         setReviews(prev => prev.filter(r => r.id !== reviewId));
-      } else {
-        console.error('Failed to delete review', data);
       }
     } catch (err) {
       console.error('Error deleting review', err);
     }
   };
 
-  const confirmDelete = (reviewId) => {
-    setDeleteConfirm({ show: true, id: reviewId });
-  };
-
-  const cancelDelete = () => {
-    setDeleteConfirm({ show: false, id: null });
-  };
-
+  const confirmDelete = (reviewId) => setDeleteConfirm({ show: true, id: reviewId });
+  const cancelDelete = () => setDeleteConfirm({ show: false, id: null });
   const handleDeleteReview = () => {
     if (deleteConfirm.show && deleteConfirm.id) {
       performDelete(deleteConfirm.id);
@@ -420,9 +396,7 @@ const PatientDashboard = ({
               </div>
               <h2 className="text-2xl font-bold text-slate-800 flex items-center justify-center gap-1.5">
                 {currentUser?.fullName || 'Patient Name'}
-                {currentUser?.email_verified && (
-                  <Verified size={25} className="text-white fill-blue-500 mt-1" />
-                )}
+                {currentUser?.email_verified && <Verified size={25} className="text-white fill-blue-500 mt-1" />}
               </h2>
               <p className="text-slate-500 text-sm mb-2">{currentUser?.email}</p>
 
@@ -435,7 +409,7 @@ const PatientDashboard = ({
               )}
 
               <button
-                onClick={() => setIsEditProfileOpen(true)}
+                onClick={() => openEditProfile('personal')}
                 className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
               >
                 <Settings size={18} /> Edit Profile
@@ -460,24 +434,14 @@ const PatientDashboard = ({
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reviews' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
               >
                 <Star size={20} /> My Reviews
-                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
-                  {reviews.length}
-                </span>
+                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">{reviews.length}</span>
               </button>
               <button
                 onClick={() => setActiveTab('reports')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
               >
                 <FileText size={20} /> Medical Records
-                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">
-                  {reports.length}
-                </span>
-              </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'profile' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
-              >
-                <User size={20} /> View Profile
+                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">{reports.length}</span>
               </button>
               <button
                 onClick={() => setActiveTab('secondOpinion')}
@@ -512,6 +476,159 @@ const PatientDashboard = ({
                 <p className="text-slate-300">Manage your medical records and doctor reviews in one place.</p>
               </div>
 
+              {/* Personal Information & Alerts Grid */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                
+                {/* Personal Information */}
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <User className="text-teal-600" size={24} />
+                      Personal Information
+                    </h3>
+                    <button 
+                      onClick={() => openEditProfile('personal')}
+                      className="text-teal-600 font-bold text-sm hover:underline flex items-center gap-1"
+                    >
+                      <Edit size={14} /> Edit All
+                    </button>
+                  </div>
+
+                  <div className="space-y-2 flex-1">
+                    <ClickableInfoRow label="Full Name" value={currentUser.fullName} icon={User} onClick={() => openEditProfile('personal')} />
+                    <ClickableInfoRow label="Date of Birth" value={currentUser.dateOfBirth} icon={Calendar} onClick={() => openEditProfile('personal')} />
+                    <ClickableInfoRow label="Gender" value={currentUser.gender} icon={User} onClick={() => openEditProfile('personal')} />
+                    <ClickableInfoRow label="Email Address" value={currentUser.email} icon={Mail} onClick={() => openEditProfile('personal')} />
+                    <ClickableInfoRow label="Phone Number" value={currentUser.phone} icon={Phone} onClick={() => openEditProfile('contact')} />
+                  </div>
+                </div>
+
+                {/* Medical Alerts */}
+                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2 text-xl">
+                      <AlertCircle className="text-red-500" size={24} />
+                      Medical Alerts
+                    </h3>
+                    <button 
+                      onClick={() => openEditProfile('medical')}
+                      className="text-teal-600 text-sm font-bold hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </div>
+
+                  <div className="mb-6">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Known Allergies</p>
+                    {currentUser.allergies && currentUser.allergies.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {currentUser.allergies.map((allergy, idx) => (
+                          <span key={idx} className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg text-sm font-medium">
+                            {allergy}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => openEditProfile('medical')}
+                        className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Plus size={16} /> Add allergies
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mb-6">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Chronic Conditions</p>
+                    {currentUser.chronicConditions && currentUser.chronicConditions.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {currentUser.chronicConditions.map((condition, idx) => (
+                          <span key={idx} className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-lg text-sm font-medium">
+                            {condition}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => openEditProfile('medical')}
+                        className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Plus size={16} /> Add conditions
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mt-auto pt-4 border-t border-slate-100">
+                    <ClickableInfoRow 
+                      label="Emergency Contact" 
+                      value={currentUser.emergencyContact} 
+                      icon={AlertCircle}
+                      highlight
+                      onClick={() => openEditProfile('contact')}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Medical History Timeline */}
+              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <Clock className="text-teal-600" size={24} />
+                    Recent Medical History
+                  </h3>
+                  <button className="text-teal-600 font-bold text-sm hover:underline flex items-center gap-1">
+                    <Plus size={14} /> Add Record
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-200"></div>
+                  <div className="space-y-8">
+                    {medicalHistory.map((record) => (
+                      <div key={record.id} className="relative flex gap-6 group">
+                        <div className={`w-8 h-8 rounded-full border-4 border-white z-10 flex items-center justify-center shrink-0 shadow-sm ${
+                          record.type === 'Emergency' ? 'bg-red-500' :
+                          record.type === 'Lab Report' ? 'bg-blue-500' :
+                          record.type === 'Prescription' ? 'bg-amber-500' : 'bg-teal-500'
+                        }`}>
+                          {record.type === 'Emergency' && <AlertCircle size={14} className="text-white" />}
+                          {record.type === 'Lab Report' && <FileText size={14} className="text-white" />}
+                          {record.type === 'Prescription' && <FileText size={14} className="text-white" />}
+                          {record.type === 'Consultation' && <Stethoscope size={14} className="text-white" />}
+                        </div>
+
+                        <div className="flex-1 bg-slate-50 rounded-2xl p-5 border border-slate-100 hover:shadow-md transition-all">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                            <h4 className="font-bold text-slate-800">{record.type}</h4>
+                            <span className="text-xs text-slate-400 font-medium bg-white px-2 py-1 rounded-md border border-slate-200">
+                              {record.date}
+                            </span>
+                          </div>
+                          <p className="text-sm text-teal-700 font-medium mb-2">{record.doctor}</p>
+                          <p className="text-slate-600 text-sm leading-relaxed">{record.notes}</p>
+
+                          <div className="mt-3 flex items-center justify-between">
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                              record.status === 'Resolved' || record.status === 'Completed' || record.status === 'Dispensed'
+                              ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {record.status}
+                            </span>
+                            {record.type === 'Lab Report' && (
+                              <button className="text-teal-600 text-sm font-bold hover:underline flex items-center gap-1">
+                                <Download size={14} /> Download
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setActiveTab('reviews')}
@@ -545,6 +662,7 @@ const PatientDashboard = ({
                 </button>
               </div>
 
+              {/* Recent Reviews */}
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-slate-800">Recent Reviews</h3>
@@ -579,9 +697,10 @@ const PatientDashboard = ({
                 )}
               </div>
 
+              {/* Recent Documents */}
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-slate-800">Recent Medical Records</h3>
+                  <h3 className="text-xl font-bold text-slate-800">Recent Documents</h3>
                   <button onClick={() => setActiveTab('reports')} className="text-teal-600 font-bold text-sm hover:underline">View All</button>
                 </div>
 
@@ -599,6 +718,7 @@ const PatientDashboard = ({
                 </div>
               </div>
 
+              {/* Watchlist */}
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-2">
@@ -636,8 +756,6 @@ const PatientDashboard = ({
               <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                 <h3 className="text-2xl font-bold text-slate-800">My Reviews & Ratings</h3>
               </div>
-
-              {/* filter buttons */}
               <div className="flex gap-2">
                 {['all', 'reviews', 'ratings'].map(opt => (
                   <button
@@ -673,13 +791,11 @@ const PatientDashboard = ({
                             <h4 className="text-xl font-semibold text-slate-800">Ratings</h4>
                             {ratingsOnly.map(review => (
                               <div key={review.id} className={`bg-white border rounded-[2rem] p-4 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
-                                {/* Status Badge */}
                                 <div className="absolute top-4 right-4">
                                   <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
                                     {review.status}
                                   </span>
                                 </div>
-
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                   <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-lg">
@@ -691,13 +807,11 @@ const PatientDashboard = ({
                                     </div>
                                   </div>
                                 </div>
-                                {/* proof link */}
                                 {review.proof && (
                                   <div className="mb-4 text-sm">
                                     Proof: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">View</a>
                                   </div>
                                 )}
-
                                 <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                                   <div className="flex items-center justify-between bg-white/60 p-2 rounded-lg border border-slate-100">
                                     <span className="font-semibold text-slate-700">Communication:</span>
@@ -732,12 +846,7 @@ const PatientDashboard = ({
                                   <span>Posted on {review.createdAt}</span>
                                 </div>
                                 <div className="flex justify-end mt-2">
-                                  <button
-                                    onClick={() => confirmDelete(review.id)}
-                                    className="text-sm text-red-500 hover:text-red-700"
-                                  >
-                                    Delete
-                                  </button>
+                                  <button onClick={() => confirmDelete(review.id)} className="text-sm text-red-500 hover:text-red-700">Delete</button>
                                 </div>
                               </div>
                             ))}
@@ -748,13 +857,11 @@ const PatientDashboard = ({
                             <h4 className="text-xl font-semibold text-slate-800">Written Reviews</h4>
                             {textReviews.map(review => (
                               <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
-                                {/* Status Badge */}
                                 <div className="absolute top-1 right-8">
                                   <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
                                     {review.status}
                                   </span>
                                 </div>
-                                {/* Delete button moved below */}
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
                                   <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl">
@@ -769,15 +876,10 @@ const PatientDashboard = ({
                                     </div>
                                   </div>
                                   <div className="space-y-5">
-                                    <p className="text-slate-600 text-sm ">
-                                    </p>
-                                    {/* Rating Badge */}
                                     <div className="flex justify-start">
                                       <div className="flex items-center gap-1 bg-teal-50 px-3 py-2 rounded-xl border border-teal-100 mr-2">
                                         {renderStars(review.rating)}
-                                        <span className="ml-2 font-bold text-teal-600">
-                                          {review.rating}/5
-                                        </span>
+                                        <span className="ml-2 font-bold text-teal-600">{review.rating}/5</span>
                                       </div>
                                     </div>
                                   </div>
@@ -791,12 +893,7 @@ const PatientDashboard = ({
                                   </div>
                                 )}
                                 <div className="flex justify-end mt-2">
-                                  <button
-                                    onClick={() => confirmDelete(review.id)}
-                                    className="text-sm text-red-500 hover:text-red-700"
-                                  >
-                                    Delete
-                                  </button>
+                                  <button onClick={() => confirmDelete(review.id)} className="text-sm text-red-500 hover:text-red-700">Delete</button>
                                 </div>
                               </div>
                             ))}
@@ -846,14 +943,8 @@ const PatientDashboard = ({
 
               <div className="space-y-3">
                 {reports.map(report => (
-                  <div
-                    key={report.id}
-                    className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all"
-                  >
-                    <div
-                      className="p-6 flex items-center justify-between cursor-pointer"
-                      onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}
-                    >
+                  <div key={report.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all">
+                    <div className="p-6 flex items-center justify-between cursor-pointer" onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}>
                       <div className="flex items-center gap-4">
                         {getReportIcon(report.type)}
                         <div>
@@ -862,16 +953,11 @@ const PatientDashboard = ({
                             {report.isConfidential && <Lock size={16} className="text-teal-500" />}
                           </h4>
                           <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                            <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">
-                              {getReportTypeLabel(report.type)}
-                            </span>
+                            <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">{getReportTypeLabel(report.type)}</span>
                             <span>•</span>
                             <span>{report.reportDate}</span>
                             {report.doctorName && (
-                              <>
-                                <span>•</span>
-                                <span>{report.doctorName}</span>
-                              </>
+                              <><span>•</span><span>{report.doctorName}</span></>
                             )}
                           </div>
                         </div>
@@ -891,7 +977,6 @@ const PatientDashboard = ({
                             <h5 className="font-bold text-slate-700 mb-2">Description</h5>
                             <p className="text-slate-600">{report.description}</p>
                           </div>
-
                           <div className="flex flex-wrap gap-3">
                             <button className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm">
                               <Download size={18} /> Download PDF
@@ -915,16 +1000,6 @@ const PatientDashboard = ({
             </div>
           )}
 
-          {activeTab === 'profile' && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <PatientViewProfile
-                user={currentUser}
-                onBack={() => setActiveTab('overview')}
-                onSaveProfile={handleSaveProfile}
-              />
-            </div>
-          )}
-
           {activeTab === 'secondOpinion' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg mb-6">
@@ -932,7 +1007,6 @@ const PatientDashboard = ({
                 <p className="text-teal-100">Get expert advice from top specialists worldwide.</p>
               </div>
 
-              {/* Doctors & Pricing Card */}
               <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-6">
                 <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                   <Stethoscope className="text-teal-600" size={24} />
@@ -945,10 +1019,7 @@ const PatientDashboard = ({
                     { name: 'Dr. Emily Chen', specialty: 'Oncology', rating: 4.7, price: 'Rs. 3500', exp: '12+ yrs' }
                   ].map((doc, idx) => (
                     <div key={idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-6">
-                      <div
-                        className="cursor-pointer group flex items-center gap-4 flex-1"
-                        onClick={onNavigateDoctors}
-                      >
+                      <div className="cursor-pointer group flex items-center gap-4 flex-1" onClick={onNavigateDoctors}>
                         <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl shrink-0 group-hover:bg-teal-200 transition-colors">
                           {doc.name.split(' ')[1]?.charAt(0) || doc.name.charAt(0)}
                         </div>
@@ -961,9 +1032,7 @@ const PatientDashboard = ({
                               <span className="font-semibold">{doc.rating}</span>
                             </div>
                             <span className="text-slate-300">•</span>
-                            <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-slate-200">
-                              {doc.exp}
-                            </span>
+                            <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-slate-200">{doc.exp}</span>
                           </div>
                         </div>
                       </div>
@@ -987,11 +1056,8 @@ const PatientDashboard = ({
                   ))}
                 </div>
               </div>
-
-
             </div>
           )}
-
         </div>
       </div>
 
@@ -1001,6 +1067,7 @@ const PatientDashboard = ({
         user={currentUser}
         onSave={handleSaveProfile}
         isLoading={isLoading}
+        initialSection={editProfileSection} // Added this newly required prop
       />
 
       <PaymentModal
