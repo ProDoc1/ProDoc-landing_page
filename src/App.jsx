@@ -16,6 +16,7 @@ import DoctorViewProfile from './DoctorViewProfile';
 import ContentHub from './ContentHub';
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
 const AdminLogin = lazy(() => import('./AdminLogin'));
+import MiniBot from './components/MiniBot';
 
 
 
@@ -170,7 +171,13 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                   <p className="text-slate-300 leading-relaxed group-hover:text-white transition-colors">
                      Describe your symptoms in Sinhala, Tamil, or English, and our AI will guide you to the right specialist immediately.
                   </p>
-                  <button className="mt-8 bg-white text-teal-900 px-6 py-3 rounded-full text-sm font-bold hover:bg-teal-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-black/20">
+                  <button
+                     onClick={() => {
+                        const chatbotUrl = window.location.hostname === 'localhost' ? 'http://localhost:4000' : '/chatbot';
+                        window.open(chatbotUrl, '_blank');
+                     }}
+                     className="mt-8 bg-white text-teal-900 px-6 py-3 rounded-full text-sm font-bold hover:bg-teal-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-black/20"
+                  >
                      Try Chatbot Demo
                   </button>
                </div>
@@ -867,6 +874,7 @@ export default function App() {
                </div>
             </div>
          )}
+         <MiniBot />
       </main>
    );
 }
