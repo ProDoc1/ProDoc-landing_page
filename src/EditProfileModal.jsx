@@ -1,60 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar,
-  Camera,
-  Save,
-  AlertCircle
+  X, User, Mail, Phone, MapPin, Calendar, Camera, Save, AlertCircle
 } from 'lucide-react';
 
-const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
+const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'personal' }) => {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    gender: '',
-    address: '',
-    emergencyContact: '',
-    bloodType: '',
-    allergies: [],
-    chronicConditions: []
+    fullName: '', email: '', phone: '', dateOfBirth: '', gender: '',
+    address: '', emergencyContact: '', bloodType: '', allergies: [], chronicConditions: []
   });
   
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [activeSection, setActiveSection] = useState('personal');
+  const [activeSection, setActiveSection] = useState(initialSection);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveSection(initialSection);
+    }
+  }, [isOpen, initialSection]);
 
   useEffect(() => {
     if (user && isOpen) {
       setFormData({
-        fullName: user.fullName || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        dateOfBirth: user.dateOfBirth || '',
-        gender: user.gender || '',
-        address: user.address || '',
-        emergencyContact: user.emergencyContact || '',
-        bloodType: user.bloodType || '',
-        allergies: user.allergies || [],
-        chronicConditions: user.chronicConditions || []
+        fullName: user.fullName || '', email: user.email || '', phone: user.phone || '',
+        dateOfBirth: user.dateOfBirth || '', gender: user.gender || '', address: user.address || '',
+        emergencyContact: user.emergencyContact || '', bloodType: user.bloodType || '',
+        allergies: user.allergies || [], chronicConditions: user.chronicConditions || []
       });
     }
   }, [user, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const validateForm = () => {
@@ -79,16 +58,27 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
     
     setIsLoading(true);
     try {
-      // Calculate age from date of birth
-      const birthDate = new Date(formData.dateOfBirth);
-      const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
-      
-      await onSave({
+      // 1. Convert comma-separated strings back into clean Arrays
+      const finalizedAllergies = typeof formData.allergies === 'string' 
+        ? formData.allergies.split(',').map(s => s.trim()).filter(Boolean)
+        : formData.allergies;
+
+      const finalizedConditions = typeof formData.chronicConditions === 'string' 
+        ? formData.chronicConditions.split(',').map(s => s.trim()).filter(Boolean)
+        : formData.chronicConditions;
+
+      // 2. Prepare the final payload
+      const finalPayload = {
         ...formData,
-        age: age > 0 ? age : null
-      });
-      onClose();
+        allergies: finalizedAllergies,
+        chronicConditions: finalizedConditions
+      };
+
+      // 3. Send to Dashboard's handleSaveProfile
+      await onSave(finalPayload);
+      
+      // We don't call onClose() here because the Dashboard 
+      // will call it ONLY if the API call is successful.
     } catch (error) {
       console.error('Failed to save profile:', error);
     } finally {
@@ -106,10 +96,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       
       <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
@@ -118,10 +105,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
             <h2 className="text-2xl font-bold">Edit Profile</h2>
             <p className="text-teal-100 text-sm mt-1">Update your personal information</p>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-full transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -131,6 +115,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
             {sections.map(section => (
               <button
                 key={section.id}
+                type="button"
                 onClick={() => setActiveSection(section.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${
                   activeSection === section.id 
@@ -169,8 +154,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
               {activeSection === 'personal' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <User size={20} className="text-teal-600" />
-                    Personal Information
+                    <User size={20} className="text-teal-600" /> Personal Information
                   </h3>
                   
                   <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
@@ -178,10 +162,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                       <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 text-3xl font-bold">
                         {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : <User size={40} />}
                       </div>
-                      <button 
-                        type="button"
-                        className="absolute bottom-0 right-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg"
-                      >
+                      <button type="button" className="absolute bottom-0 right-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg">
                         <Camera size={16} />
                       </button>
                     </div>
@@ -189,18 +170,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                       <h4 className="font-bold text-slate-800">Profile Photo</h4>
                       <p className="text-sm text-slate-500 mb-3">Upload a clear photo of yourself</p>
                       <div className="flex gap-2">
-                        <button 
-                          type="button"
-                          className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors"
-                        >
-                          Upload New
-                        </button>
-                        <button 
-                          type="button"
-                          className="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors"
-                        >
-                          Remove
-                        </button>
+                        <button type="button" className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors">Upload New</button>
+                        <button type="button" className="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">Remove</button>
                       </div>
                     </div>
                   </div>
@@ -208,25 +179,13 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">Full Name *</label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-3 rounded-xl border ${errors.fullName ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`}
-                        placeholder="John Doe"
-                      />
+                      <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border ${errors.fullName ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`} placeholder="John Doe" />
                       {errors.fullName && <p className="text-red-500 text-xs">{errors.fullName}</p>}
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">Gender</label>
-                      <select
-                        name="gender"
-                        value={formData.gender}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white"
-                      >
+                      <select name="gender" value={formData.gender} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white">
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -238,32 +197,17 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">Date of Birth</label>
-                      <input
-                        type="date"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                      />
+                      <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" />
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700">Blood Type</label>
-                      <select
-                        name="bloodType"
-                        value={formData.bloodType}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white"
-                      >
+                      <select name="bloodType" value={formData.bloodType} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all bg-white">
                         <option value="">Select Blood Type</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
+                        <option value="A+">A+</option><option value="A-">A-</option>
+                        <option value="B+">B+</option><option value="B-">B-</option>
+                        <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                        <option value="O+">O+</option><option value="O-">O-</option>
                       </select>
                     </div>
                   </div>
@@ -272,14 +216,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                     <label className="text-sm font-bold text-slate-700">Email Address *</label>
                     <div className="relative">
                       <Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className={`w-full pl-12 pr-4 py-3 rounded-xl border ${errors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`}
-                        placeholder="john@example.com"
-                      />
+                      <input type="email" name="email" value={formData.email} onChange={handleChange} className={`w-full pl-12 pr-4 py-3 rounded-xl border ${errors.email ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`} placeholder="john@example.com" />
                     </div>
                     {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
                   </div>
@@ -289,22 +226,14 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
               {activeSection === 'contact' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <Phone size={20} className="text-teal-600" />
-                    Contact Information
+                    <Phone size={20} className="text-teal-600" /> Contact Information
                   </h3>
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Phone Number</label>
                     <div className="relative">
                       <Phone size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className={`w-full pl-12 pr-4 py-3 rounded-xl border ${errors.phone ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`}
-                        placeholder="+94 77 123 4567"
-                      />
+                      <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={`w-full pl-12 pr-4 py-3 rounded-xl border ${errors.phone ? 'border-red-500 bg-red-50' : 'border-slate-200'} focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all`} placeholder="+94 77 123 4567" />
                     </div>
                     {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
                   </div>
@@ -313,27 +242,13 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
                     <label className="text-sm font-bold text-slate-700">Address</label>
                     <div className="relative">
                       <MapPin size={20} className="absolute left-4 top-4 text-slate-400" />
-                      <textarea
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        rows={3}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none"
-                        placeholder="123 Galle Road, Colombo 03"
-                      />
+                      <textarea name="address" value={formData.address} onChange={handleChange} rows={3} className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all resize-none" placeholder="123 Galle Road, Colombo 03" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Emergency Contact</label>
-                    <input
-                      type="text"
-                      name="emergencyContact"
-                      value={formData.emergencyContact}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                      placeholder="Name: Jane Doe, Phone: +94 77 987 6543"
-                    />
+                    <input type="text" name="emergencyContact" value={formData.emergencyContact} onChange={handleChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="Name: Jane Doe, Phone: +94 77 987 6543" />
                     <p className="text-xs text-slate-500">Include name and phone number of emergency contact</p>
                   </div>
                 </div>
@@ -342,35 +257,28 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
               {activeSection === 'medical' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                   <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <AlertCircle size={20} className="text-teal-600" />
-                    Medical Information
+                    <AlertCircle size={20} className="text-teal-600" /> Medical Information
                   </h3>
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Allergies (comma separated)</label>
-                    <input
-                      type="text"
-                      value={formData.allergies.join(', ')}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        allergies: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                      }))}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                      placeholder="e.g. Penicillin, Peanuts, Dust"
+                    <input 
+                      type="text" 
+                      value={Array.isArray(formData.allergies) ? formData.allergies.join(', ') : formData.allergies} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, allergies: e.target.value }))} 
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" 
+                      placeholder="e.g. Penicillin, Peanuts" 
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Chronic Conditions (comma separated)</label>
-                    <input
-                      type="text"
-                      value={formData.chronicConditions.join(', ')}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        chronicConditions: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                      }))}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
-                      placeholder="e.g. Asthma, Hypertension, Diabetes"
+                    <input 
+                      type="text" 
+                      value={Array.isArray(formData.chronicConditions) ? formData.chronicConditions.join(', ') : formData.chronicConditions} 
+                      onChange={(e) => setFormData(prev => ({ ...prev, chronicConditions: e.target.value }))} 
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" 
+                      placeholder="e.g. Asthma, Diabetes" 
                     />
                   </div>
 
@@ -383,29 +291,9 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave }) => {
               )}
 
               <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 mt-8 sticky bottom-0 bg-white">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-6 py-3 border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={20} />
-                      Save Changes
-                    </>
-                  )}
+                <button type="button" onClick={onClose} className="px-6 py-3 border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancel</button>
+                <button type="submit" disabled={isLoading} className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isLoading ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving...</> : <><Save size={20} /> Save Changes</>}
                 </button>
               </div>
             </form>
