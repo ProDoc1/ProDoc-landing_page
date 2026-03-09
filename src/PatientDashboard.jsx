@@ -37,9 +37,9 @@ import EditProfileModal from './EditProfileModal';
 
 const ClickableInfoRow = ({ label, value, icon: Icon, highlight, onClick }) => {
   const isEmpty = !value || value === '';
-  
+
   return (
-    <div 
+    <div
       onClick={onClick}
       className="group flex items-start gap-3 p-4 rounded-xl hover:bg-slate-50 cursor-pointer transition-all border border-transparent hover:border-slate-200"
     >
@@ -64,9 +64,74 @@ const ClickableInfoRow = ({ label, value, icon: Icon, highlight, onClick }) => {
 
 const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request' }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState('payment'); 
+  const [step, setStep] = useState('payment');
+
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [cardType, setCardType] = useState('Unknown');
 
   if (!isOpen) return null;
+
+  const handleCardNumberChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Digits only
+    if (value.length > 16) value = value.slice(0, 16);
+
+    // Check card type
+    if (value.startsWith('4')) setCardType('VISA');
+    else if (value.startsWith('5')) setCardType('MASTERCARD');
+    else if (value.startsWith('3')) setCardType('AMEX');
+    else setCardType('Unknown');
+
+    // Add space every 4 digits
+    const formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    setCardNumber(formattedValue);
+  };
+
+  const handleExpiryChange = (e) => {
+    let inputVal = e.target.value;
+
+    if (expiry.endsWith('/') && inputVal.length === expiry.length - 1) {
+      setExpiry(inputVal.slice(0, -1));
+      return;
+    }
+
+    let value = inputVal.replace(/\D/g, '');
+    if (value.length > 4) value = value.slice(0, 4);
+
+    if (value.length >= 1) {
+      const firstDigit = parseInt(value[0], 10);
+      if (value.length === 1 && firstDigit > 1) {
+        value = `0${firstDigit}/`;
+      } else if (value.length >= 2) {
+        let month = parseInt(value.slice(0, 2), 10);
+        if (month > 12) month = 12;
+        if (month === 0) month = 1;
+        let monthStr = month.toString().padStart(2, '0');
+
+        if (value.length === 4) {
+          let year = parseInt(value.slice(2, 4), 10);
+          const currentYear = parseInt(new Date().getFullYear().toString().slice(2), 10);
+          if (year < currentYear) year = currentYear;
+          value = `${monthStr}/${year.toString().padStart(2, '0')}`;
+        } else {
+          value = `${monthStr}/${value.slice(2)}`;
+          if (value.length === 2 && !inputVal.endsWith('/')) {
+            value = `${value}/`;
+          }
+        }
+      }
+    }
+
+    setExpiry(value);
+  };
+
+  const handleCvvChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 3) value = value.slice(0, 3);
+    setCvv(value);
+  };
 
   const handlePayment = async (e) => {
     e.preventDefault();
@@ -106,45 +171,113 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-slate-700">Card Number</label>
-                  <div className="relative">
-                    <CreditCard size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input type="text" className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="0000 0000 0000 0000" required />
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-bold text-slate-700">Card Number</label>
+                    <div className="flex gap-2 items-center h-6">
+                      <svg viewBox="0 0 38 15" className="h-4 opacity-100 drop-shadow-sm" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.672 0.28H10.138L6.476 8.526L5.808 5.122C5.64 4.09 4.882 3.328 3.868 3.018L0 2.216V0.28H7.316C8.216 0.28 8.974 0.96 9.172 1.838L10.832 9.07L14.672 0.28ZM27.086 7.64C27.086 5.342 23.778 5.218 23.778 3.978C23.778 3.606 24.116 3.172 24.962 3.048C25.356 2.986 26.316 2.924 27.132 3.328L27.866 0.536C27.414 0.38 26.37 0 25.044 0C21.464 0 19.04 1.954 19.012 4.684C18.984 6.668 20.73 7.784 22.084 8.466C23.466 9.148 23.944 9.582 23.944 10.234C23.916 11.226 22.788 11.66 21.604 11.692C19.828 11.722 18.784 11.194 18.022 10.822L17.26 13.738C18.05 14.11 19.516 14.452 21.066 14.482C24.872 14.482 27.284 12.558 27.284 9.774M36.31 14.234L33.914 0.28H30.136C29.346 0.28 28.698 0.744 28.388 1.488L24.328 11.436H28.98L29.91 8.862H35.548L36.084 14.234H36.31ZM31.122 5.56L33.096 0.25L34.252 5.56H31.122Z" fill="#1434CB" />
+                      </svg>
+                      <svg viewBox="0 0 24 15" className="h-5 opacity-100 drop-shadow-sm" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="7.5" cy="7.5" r="7.5" fill="#EB001B" />
+                        <circle cx="16.5" cy="7.5" r="7.5" fill="#F79E1B" />
+                        <path d="M16.5 7.5C16.5 4.96316 15.2415 2.68285 13.2985 1.32043C11.3556 2.68285 10.0971 4.96316 10.0971 7.5C10.0971 10.0368 11.3556 12.3171 13.2985 13.6796C15.2415 12.3171 16.5 10.0368 16.5 7.5Z" fill="#FF5F00" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-4 z-10 w-8 flex justify-center">
+                      {cardType === 'VISA' ? (
+                        <svg viewBox="0 0 38 15" className="h-3.5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)] animate-in fade-in zoom-in" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M14.672 0.28H10.138L6.476 8.526L5.808 5.122C5.64 4.09 4.882 3.328 3.868 3.018L0 2.216V0.28H7.316C8.216 0.28 8.974 0.96 9.172 1.838L10.832 9.07L14.672 0.28ZM27.086 7.64C27.086 5.342 23.778 5.218 23.778 3.978C23.778 3.606 24.116 3.172 24.962 3.048C25.356 2.986 26.316 2.924 27.132 3.328L27.866 0.536C27.414 0.38 26.37 0 25.044 0C21.464 0 19.04 1.954 19.012 4.684C18.984 6.668 20.73 7.784 22.084 8.466C23.466 9.148 23.944 9.582 23.944 10.234C23.916 11.226 22.788 11.66 21.604 11.692C19.828 11.722 18.784 11.194 18.022 10.822L17.26 13.738C18.05 14.11 19.516 14.452 21.066 14.482C24.872 14.482 27.284 12.558 27.284 9.774M36.31 14.234L33.914 0.28H30.136C29.346 0.28 28.698 0.744 28.388 1.488L24.328 11.436H28.98L29.91 8.862H35.548L36.084 14.234H36.31ZM31.122 5.56L33.096 0.25L34.252 5.56H31.122Z" fill="#1434CB" />
+                        </svg>
+                      ) : cardType === 'MASTERCARD' ? (
+                        <svg viewBox="0 0 24 15" className="h-4.5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)] animate-in fade-in zoom-in" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="7.5" cy="7.5" r="7.5" fill="#EB001B" />
+                          <circle cx="16.5" cy="7.5" r="7.5" fill="#F79E1B" />
+                          <path d="M16.5 7.5C16.5 4.96316 15.2415 2.68285 13.2985 1.32043C11.3556 2.68285 10.0971 4.96316 10.0971 7.5C10.0971 10.0368 11.3556 12.3171 13.2985 13.6796C15.2415 12.3171 16.5 10.0368 16.5 7.5Z" fill="#FF5F00" />
+                        </svg>
+                      ) : (
+                        <CreditCard size={20} className="text-slate-400" />
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={cardNumber}
+                      onChange={handleCardNumberChange}
+                      className="w-full pl-14 pr-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-mono placeholder:font-sans font-medium tracking-wide"
+                      placeholder="0000 0000 0000 0000"
+                      required
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Expiry Date</label>
-                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="MM/YY" required />
+                    <input
+                      type="text"
+                      value={expiry}
+                      onChange={handleExpiryChange}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-mono placeholder:font-sans font-medium tracking-wide"
+                      placeholder="MM/YY"
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">CVV</label>
-                    <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="123" required />
+                    <input
+                      type="password"
+                      value={cvv}
+                      onChange={handleCvvChange}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-mono placeholder:font-sans font-medium tracking-wide"
+                      placeholder="123"
+                      required
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Cardholder Name</label>
-                  <input type="text" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all" placeholder="John Doe" required />
+                  <input
+                    type="text"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all font-medium uppercase placeholder:normal-case placeholder:font-normal"
+                    placeholder="John Doe"
+                    required
+                  />
                 </div>
               </div>
 
-              <button type="submit" disabled={isProcessing} className="w-full py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-teal-200">
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="saveCard"
+                  className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 accent-teal-600 cursor-pointer"
+                />
+                <label htmlFor="saveCard" className="text-sm font-medium text-slate-700 cursor-pointer select-none">
+                  Save card details
+                </label>
+              </div>
+
+              <button type="submit" disabled={isProcessing} className="w-full py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-teal-200 mt-2">
                 {isProcessing ? (
                   <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Processing...</>
                 ) : (
                   <><CreditCard size={20} /> Pay {amount}</>
                 )}
               </button>
+              <p className="text-xs text-slate-500 text-center mt-4">
+                Your personal data will be used to process your payment, support your experience throughout this website.
+              </p>
             </form>
           ) : (
             <div className="text-center py-8 animate-in fade-in zoom-in-95 duration-300">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
-                <CheckCircle size={40} />
+              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 shadow-inner">
+                <CheckCircle size={48} />
               </div>
               <h3 className="text-2xl font-bold text-slate-800 mb-2">Payment Successful!</h3>
-              <p className="text-slate-500 mb-8">Your request for a second opinion has been initiated.</p>
+              <p className="text-slate-500 mb-8">Your request for a second opinion has been initiated successfully. We will follow up shortly.</p>
               <button
                 onClick={() => {
                   onPaymentSuccess();
@@ -152,7 +285,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
                 }}
                 className="w-full py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200"
               >
-                Continue to Request Form
+                Continue to Dashboard
               </button>
             </div>
           )}
@@ -176,7 +309,7 @@ const PatientDashboard = ({
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [editProfileSection, setEditProfileSection] = useState('personal'); 
+  const [editProfileSection, setEditProfileSection] = useState('personal');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion' });
 
@@ -202,16 +335,39 @@ const PatientDashboard = ({
   const [watchlist, setWatchlist] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
 
+  const [secondOpinionDoctors, setSecondOpinionDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        setLoadingDoctors(true);
+        const response = await fetch(`/api/doctors?t=${Date.now()}`);
+        if (!response.ok) throw new Error("API Error");
+        const data = await response.json();
+
+        if (Array.isArray(data)) {
+          const remoteDoctors = data.filter(doc => doc.second_opinion_available === true);
+          setSecondOpinionDoctors(remoteDoctors);
+        }
+      } catch (error) {
+        console.error("Failed to load doctors:", error);
+      } finally {
+        setLoadingDoctors(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
   const [medicalHistory] = useState([
-    { id: 1, date: "2023-10-15", type: "Consultation", doctor: "Dr. Sarah Perera", notes: "Routine checkup. BP slightly elevated.", status: "Completed" },
-    { id: 2, date: "2023-08-10", type: "Lab Report", doctor: "Dr. Sunil Jayawardena", notes: "Full Blood Count - Normal Range.", status: "Reviewed" },
     { id: 3, date: "2023-05-20", type: "Prescription", doctor: "Dr. Sarah Perera", notes: "Medication refill.", status: "Dispensed" },
   ]);
 
   useEffect(() => {
     if (user && (user.id || user.uid || user.email)) {
-      setCurrentUser(prev => ({ 
-        ...prev, 
+      setCurrentUser(prev => ({
+        ...prev,
         ...user,
         fullName: user.fullName || user.name || prev.fullName || ''
       }));
@@ -267,15 +423,15 @@ const PatientDashboard = ({
       queryParams.append('t', Date.now());
 
       const response = await fetch(`/api/patient/profile?${queryParams.toString()}`);
-      
+
       if (response.ok) {
         const data = await response.json();
-        setCurrentUser(prev => ({ 
-          ...prev, 
+        setCurrentUser(prev => ({
+          ...prev,
           ...data,
           fullName: data.fullName || prev.fullName || prev.name || ''
         }));
-        
+
         if (data.id) localStorage.setItem('patientId', data.id);
         if (data.email) localStorage.setItem('patientEmail', data.email);
       }
@@ -307,10 +463,10 @@ const PatientDashboard = ({
       }
 
       const result = await response.json();
-      
+
       // Force local UI update so changes appear immediately
-      setCurrentUser(prev => ({ 
-        ...prev, 
+      setCurrentUser(prev => ({
+        ...prev,
         ...formData,
         allergies: formData.allergies || [],
         chronicConditions: formData.chronicConditions || [],
@@ -320,12 +476,12 @@ const PatientDashboard = ({
       if (result.patient?.id) {
         localStorage.setItem('patientId', result.patient.id);
       }
-      
+
       setIsEditProfileOpen(false);
 
     } catch (error) {
       console.error('Failed to save profile:', error);
-      alert(`Could not save profile: ${error.message}`); 
+      alert(`Could not save profile: ${error.message}`);
     }
   };
 
@@ -498,14 +654,14 @@ const PatientDashboard = ({
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                
+
                 <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                       <User className="text-teal-600" size={24} />
                       Personal Information
                     </h3>
-                    <button 
+                    <button
                       onClick={() => openEditProfile('personal')}
                       className="text-teal-600 font-bold text-sm hover:underline flex items-center gap-1"
                     >
@@ -528,7 +684,7 @@ const PatientDashboard = ({
                       <AlertCircle className="text-red-500" size={24} />
                       Medical Alerts
                     </h3>
-                    <button 
+                    <button
                       onClick={() => openEditProfile('medical')}
                       className="text-teal-600 text-sm font-bold hover:underline"
                     >
@@ -547,7 +703,7 @@ const PatientDashboard = ({
                         ))}
                       </div>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => openEditProfile('medical')}
                         className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2"
                       >
@@ -567,7 +723,7 @@ const PatientDashboard = ({
                         ))}
                       </div>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => openEditProfile('medical')}
                         className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm font-medium hover:border-teal-400 hover:text-teal-600 transition-colors flex items-center justify-center gap-2"
                       >
@@ -577,9 +733,9 @@ const PatientDashboard = ({
                   </div>
 
                   <div className="mt-auto pt-4 border-t border-slate-100">
-                    <ClickableInfoRow 
-                      label="Emergency Contact" 
-                      value={currentUser.emergencyContact} 
+                    <ClickableInfoRow
+                      label="Emergency Contact"
+                      value={currentUser.emergencyContact}
                       icon={AlertCircle}
                       highlight
                       onClick={() => openEditProfile('contact')}
@@ -604,11 +760,10 @@ const PatientDashboard = ({
                   <div className="space-y-8">
                     {medicalHistory.map((record) => (
                       <div key={record.id} className="relative flex gap-6 group">
-                        <div className={`w-8 h-8 rounded-full border-4 border-white z-10 flex items-center justify-center shrink-0 shadow-sm ${
-                          record.type === 'Emergency' ? 'bg-red-500' :
+                        <div className={`w-8 h-8 rounded-full border-4 border-white z-10 flex items-center justify-center shrink-0 shadow-sm ${record.type === 'Emergency' ? 'bg-red-500' :
                           record.type === 'Lab Report' ? 'bg-blue-500' :
-                          record.type === 'Prescription' ? 'bg-amber-500' : 'bg-teal-500'
-                        }`}>
+                            record.type === 'Prescription' ? 'bg-amber-500' : 'bg-teal-500'
+                          }`}>
                           {record.type === 'Emergency' && <AlertCircle size={14} className="text-white" />}
                           {record.type === 'Lab Report' && <FileText size={14} className="text-white" />}
                           {record.type === 'Prescription' && <FileText size={14} className="text-white" />}
@@ -626,10 +781,9 @@ const PatientDashboard = ({
                           <p className="text-slate-600 text-sm leading-relaxed">{record.notes}</p>
 
                           <div className="mt-3 flex items-center justify-between">
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                              record.status === 'Resolved' || record.status === 'Completed' || record.status === 'Dispensed'
+                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${record.status === 'Resolved' || record.status === 'Completed' || record.status === 'Dispensed'
                               ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                            }`}>
+                              }`}>
                               {record.status}
                             </span>
                             {record.type === 'Lab Report' && (
@@ -1025,49 +1179,69 @@ const PatientDashboard = ({
                   <Stethoscope className="text-teal-600" size={24} />
                   Available Specialists & Pricing
                 </h3>
-                <div className="flex flex-col gap-4">
-                  {[
-                    { name: 'Dr. Sarah Smith', specialty: 'Neurology', rating: 4.8, price: 'Rs. 2500', exp: '15+ yrs' },
-                    { name: 'Dr. John Davis', specialty: 'Cardiology', rating: 4.9, price: 'Rs. 3000', exp: '20+ yrs' },
-                    { name: 'Dr. Emily Chen', specialty: 'Oncology', rating: 4.7, price: 'Rs. 3500', exp: '12+ yrs' }
-                  ].map((doc, idx) => (
-                    <div key={idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-6">
-                      <div className="cursor-pointer group flex items-center gap-4 flex-1" onClick={onNavigateDoctors}>
-                        <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl shrink-0 group-hover:bg-teal-200 transition-colors">
-                          {doc.name.split(' ')[1]?.charAt(0) || doc.name.charAt(0)}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-lg text-slate-800 group-hover:text-teal-600 transition-colors">{doc.name}</h4>
-                          <p className="text-sm text-slate-500">{doc.specialty}</p>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
-                            <div className="flex items-center gap-1">
-                              <Star size={16} className="text-teal-500 fill-teal-500" />
-                              <span className="font-semibold">{doc.rating}</span>
+                {loadingDoctors ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-teal-500 border-r-transparent"></div>
+                  </div>
+                ) : secondOpinionDoctors.length === 0 ? (
+                  <div className="text-center py-12 text-slate-500">
+                    <p>No specialists available for remote consult at the moment.</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {secondOpinionDoctors.map((doc, idx) => {
+                      const doctorName = doc.full_name || 'Doctor Name';
+                      const initial = doctorName.split(' ')[1]?.charAt(0) || doctorName.charAt(0);
+                      const specialty = doc.specialty || 'Specialist';
+                      // Using realistic mock values for rating/price as they might not come from db
+                      const rating = doc.rating || (Math.random() * (5.0 - 4.5) + 4.5).toFixed(1);
+                      const price = 'Rs. 2500';
+                      const exp = doc.years_of_experience ? `${doc.years_of_experience}+ yrs` : '10+ yrs';
+
+                      return (
+                        <div key={doc.doctor_id || idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-6">
+                          <div className="cursor-pointer group flex items-center gap-4 flex-1" onClick={onNavigateDoctors}>
+                            <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl shrink-0 group-hover:bg-teal-200 transition-colors overflow-hidden border border-teal-200">
+                              {doc.image_url ? (
+                                <img src={doc.image_url} alt={doctorName} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : (
+                                initial
+                              )}
                             </div>
-                            <span className="text-slate-300">•</span>
-                            <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-slate-200">{doc.exp}</span>
+                            <div>
+                              <h4 className="font-bold text-lg text-slate-800 group-hover:text-teal-600 transition-colors">{doctorName}</h4>
+                              <p className="text-sm text-slate-500">{specialty}</p>
+                              <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                                <div className="flex items-center gap-1">
+                                  <Star size={16} className="text-teal-500 fill-teal-500" />
+                                  <span className="font-semibold">{rating}</span>
+                                </div>
+                                <span className="text-slate-300">•</span>
+                                <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-slate-200">{exp}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between md:justify-end gap-6 md:min-w-[250px] border-t md:border-t-0 md:border-l border-slate-200/60 pt-4 md:pt-0 md:pl-6">
+                            <div>
+                              <p className="text-xs text-slate-500 mb-0.5">Consultation Fee</p>
+                              <p className="font-bold text-xl text-teal-600">{price}</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setPaymentDetails({ amount: price, serviceName: `Second Opinion - ${doctorName}` });
+                                setIsPaymentModalOpen(true);
+                              }}
+                              className="px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors shrink-0"
+                            >
+                              Proceed to Payment
+                            </button>
                           </div>
                         </div>
-                      </div>
-
-                      <div className="flex items-center justify-between md:justify-end gap-6 md:min-w-[250px] border-t md:border-t-0 md:border-l border-slate-200/60 pt-4 md:pt-0 md:pl-6">
-                        <div>
-                          <p className="text-xs text-slate-500 mb-0.5">Consultation Fee</p>
-                          <p className="font-bold text-xl text-teal-600">{doc.price}</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setPaymentDetails({ amount: doc.price, serviceName: `Second Opinion - ${doc.name}` });
-                            setIsPaymentModalOpen(true);
-                          }}
-                          className="px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors shrink-0"
-                        >
-                          Proceed to Payment
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1079,7 +1253,7 @@ const PatientDashboard = ({
         onClose={() => setIsEditProfileOpen(false)}
         user={currentUser}
         onSave={handleSaveProfile}
-        initialSection={editProfileSection} 
+        initialSection={editProfileSection}
       />
 
       <PaymentModal
