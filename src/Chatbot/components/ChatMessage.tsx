@@ -5,9 +5,10 @@ import DoctorCard from './DoctorCard';
 
 interface ChatMessageProps {
   message: Message;
+  onViewProfile?: (id: string) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, onViewProfile }) => {
   const isUser = message.role === 'user';
   const isTyping = message.text === '...';
 
@@ -23,20 +24,20 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       )}
       <div className="message-content">
         <div className={bubbleClasses}>
-            {isTyping ? (
-                 <div className="typing-indicator" aria-label="AI is typing">
-                    <span className="typing-dot" style={{ animationDelay: '0.1s' }}></span>
-                    <span className="typing-dot" style={{ animationDelay: '0.2s' }}></span>
-                    <span className="typing-dot" style={{ animationDelay: '0.3s' }}></span>
-                 </div>
-            ) : (
-                <p>{message.text}</p>
-            )}
+          {isTyping ? (
+            <div className="typing-indicator" aria-label="AI is typing">
+              <span className="typing-dot" style={{ animationDelay: '0.1s' }}></span>
+              <span className="typing-dot" style={{ animationDelay: '0.2s' }}></span>
+              <span className="typing-dot" style={{ animationDelay: '0.3s' }}></span>
+            </div>
+          ) : (
+            <p>{message.text}</p>
+          )}
         </div>
         {message.doctor && (
-            <div className="doctor-card-wrap">
-                <DoctorCard doctor={message.doctor} />
-            </div>
+          <div className="doctor-card-wrap">
+            <DoctorCard doctor={message.doctor} onViewProfile={onViewProfile} />
+          </div>
         )}
       </div>
     </div>

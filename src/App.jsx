@@ -768,17 +768,15 @@ export default function App() {
             </Suspense>
          )}
 
-         {currentPage === 'chatbot' && (
-            <div className="fixed inset-0 z-[200] bg-white">
-               <button
-                  onClick={() => navigateTo('home')}
-                  className="absolute top-4 left-4 z-[210] p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors flex items-center gap-2 text-slate-700 font-semibold"
-               >
-                  <ArrowRight className="w-5 h-5 rotate-180" /> Back to ProDoc
-               </button>
-               <ChatbotApp />
-            </div>
-         )}
+         <div className={`fixed inset-0 z-[200] bg-white transition-opacity ${currentPage === 'chatbot' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+            <button
+               onClick={() => navigateTo('home')}
+               className="absolute top-4 left-4 z-[210] p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors flex items-center gap-2 text-slate-700 font-semibold"
+            >
+               <ArrowRight className="w-5 h-5 rotate-180" /> Back to ProDoc
+            </button>
+            <ChatbotApp onViewProfile={(id) => navigateTo('doctor-view', id)} />
+         </div>
 
          {/* --- SESSION EXPIRED MODAL --- */}
          {showSessionExpiredModal && (

@@ -11,7 +11,7 @@ const Header: React.FC = () => {
           </svg>
         </div>
         <div>
-          <h1 className="brand-title">MedBot AI Assistant</h1>
+          <h1 className="brand-title">ProDoc Agent</h1>
           <p className="brand-subtitle">Symptom guidance and specialist matching</p>
         </div>
       </div>

@@ -3,9 +3,10 @@ import { Doctor } from '../types';
 
 interface DoctorCardProps {
   doctor: Doctor;
+  onViewProfile?: (id: string) => void;
 }
 
-const DoctorCard: React.FC<DoctorCardProps> = ({ doctor }) => {
+const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewProfile }) => {
   const hospitals = (() => {
     try {
       const parsed = JSON.parse(doctor.associated_hospitals || '[]');
@@ -73,9 +74,19 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor }) => {
           <p className="doctor-reg">
             <span className="doctor-label-inline">SLMC:</span> {doctor.slmc_number}
           </p>
-          <a href={`mailto:${doctor.contact_email}`} className="doctor-contact-btn">
-            Contact Doctor
-          </a>
+          <button
+            type="button"
+            className="doctor-contact-btn text-sm font-semibold hover:bg-teal-500 hover:text-white transition-colors"
+            onClick={() => {
+              if (onViewProfile) {
+                onViewProfile(doctor.doctor_id);
+              } else {
+                window.location.href = `mailto:${doctor.contact_email}`;
+              }
+            }}
+          >
+            View Profile
+          </button>
         </div>
       </div>
     </div>

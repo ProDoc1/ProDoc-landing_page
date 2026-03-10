@@ -10,7 +10,11 @@ import Header from './components/Header';
 import Disclaimer from './components/Disclaimer';
 import './index.css';
 
-const App: React.FC = () => {
+interface AppProps {
+  onViewProfile?: (id: string) => void;
+}
+
+const App: React.FC<AppProps> = ({ onViewProfile }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [language, setLanguage] = useState<Language>(Language.EN);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -26,6 +30,7 @@ const App: React.FC = () => {
 
   const initializeChat = useCallback(() => {
     try {
+      // @ts-ignore
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
       if (!apiKey) {
@@ -93,39 +98,48 @@ const App: React.FC = () => {
       // Create a placeholder for the bot's message
       setMessages((prev) => [...prev, { id: botMessageId, role: 'bot', text: '...' }]);
 
+      const extractResponse = (text: string) => {
+        const responseMatch = text.match(/RESPONSE:\s*([\s\S]*)/);
+        return responseMatch ? responseMatch[1].trim() : text;
+      };
+
       for await (const chunk of stream) {
         const c = chunk as GenerateContentResponse;
         fullResponseText += c.text;
 
-        // Update the bot's message in real-time
+        // Update the bot's message in real-time, showing only the response part if available
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.id === botMessageId ? { ...msg, text: fullResponseText } : msg
+            msg.id === botMessageId ? { ...msg, text: extractResponse(fullResponseText) || 'Thinking...' } : msg
           )
         );
       }
 
       const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';
       let doctor: Doctor | undefined;
-      let finalText = fullResponseText;
+      // Strip out the internal reasoning for the final text as well
+      let finalText = extractResponse(fullResponseText);
 
-      if (fullResponseText.startsWith(recommendationPrefix)) {
-        const jsonString = fullResponseText.substring(recommendationPrefix.length);
+      if (finalText.includes(recommendationPrefix)) {
+        const prefixIndex = finalText.indexOf(recommendationPrefix);
+        let jsonString = finalText.substring(prefixIndex + recommendationPrefix.length).trim();
+        const match = jsonString.match(/(\{[\s\S]*?\})/);
+        if (match) {
+          jsonString = match[1];
+        }
         try {
           const recommendation: { doctor_id: string; reason: string } = JSON.parse(jsonString);
           const foundDoctor = DOCTORS.find(d => d.doctor_id === recommendation.doctor_id);
           if (foundDoctor) {
             doctor = { ...foundDoctor, reason: recommendation.reason } as Doctor;
-            finalText = `${recommendation.reason}`;
-          } else {
-            finalText = fullResponseText;
+            finalText = finalText.substring(0, prefixIndex).trim() + '\n\n' + recommendation.reason;
           }
         } catch (e) {
           console.error("Failed to parse doctor recommendation JSON:", e);
-          finalText = fullResponseText; // Fallback to showing raw response
         }
       }
 
+      // Cleanup duplicate disclaimer if it was already printed by the bot but also hardcoded
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === botMessageId ? { ...msg, text: finalText, doctor } : msg
@@ -173,7 +187,7 @@ const App: React.FC = () => {
             className="chat-scroll"
           >
             {messages.map((msg) => (
-              <ChatMessage key={msg.id} message={msg} />
+              <ChatMessage key={msg.id} message={msg} onViewProfile={onViewProfile} />
             ))}
             {isLoading && messages[messages.length - 1]?.role === 'user' && (
               <ChatMessage key="loading" message={{ id: 'loading', role: 'bot', text: '...' }} />
