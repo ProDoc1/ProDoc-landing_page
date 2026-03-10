@@ -259,75 +259,92 @@ const PatientDashboard = ({
   }, [currentUser?.id]);
 
   const fetchUserData = async (patientId, email) => {
-    try {
-      const queryParams = new URLSearchParams();
-      if (patientId) queryParams.append('patientId', patientId);
-      if (email) queryParams.append('email', email);
-      // Adding a timestamp ensures the browser doesn't serve a cached (old) version
-      queryParams.append('t', Date.now());
+  try {
+    const queryParams = new URLSearchParams();
+    if (patientId && patientId !== 'undefined') queryParams.append('patientId', patientId);
+    if (email) queryParams.append('email', email);
+    queryParams.append('t', Date.now());
 
-      const response = await fetch(`/api/patient/profile?${queryParams.toString()}`);
+    const response = await fetch(`/api/patient/profile?${queryParams.toString()}`);
+    
+    if (response.ok) {
+      const data = await response.json();
       
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentUser(prev => ({ 
+      // Merge carefully, preserving existing data if fetch returns empty
+      setCurrentUser(prev => {
+        const merged = { 
           ...prev, 
           ...data,
-          fullName: data.fullName || prev.fullName || prev.name || ''
-        }));
-        
-        if (data.id) localStorage.setItem('patientId', data.id);
-        if (data.email) localStorage.setItem('patientEmail', data.email);
-      }
-    } catch (error) {
-      console.error('Failed to fetch user data:', error);
+          // Only overwrite if new data exists
+          fullName: data.fullName || prev.fullName || prev.name || '',
+          email: data.email || prev.email || '',
+          phone: data.phone || prev.phone || '',
+          dateOfBirth: data.dateOfBirth || prev.dateOfBirth || '',
+          gender: data.gender || prev.gender || '',
+          address: data.address || prev.address || '',
+          emergencyContact: data.emergencyContact || prev.emergencyContact || '',
+          bloodType: data.bloodType || prev.bloodType || '',
+          allergies: data.allergies?.length > 0 ? data.allergies : (prev.allergies || []),
+          chronicConditions: data.chronicConditions?.length > 0 ? data.chronicConditions : (prev.chronicConditions || []),
+          email_verified: data.email_verified || prev.email_verified || false
+        };
+        return merged;
+      });
+      
+      if (data.id) localStorage.setItem('patientId', data.id);
+      if (data.email) localStorage.setItem('patientEmail', data.email);
     }
-  };
+  } catch (error) {
+    console.error('Failed to fetch user data:', error);
+  }
+};
 
   const handleSaveProfile = async (formData) => {
-    try {
-      const email = currentUser?.email || formData.email || localStorage.getItem('patientEmail');
-      if (!email) throw new Error('Email is required to save profile data.');
+  try {
+    const email = currentUser?.email || formData.email || localStorage.getItem('patientEmail');
+    if (!email) throw new Error('Email is required to save profile data.');
 
-      const response = await fetch('/api/patient/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, email }),
-      });
+    const response = await fetch('/api/patient/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...formData, email }),
+    });
 
-      const contentType = response.headers.get("content-type");
-      if (!response.ok) {
-        if (contentType && contentType.includes("application/json")) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to save profile');
-        } else {
-          // If 404 appears here, verify that the file exists at /api/patient/profile/route.js
-          throw new Error(`Server returned a ${response.status} error. Check your API route path!`);
-        }
-      }
-
-      const result = await response.json();
-      
-      // Force local UI update so changes appear immediately
-      setCurrentUser(prev => ({ 
-        ...prev, 
-        ...formData,
-        allergies: formData.allergies || [],
-        chronicConditions: formData.chronicConditions || [],
-        id: result.patient?.id || prev.id
-      }));
-
-      if (result.patient?.id) {
-        localStorage.setItem('patientId', result.patient.id);
-      }
-      
-      setIsEditProfileOpen(false);
-
-    } catch (error) {
-      console.error('Failed to save profile:', error);
-      alert(`Could not save profile: ${error.message}`); 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to save profile');
     }
-  };
+
+    const result = await response.json();
+    
+    // IMPORTANT: Update state with returned data from server
+    const updatedUser = {
+      ...currentUser,
+      ...formData,
+      id: result.patient?.id || currentUser.id,
+      // Ensure arrays are properly set from server response
+      allergies: result.patient?.allergies || formData.allergies || [],
+      chronicConditions: result.patient?.chronic_conditions || formData.chronicConditions || []
+    };
+    
+    setCurrentUser(updatedUser);
+    
+    // Store in localStorage as backup
+    if (result.patient?.id) {
+      localStorage.setItem('patientId', result.patient.id);
+    }
+    localStorage.setItem('patientEmail', email);
+    
+    // Close modal on success
+    setIsEditProfileOpen(false);
+    
+    return result;
+  } catch (error) {
+    console.error('Failed to save profile:', error);
+    alert(`Could not save profile: ${error.message}`);
+    throw error;
+  }
+};
 
   const openEditProfile = (section = 'personal') => {
     setEditProfileSection(section);

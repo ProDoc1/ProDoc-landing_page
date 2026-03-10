@@ -28,7 +28,9 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor }) => {
             </svg>
           </div>
           <div className="doctor-meta">
-            <h3 className="doctor-name">{doctor.full_name}</h3>
+            <h3 className="doctor-name">{doctor.translated_name && doctor.translated_name !== doctor.full_name 
+                ? `${doctor.translated_name} (${doctor.full_name})` 
+                : doctor.full_name}</h3>
             <p className="doctor-specialty">{doctor.specialty}</p>
             <div className="doctor-stats">
               <span>{doctor.years_of_experience} Years Experience</span>
