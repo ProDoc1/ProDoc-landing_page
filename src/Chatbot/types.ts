@@ -25,6 +25,7 @@ export interface Doctor {
   second_opinion_dates?: string;
   educational_qualifications: string;
   reason: string; // Added by the AI to explain why this doctor was chosen
+  translated_name?: string; // Added by the AI for the doctor's name in the user's language
 }
 
 export interface Message {
