@@ -3,9 +3,9 @@ import { Star, Send, CheckCircle2, AlertCircle, Upload, FileText, X } from 'luci
 
 const RatingCategory = ({ label, value, onChange }) => {
     return (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-            <label className="text-sm font-semibold text-slate-700 w-full sm:w-1/3">{label}</label>
-            <div className="flex gap-1 w-full sm:w-2/3">
+        <div className="flex flex-col gap-1.5 mb-4 items-center">
+            <label className="text-sm font-bold text-slate-700">{label}</label>
+            <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                     <button
                         key={star}
@@ -14,10 +14,10 @@ const RatingCategory = ({ label, value, onChange }) => {
                         type="button"
                     >
                         <Star
-                            size={24}
+                            size={28}
                             className={`${star <= value
-                                ? 'fill-teal-500 text-teal-500'
-                                : 'fill-slate-100 text-slate-300 hover:text-teal-200'
+                                ? 'fill-amber-400 text-amber-400 drop-shadow-sm'
+                                : 'fill-slate-100 text-slate-200 hover:text-amber-200'
                                 } transition-colors duration-200`}
                         />
                     </button>
@@ -27,7 +27,7 @@ const RatingCategory = ({ label, value, onChange }) => {
     );
 };
 
-const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateSignup }) => {
+const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateSignup, onRatingSubmit }) => {
     const fileInputRef = useRef(null);
     const [ratings, setRatings] = useState({
         communication: 0,
@@ -124,6 +124,10 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                 setSubmitStatus('success');
             }
 
+            if (onRatingSubmit) {
+                onRatingSubmit();
+            }
+
             // Reset form after delay
             setTimeout(() => {
                 setRatings({
@@ -148,72 +152,60 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
     };
 
     return (
-        <section className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-lg border border-slate-100 mt-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-200/50 rounded-full -mr-10 -mt-10 opacity-60 pointer-events-none"></div>
-
-            <div className="relative z-10">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-                    <div className="p-3 bg-teal-50 rounded-2xl text-teal-500">
-                        <Star size={24} className="fill-teal-500" />
-                    </div>
-                    Rate Your Experience
-                </h3>
-                <p className="text-slate-500 mb-8 ml-16 max-w-none">
-                    Help other patients by sharing your experience with {doctorName || 'this specialist'}. Your feedback is confidential and valuable.
-                </p>
-
+        <div className="relative">
+            <div className="relative z-10 w-full">
                 {!user ? (
-                    <div className="text-center py-12 bg-slate-50 border border-slate-100 rounded-3xl shadow-sm">
-                        <h4 className="text-xl font-bold text-teal-500 mb-2">Login to Rate Your Experience</h4>
-                        <p className="text-slate-500 max-w-md mx-auto mb-8">
-                            Please login or register to share your review and help other patients find the right specialist.
+                    <div className="text-center py-8 bg-slate-50 border border-slate-100 rounded-2xl shadow-sm">
+                        <h4 className="text-sm font-bold text-teal-600 mb-2">Login to Rate</h4>
+                        <p className="text-xs text-slate-500 mb-6 px-4">
+                            Please login or register to share your review and help other patients.
                         </p>
-                        <div className="flex justify-center gap-4">
+                        <div className="flex flex-col gap-3 px-6">
                             <button
                                 type="button"
                                 onClick={onNavigateLogin}
-                                className="bg-teal-500 text-white font-bold py-3 px-8 rounded-xl hover:bg-teal-600 transition-colors shadow-md active:scale-95"
+                                className="bg-teal-500 text-white text-sm font-bold py-2.5 px-4 rounded-xl hover:bg-teal-600 transition-colors shadow-sm active:scale-95"
                             >
                                 Login
                             </button>
                             <button
                                 type="button"
                                 onClick={onNavigateSignup}
-                                className="bg-white text-slate-700 font-bold py-3 px-8 rounded-xl hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm active:scale-95"
+                                className="bg-white text-slate-700 text-sm font-bold py-2.5 px-4 rounded-xl hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm active:scale-95"
                             >
                                 Register
                             </button>
                         </div>
                     </div>
                 ) : localStorage.getItem('userRole') === 'doctor' ? (
-                    <div className="text-center py-12 bg-slate-50 border border-slate-100 rounded-3xl shadow-sm">
-                        <h4 className="text-xl font-bold text-slate-500 mb-2">Doctor Accounts Cannot Submit Ratings</h4>
-                        <p className="text-slate-400 max-w-md mx-auto">
-                            To maintain platform integrity and fairness, doctor accounts are restricted from rating or reviewing specialists.
+                    <div className="text-center py-8 bg-slate-50 border border-slate-100 rounded-2xl shadow-sm">
+                        <h4 className="text-sm font-bold text-slate-500 mb-2">Doctors Cannot Rate</h4>
+                        <p className="text-xs text-slate-400 px-4">
+                            Doctor accounts are restricted from rating or reviewing specialists.
                         </p>
                     </div>
                 ) : submitStatus === 'success' || submitStatus === 'pending-approval' ? (
-                    <div className={`rounded-2xl p-8 text-center animate-fade-in border ${submitStatus === 'success' ? 'bg-green-50 border-green-100' : 'bg-teal-50 border-teal-100'}`}>
-                        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${submitStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-teal-100 text-teal-600'}`}>
-                            <CheckCircle2 size={32} />
+                    <div className={`rounded-2xl p-6 text-center animate-fade-in border ${submitStatus === 'success' ? 'bg-green-50 border-green-100' : 'bg-teal-50 border-teal-100'}`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${submitStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-teal-100 text-teal-600'}`}>
+                            <CheckCircle2 size={24} />
                         </div>
-                        <h4 className="text-xl font-bold text-slate-900 mb-2">Submitted Successfully!</h4>
-                        <p className="text-slate-600">
-                            Your rating has been published directly.
-                            {submitStatus === 'pending-approval' && ' Your written review has been sent for admin verification.'}
+                        <h4 className="text-base font-bold text-slate-900 mb-1">Submitted Successfully!</h4>
+                        <p className="text-xs text-slate-600">
+                            Your rating has been published.
+                            {submitStatus === 'pending-approval' && ' Written review pending admin verification.'}
                         </p>
                     </div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto bg-slate-50/50 rounded-3xl p-6 md:p-8 border border-slate-100">
+                    <form onSubmit={handleSubmit} className="w-full">
 
                         {submitStatus === 'error' && (
-                            <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 flex items-center gap-3 text-sm font-medium border border-red-100">
-                                <AlertCircle size={18} />
+                            <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-4 flex items-center gap-2 text-xs font-medium border border-red-100">
+                                <AlertCircle size={16} />
                                 {errorMessage}
                             </div>
                         )}
 
-                        <div className="grid md:grid-cols-1 gap-x-8 gap-y-2 mb-8">
+                        <div className="flex flex-col gap-2 mb-6 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                             <RatingCategory
                                 label="Communication"
                                 value={ratings.communication}
@@ -225,7 +217,7 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                                 onChange={(val) => handleRatingChange('punctuality', val)}
                             />
                             <RatingCategory
-                                label="Treatment Plan Clarity"
+                                label="Treatment Plan"
                                 value={ratings.treatmentPlan}
                                 onChange={(val) => handleRatingChange('treatmentPlan', val)}
                             />
@@ -236,22 +228,15 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                             />
                         </div>
 
-                        <div className="pt-6 border-t border-slate-200 mb-6">
-                            <h4 className="text-lg font-bold text-slate-800 mb-2">Write a Review (Optional)</h4>
-                            <p className="text-sm text-slate-500 mb-6">
-                                Sharing a written review helps others! Note: A proof of visit is <strong>only</strong> required if you choose to write a comment.
-                            </p>
-
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                    Proof of Visit {comment.trim() && <span className="text-red-500">*</span>}
+                        <div className="pt-4 border-t border-slate-100 mb-6">
+                            <div className="mb-4">
+                                <label className="block text-sm font-bold text-slate-800 mb-1">
+                                    Want to write a review?
                                 </label>
                                 <p className="text-xs text-slate-500 mb-3">
-                                    {comment.trim()
-                                        ? "Required for written reviews. Upload receipt/slip. (Max 5MB)"
-                                        : "Optional unless writing a review. (Max 5MB)"}
+                                    Upload proof of your visit (like a receipt) to unlock the written review section. Star ratings can be submitted without proof.
                                 </p>
-                                <div className="relative border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-teal-400 hover:bg-teal-50/30 transition-all group cursor-pointer bg-slate-50">
+                                <div className="relative border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-teal-400 hover:bg-teal-50/30 transition-all group cursor-pointer bg-slate-50">
                                     <input
                                         type="file"
                                         ref={fileInputRef}
@@ -259,11 +244,12 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                                         onChange={handleFileChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     />
-                                    <div className="flex flex-col items-center justify-center gap-2 relative z-20 pointer-events-none">
+                                    <div className="flex flex-col items-center justify-center gap-1.5 relative z-20 pointer-events-none">
                                         {proofFile ? (
-                                            <div className="flex items-center gap-2 group/file animate-fade-in pointer-events-auto">
-                                                <div className="text-teal-600 font-bold flex items-center gap-2 bg-teal-100 px-4 py-2 rounded-lg">
-                                                    <CheckCircle2 size={16} /> {fileName}
+                                            <div className="flex flex-col items-center gap-2 group/file animate-fade-in pointer-events-auto w-full">
+                                                <div className="text-teal-700 text-xs font-bold flex items-center gap-1.5 bg-teal-100 px-3 py-1.5 rounded-lg max-w-full overflow-hidden">
+                                                    <CheckCircle2 size={14} className="shrink-0" />
+                                                    <span className="truncate">{fileName}</span>
                                                 </div>
                                                 <button
                                                     type="button"
@@ -272,51 +258,50 @@ const DoctorRating = ({ doctorId, user, doctorName, onNavigateLogin, onNavigateS
                                                         e.stopPropagation();
                                                         handleRemoveFile();
                                                     }}
-                                                    className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors shadow-sm relative z-30"
-                                                    title="Remove proof"
+                                                    className="text-xs text-red-500 font-medium hover:text-red-700 z-30 pointer-events-auto"
                                                 >
-                                                    <X size={16} />
+                                                    Remove
                                                 </button>
                                             </div>
                                         ) : (
                                             <>
-                                                <Upload size={24} className="text-slate-400 group-hover:text-teal-500 transition-colors" />
-                                                <span className="text-sm text-slate-500 group-hover:text-teal-600 font-medium">Click or Drag to Upload Receipt</span>
+                                                <Upload size={20} className="text-slate-400 group-hover:text-teal-500 transition-colors" />
+                                                <span className="text-xs text-slate-500 group-hover:text-teal-600 font-medium whitespace-nowrap">Upload Receipt</span>
                                             </>
                                         )}
                                     </div>
                                 </div>
                             </div>
+
+                            {proofFile && (
+                                <div className="mb-4 animate-fade-in bg-teal-50/50 p-4 rounded-xl border border-teal-100">
+                                    <label className="block text-sm font-bold text-slate-800 mb-2">Written Review <span className="text-red-500">*</span></label>
+                                    <textarea
+                                        value={comment}
+                                        onChange={(e) => setComment(e.target.value)}
+                                        className="w-full bg-white border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:border-teal-500 ring-1 ring-transparent focus:ring-teal-500 transition-all min-h-[100px] resize-y"
+                                        placeholder="Share detailed feedback about your experience..."
+                                    />
+                                </div>
+                            )}
                         </div>
 
-                        {proofFile && (
-                            <div className="mb-6 animate-fade-in">
-                                <label className="block text-sm font-semibold text-slate-700 mb-2">Additional Comments (Optional)</label>
-                                <textarea
-                                    value={comment}
-                                    onChange={(e) => setComment(e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-xl p-4 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all min-h-[100px] resize-y"
-                                    placeholder="Share more details about your visit..."
-                                />
-                            </div>
-                        )}
-
-                        <div className="flex justify-end">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
                                 className={`
-                  flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95
-                  ${isSubmitting ? 'bg-teal-500 cursor-not-allowed' : 'bg-teal-500 hover:bg-teal-600 hover:shadow-teal-500/30'}
-                `}
+                                    w-full py-3 rounded-xl font-bold text-white shadow-md transition-all transform active:scale-[0.98] flex items-center justify-center gap-2
+                                    ${isSubmitting ? 'bg-teal-400 cursor-not-allowed' : 'bg-teal-500 hover:bg-teal-600'}
+                                `}
                             >
-                                {isSubmitting ? 'Submitting...' : (proofFile ? 'Submit Rating & Review' : 'Submit Rating')} <Send size={18} />
+                                {isSubmitting ? 'Submitting...' : (proofFile ? 'Submit Rating & Review' : 'Submit Rating')} <Send size={16} />
                             </button>
                         </div>
                     </form>
                 )}
             </div>
-        </section>
+        </div>
     );
 };
 
