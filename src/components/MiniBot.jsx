@@ -120,14 +120,13 @@ const EveBotIcon = () => {
     );
 };
 
-const MiniBot = () => {
+const MiniBot = ({ onNavigate }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleBotClick = () => {
-        // Redirect to AI Chatbot. 
-        // In local development, it runs on port 4000. In production, assume it's routed to /chatbot via Vercel or similar.
-        const chatbotUrl = window.location.hostname === 'localhost' ? 'http://localhost:4000' : '/chatbot';
-        window.open(chatbotUrl, '_blank');
+        if (onNavigate) {
+            onNavigate();
+        }
     };
 
     return (

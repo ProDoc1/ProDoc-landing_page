@@ -17,10 +17,10 @@ import ContentHub from './ContentHub';
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
 const AdminLogin = lazy(() => import('./AdminLogin'));
 import MiniBot from './components/MiniBot';
+import ChatbotApp from './Chatbot/App';
 
 
-
-const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms }) => {
+const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms, onNavigateChatbot }) => {
 
    useEffect(() => {
       document.documentElement.style.scrollBehavior = 'smooth';
@@ -172,10 +172,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                      Describe your symptoms in Sinhala, Tamil, or English, and our AI will guide you to the right specialist immediately.
                   </p>
                   <button
-                     onClick={() => {
-                        const chatbotUrl = window.location.hostname === 'localhost' ? 'http://localhost:4000' : '/chatbot';
-                        window.open(chatbotUrl, '_blank');
-                     }}
+                     onClick={onNavigateChatbot}
                      className="mt-8 bg-white text-teal-900 px-6 py-3 rounded-full text-sm font-bold hover:bg-teal-50 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-black/20"
                   >
                      Try Chatbot Demo
@@ -330,7 +327,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
-   const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'privacy', 'terms', 'content-hub', 'admin'];
+   const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'privacy', 'terms', 'content-hub', 'admin', 'chatbot'];
 
    const [currentPage, setCurrentPage] = useState(() => {
       const segments = window.location.pathname.split('/').filter(Boolean);
@@ -666,6 +663,10 @@ export default function App() {
                onNavigateAbout={() => navigateTo('about')}
                onNavigatePrivacy={() => navigateTo('privacy')}
                onNavigateTerms={() => navigateTo('terms')}
+               onNavigateChatbot={() => {
+                  window.history.pushState(null, '', '/chatbot');
+                  navigateTo('chatbot');
+               }}
             />
          )}
 
@@ -764,6 +765,18 @@ export default function App() {
                   />
                )}
             </Suspense>
+         )}
+
+         {currentPage === 'chatbot' && (
+            <div className="fixed inset-0 z-[200] bg-white">
+               <button
+                  onClick={() => navigateTo('home')}
+                  className="absolute top-4 left-4 z-[210] p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors flex items-center gap-2 text-slate-700 font-semibold"
+               >
+                  <ArrowRight className="w-5 h-5 rotate-180" /> Back to ProDoc
+               </button>
+               <ChatbotApp />
+            </div>
          )}
 
          {/* --- SESSION EXPIRED MODAL --- */}
@@ -874,7 +887,10 @@ export default function App() {
                </div>
             </div>
          )}
-         <MiniBot />
+         <MiniBot onNavigate={() => {
+            window.history.pushState(null, '', '/chatbot');
+            navigateTo('chatbot');
+         }} />
       </main>
    );
 }

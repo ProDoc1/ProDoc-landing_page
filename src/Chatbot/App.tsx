@@ -8,9 +8,8 @@ import ChatInput from './components/ChatInput';
 import LanguageSelector from './components/LanguageSelector';
 import Header from './components/Header';
 import Disclaimer from './components/Disclaimer';
-const ai = new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY
-});
+import './index.css';
+
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [language, setLanguage] = useState<Language>(Language.EN);
@@ -24,17 +23,17 @@ const App: React.FC = () => {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
-  
+
   const initializeChat = useCallback(() => {
     try {
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
-if (!apiKey) {
-  throw new Error("Gemini API key not found");
-}
+      if (!apiKey) {
+        throw new Error("Gemini API key not found");
+      }
 
-const ai = new GoogleGenAI({ apiKey });
-const doctorsList = DOCTORS.map(d => ({
+      const ai = new GoogleGenAI({ apiKey });
+      const doctorsList = DOCTORS.map(d => ({
         id: d.doctor_id,
         name: d.full_name,
         specialty: d.specialty,
@@ -45,7 +44,7 @@ const doctorsList = DOCTORS.map(d => ({
       const systemInstruction = SYSTEM_PROMPT_TEMPLATE
         .replace('{language}', language)
         .replace('{doctors}', JSON.stringify(doctorsList));
-      
+
       const newChat = ai.chats.create({
         model: 'gemini-2.5-flash',
         config: {
@@ -64,11 +63,11 @@ const doctorsList = DOCTORS.map(d => ({
         }
       ]);
     } catch (error) {
-       console.error("Failed to initialize chat:", error);
-       setMessages([{ id: 'error-init', role: 'bot', text: 'Error: Could not initialize AI chat. Please check the API key and refresh.' }]);
+      console.error("Failed to initialize chat:", error);
+      setMessages([{ id: 'error-init', role: 'bot', text: 'Error: Could not initialize AI chat. Please check the API key and refresh.' }]);
     }
   }, [language]);
-  
+
   useEffect(() => {
     initializeChat();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +96,7 @@ const doctorsList = DOCTORS.map(d => ({
       for await (const chunk of stream) {
         const c = chunk as GenerateContentResponse;
         fullResponseText += c.text;
-        
+
         // Update the bot's message in real-time
         setMessages((prev) =>
           prev.map((msg) =>
@@ -105,26 +104,26 @@ const doctorsList = DOCTORS.map(d => ({
           )
         );
       }
-      
+
       const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';
       let doctor: Doctor | undefined;
       let finalText = fullResponseText;
 
       if (fullResponseText.startsWith(recommendationPrefix)) {
-          const jsonString = fullResponseText.substring(recommendationPrefix.length);
-          try {
-              const recommendation: { doctor_id: string; reason: string } = JSON.parse(jsonString);
-              const foundDoctor = DOCTORS.find(d => d.doctor_id === recommendation.doctor_id);
-              if (foundDoctor) {
-                  doctor = { ...foundDoctor, reason: recommendation.reason } as Doctor;
-                  finalText = `${recommendation.reason}`;
-              } else {
-                  finalText = fullResponseText;
-              }
-          } catch (e) {
-              console.error("Failed to parse doctor recommendation JSON:", e);
-              finalText = fullResponseText; // Fallback to showing raw response
+        const jsonString = fullResponseText.substring(recommendationPrefix.length);
+        try {
+          const recommendation: { doctor_id: string; reason: string } = JSON.parse(jsonString);
+          const foundDoctor = DOCTORS.find(d => d.doctor_id === recommendation.doctor_id);
+          if (foundDoctor) {
+            doctor = { ...foundDoctor, reason: recommendation.reason } as Doctor;
+            finalText = `${recommendation.reason}`;
+          } else {
+            finalText = fullResponseText;
           }
+        } catch (e) {
+          console.error("Failed to parse doctor recommendation JSON:", e);
+          finalText = fullResponseText; // Fallback to showing raw response
+        }
       }
 
       setMessages((prev) =>
@@ -136,14 +135,14 @@ const doctorsList = DOCTORS.map(d => ({
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = 'Sorry, I hit a rate limit or encountered an error. Please wait 60 seconds and try again.';
-      
+
       setMessages((prev) => {
         // Check if the placeholder was already added to the screen
         const messageExists = prev.some(msg => msg.id === botMessageId);
-        
+
         if (messageExists) {
           // If it exists (e.g., error happened mid-stream), update it
-          return prev.map((msg) => 
+          return prev.map((msg) =>
             msg.id === botMessageId ? { ...msg, text: msg.text + '\n\n' + errorMessage } : msg
           );
         } else {
@@ -157,30 +156,32 @@ const doctorsList = DOCTORS.map(d => ({
   };
 
   return (
-    <div className="app-shell">
-      <div className="app-frame">
-        <Header />
-        <LanguageSelector
-          selectedLanguage={language}
-          onLanguageChange={(lang: Language) => {
-            setLanguage(lang);
-          }}
-          languages={LANGUAGE_OPTIONS}
-        />
-        <Disclaimer />
-        <div
-          ref={chatContainerRef}
-          className="chat-scroll"
-        >
-          {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
-          ))}
-          {isLoading && messages[messages.length - 1]?.role === 'user' && (
-            <ChatMessage key="loading" message={{ id: 'loading', role: 'bot', text: '...' }} />
-          )}
-        </div>
-        <div className="chat-input-wrap">
-          <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+    <div className="chatbot-root">
+      <div className="app-shell">
+        <div className="app-frame">
+          <Header />
+          <LanguageSelector
+            selectedLanguage={language}
+            onLanguageChange={(lang: Language) => {
+              setLanguage(lang);
+            }}
+            languages={LANGUAGE_OPTIONS}
+          />
+          <Disclaimer />
+          <div
+            ref={chatContainerRef}
+            className="chat-scroll"
+          >
+            {messages.map((msg) => (
+              <ChatMessage key={msg.id} message={msg} />
+            ))}
+            {isLoading && messages[messages.length - 1]?.role === 'user' && (
+              <ChatMessage key="loading" message={{ id: 'loading', role: 'bot', text: '...' }} />
+            )}
+          </div>
+          <div className="chat-input-wrap">
+            <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+          </div>
         </div>
       </div>
     </div>
