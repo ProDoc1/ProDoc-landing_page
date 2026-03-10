@@ -726,6 +726,7 @@ export default function App() {
                onNavigateSignupPage={() => navigateTo('signup')}
                onNavigateDashboard={() => navigateTo('dashboard')}
                onNavigateContentHub={() => navigateTo('content-hub')}
+               onViewProfile={(id) => navigateTo('doctor-view', id)}
             />
          )}
 

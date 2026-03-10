@@ -30,13 +30,48 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
     // derived collections
     const totalRatingsCount = reviews.length;
 
-    const handleSaveClick = () => {
-        if (!currentUser) {
+    const handleSaveClick = async () => {
+        if (!currentUser || !currentUser.id) {
             setShowLoginPrompt(true);
-        } else {
-            setIsSaved(!isSaved);
+            return;
+        }
+
+        try {
+            const action = isSaved ? 'unsave' : 'save';
+            const res = await fetch('/api/saved-doctors', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    patientId: currentUser.id,
+                    doctorId: doctorId,
+                    action: action
+                })
+            });
+
+            if (res.ok) {
+                setIsSaved(action === 'save');
+            }
+        } catch (error) {
+            console.error('Error saving doctor:', error);
         }
     };
+
+    useEffect(() => {
+        if (doctorId && currentUser && currentUser.id) {
+            fetch('/api/saved-doctors', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    patientId: currentUser.id,
+                    doctorId: doctorId,
+                    action: 'check'
+                })
+            })
+                .then(res => res.json())
+                .then(data => setIsSaved(data.isSaved))
+                .catch(console.error);
+        }
+    }, [doctorId, currentUser]);
 
     const fetchDoctorData = async (showLoading = true) => {
         try {

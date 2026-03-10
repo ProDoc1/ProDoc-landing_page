@@ -304,7 +304,8 @@ const PatientDashboard = ({
   onNavigateLogin,
   onNavigateSignupPage,
   onNavigateDashboard,
-  onNavigateContentHub
+  onNavigateContentHub,
+  onViewProfile
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedReport, setExpandedReport] = useState(null);
@@ -337,6 +338,9 @@ const PatientDashboard = ({
 
   const [secondOpinionDoctors, setSecondOpinionDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
+
+  const [savedDoctors, setSavedDoctors] = useState([]);
+  const [loadingSavedDoctors, setLoadingSavedDoctors] = useState(false);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -411,6 +415,17 @@ const PatientDashboard = ({
         })
         .catch(err => console.error("Error fetching patient reviews:", err))
         .finally(() => setReviewsLoading(false));
+
+      setLoadingSavedDoctors(true);
+      fetch(`/api/saved-doctors?patientId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setSavedDoctors(data);
+          }
+        })
+        .catch(err => console.error("Error fetching saved doctors:", err))
+        .finally(() => setLoadingSavedDoctors(false));
     }
   }, [currentUser?.id]);
 
@@ -625,6 +640,13 @@ const PatientDashboard = ({
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'secondOpinion' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
               >
                 <MessageSquare size={20} /> Second Opinion
+              </button>
+              <button
+                onClick={() => setActiveTab('savedDoctors')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === 'savedDoctors' ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                <Heart size={20} /> Watchlist
+                <span className="ml-auto bg-slate-200 text-slate-600 text-xs px-2 py-1 rounded-full">{savedDoctors.length}</span>
               </button>
             </div>
 
@@ -892,27 +914,41 @@ const PatientDashboard = ({
                     <Heart className="text-red-500 fill-red-500" size={20} />
                     <h3 className="text-xl font-bold text-slate-800">Watchlist</h3>
                   </div>
-                  <button className="text-teal-600 font-bold text-sm hover:underline">Manage</button>
+                  <button onClick={() => setActiveTab('savedDoctors')} className="text-teal-600 font-bold text-sm hover:underline">Manage</button>
                 </div>
 
                 <div className="space-y-3">
-                  {watchlist.map(doc => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`h-2.5 w-2.5 rounded-full ${doc.status === 'SLMC Verified' ? 'bg-teal-500' : 'bg-amber-500'}`}></div>
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm group-hover:text-teal-600 transition-colors">{doc.name}</p>
-                          <p className="text-xs text-slate-500">{doc.specialty}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${doc.status === 'SLMC Verified' ? 'bg-teal-100 text-teal-700' : 'bg-amber-100 text-amber-700'}`}>
-                        {doc.status}
-                      </span>
+                  {savedDoctors.length === 0 ? (
+                    <div className="text-center py-6 text-slate-400 bg-slate-50 rounded-2xl">
+                      <p className="text-sm">No saved doctors yet</p>
                     </div>
-                  ))}
+                  ) : (
+                    savedDoctors.slice(0, 3).map(doc => (
+                      <div
+                        key={doc.id}
+                        onClick={() => onViewProfile(doc.id)}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-white hover:shadow-md transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-lg shrink-0 overflow-hidden border border-teal-200">
+                            {doc.image_url ? (
+                              <img src={doc.image_url} alt={doc.name} className="w-full h-full object-cover" />
+                            ) : (
+                              doc.name.charAt(0)
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800 text-sm group-hover:text-teal-600 transition-colors">{doc.name}</p>
+                            <p className="text-xs text-slate-500">{doc.specialty}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold px-3 py-1 bg-teal-100 text-teal-700 rounded-full flex items-center gap-1">
+                          <Star size={12} className="fill-teal-700" />
+                          {Number(doc.average_rating || 0).toFixed(1)}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1235,6 +1271,107 @@ const PatientDashboard = ({
                               className="px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors shrink-0"
                             >
                               Proceed to Payment
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'savedDoctors' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg mb-6">
+                <h2 className="text-3xl font-bold mb-2">Saved Doctors</h2>
+                <p className="text-teal-100">Easily access your preferred specialists.</p>
+              </div>
+
+              <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-6">
+                <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <Heart className="text-red-500 fill-red-500" size={24} />
+                  My Saved Professionals
+                </h3>
+                {loadingSavedDoctors ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-teal-500 border-r-transparent"></div>
+                  </div>
+                ) : savedDoctors.length === 0 ? (
+                  <div className="bg-white rounded-[2rem] p-12 text-center text-slate-400 border border-slate-100 shadow-sm">
+                    <Heart size={48} className="mx-auto mb-4 opacity-20" />
+                    <h4 className="text-lg font-bold text-slate-600 mb-2">No saved doctors yet</h4>
+                    <p className="mb-6">Save doctors while browsing to easily find them later.</p>
+                    <button onClick={onNavigateDoctors} className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors">
+                      Browse Doctors Directory
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {savedDoctors.map((doc, idx) => {
+                      const doctorName = doc.name || 'Doctor Name';
+                      const initial = doctorName.split(' ')[1]?.charAt(0) || doctorName.charAt(0);
+                      const specialty = doc.specialty || 'Specialist';
+                      const rating = Number(doc.average_rating || 0).toFixed(1);
+                      const reviewsCount = doc.rating_count || 0;
+                      const exp = doc.years_of_experience ? `${doc.years_of_experience}+ yrs` : '10+ yrs';
+
+                      return (
+                        <div key={doc.id || idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col md:flex-row md:items-center justify-between gap-6">
+                          <div className="cursor-pointer group flex items-center gap-4 flex-1" onClick={() => onViewProfile(doc.id)}>
+                            <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl shrink-0 group-hover:bg-teal-200 transition-colors overflow-hidden border border-teal-200">
+                              {doc.image_url ? (
+                                <img src={doc.image_url} alt={doctorName} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : (
+                                initial
+                              )}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-lg text-slate-800 group-hover:text-teal-600 transition-colors">{doctorName}</h4>
+                              <p className="text-sm text-slate-500">{specialty}</p>
+                              <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
+                                <div className="flex items-center gap-1">
+                                  <Star size={16} className="text-teal-500 fill-teal-500" />
+                                  <span className="font-semibold">{rating} <span className="text-slate-400 font-normal">({reviewsCount})</span></span>
+                                </div>
+                                <span className="text-slate-300">•</span>
+                                <span className="bg-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm border border-slate-200">{exp}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between md:justify-end gap-3 md:min-w-[200px] border-t md:border-t-0 md:border-l border-slate-200/60 pt-4 md:pt-0 md:pl-6">
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  const res = await fetch('/api/saved-doctors', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      patientId: currentUser.id,
+                                      doctorId: doc.id,
+                                      action: 'unsave'
+                                    })
+                                  });
+                                  if (res.ok) {
+                                    setSavedDoctors(savedDoctors.filter(d => d.id !== doc.id));
+                                  }
+                                } catch (err) {
+                                  console.error('Failed to unsave doctor', err);
+                                }
+                              }}
+                              className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors shadow-sm border border-red-100"
+                              title="Remove from saved"
+                            >
+                              <Heart size={20} className="fill-current" />
+                            </button>
+                            <button
+                              onClick={() => onViewProfile(doc.id)}
+                              className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm flex-1 md:flex-none text-center"
+                            >
+                              View Profile
                             </button>
                           </div>
                         </div>
