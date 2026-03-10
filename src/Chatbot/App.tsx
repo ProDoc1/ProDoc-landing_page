@@ -97,10 +97,23 @@ const App: React.FC<AppProps> = ({ onViewProfile }) => {
 
       // Create a placeholder for the bot's message
       setMessages((prev) => [...prev, { id: botMessageId, role: 'bot', text: '...' }]);
+      const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';
 
       const extractResponse = (text: string) => {
         const responseMatch = text.match(/RESPONSE:\s*([\s\S]*)/);
-        return responseMatch ? responseMatch[1].trim() : text;
+        let extracted = text;
+        if (responseMatch) {
+          extracted = responseMatch[1].trim();
+        } else if (/(?:THOUGHT|ACTION|OBSERVATION):/i.test(text)) {
+          return '';
+        }
+
+        // Hide the doctor recommendation block from the textual display as it streams
+        const recMatch = extracted.match(new RegExp(recommendationPrefix + '\\s*(\\{[\\s\\S]*?\\})?'));
+        if (recMatch) {
+          extracted = extracted.replace(recMatch[0], '').trim();
+        }
+        return extracted;
       };
 
       for await (const chunk of stream) {
@@ -115,24 +128,21 @@ const App: React.FC<AppProps> = ({ onViewProfile }) => {
         );
       }
 
-      const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';
       let doctor: Doctor | undefined;
       // Strip out the internal reasoning for the final text as well
       let finalText = extractResponse(fullResponseText);
 
-      if (finalText.includes(recommendationPrefix)) {
-        const prefixIndex = finalText.indexOf(recommendationPrefix);
-        let jsonString = finalText.substring(prefixIndex + recommendationPrefix.length).trim();
-        const match = jsonString.match(/(\{[\s\S]*?\})/);
-        if (match) {
-          jsonString = match[1];
-        }
+      // Now we look at the raw stream to extract the actual object
+      // since extractResponse() hides it!
+      const finalRawResponse = fullResponseText.match(/RESPONSE:\s*([\s\S]*)/)?.[1] || fullResponseText;
+      const jsonMatch = finalRawResponse.match(new RegExp(recommendationPrefix + '\\s*(\\{[\\s\\S]*?\\})'));
+
+      if (jsonMatch) {
         try {
-          const recommendation: { doctor_id: string; reason: string } = JSON.parse(jsonString);
+          const recommendation: { doctor_id: string; reason: string } = JSON.parse(jsonMatch[1]);
           const foundDoctor = DOCTORS.find(d => d.doctor_id === recommendation.doctor_id);
           if (foundDoctor) {
             doctor = { ...foundDoctor, reason: recommendation.reason } as Doctor;
-            finalText = finalText.substring(0, prefixIndex).trim() + '\n\n' + recommendation.reason;
           }
         } catch (e) {
           console.error("Failed to parse doctor recommendation JSON:", e);

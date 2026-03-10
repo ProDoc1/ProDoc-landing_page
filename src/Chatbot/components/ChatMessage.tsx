@@ -2,6 +2,8 @@
 import React from 'react';
 import { Message } from '../types';
 import DoctorCard from './DoctorCard';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatMessageProps {
   message: Message;
@@ -31,7 +33,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onViewProfile }) => 
               <span className="typing-dot" style={{ animationDelay: '0.3s' }}></span>
             </div>
           ) : (
-            <p>{message.text}</p>
+            <div className="markdown-content text-[15px] leading-relaxed">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.text}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
         {message.doctor && (
