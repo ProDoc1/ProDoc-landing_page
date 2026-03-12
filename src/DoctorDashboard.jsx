@@ -65,6 +65,32 @@ const DoctorDashboard = ({
   // local filter for doctor view: show all, ratings only, or reviews only
   const [reviewFilter, setReviewFilter] = useState('all');
 
+  // Second Opinion Requests Mock Data
+  const [secondOpinionRequests, setSecondOpinionRequests] = useState([
+    {
+      id: 1,
+      patientName: 'John Doe',
+      age: 45,
+      gender: 'Male',
+      dateRequired: '2026-03-12',
+      status: 'Pending',
+      summary: 'Seeking second opinion regarding recent MRI scan results for lower back pain. Advised surgery but want exploring alternatives.',
+      documents: ['MRI_Scan_Lumbar.pdf', 'Initial_Consultation_Notes.pdf'],
+      amount: 'Rs. 2500'
+    },
+    {
+      id: 2,
+      patientName: 'Jane Smith',
+      age: 32,
+      gender: 'Female',
+      dateRequired: '2026-03-15',
+      status: 'Pending',
+      summary: 'Second opinion requested for persistent migraines. Current medication is not effective.',
+      documents: ['Neurology_Report_Feb.pdf'],
+      amount: 'Rs. 2500'
+    }
+  ]);
+
   // Article State
   const [articleForm, setArticleForm] = useState({ content: '', image: null });
   const [articleStatus, setArticleStatus] = useState({ type: '', message: '' });
@@ -484,8 +510,12 @@ const DoctorDashboard = ({
             <NavItem
               icon={<FileText size={18} />}
               label="Second Opinions"
-              badge={3}
-              onClick={() => setIsMobileMenuOpen(false)}
+              active={activeTab === 'Second Opinions'}
+              badge={secondOpinionRequests.length > 0 ? secondOpinionRequests.length : undefined}
+              onClick={() => {
+                setActiveTab('Second Opinions');
+                setIsMobileMenuOpen(false);
+              }}
             />
             <NavItem
               icon={<Star size={18} />}
@@ -845,6 +875,79 @@ const DoctorDashboard = ({
                   </div>
                 </div>
               </div>            </div>
+          ) : activeTab === 'Second Opinions' ? (
+            <div className="animate-slideUp max-w-4xl mx-auto w-full">
+              <div className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100 mb-4 w-full">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
+                    <FileText size={32} />
+                  </div>
+                  <div className="flex-1 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-800">Second Opinion Requests</h3>
+                      <p className="text-slate-500 text-sm">Review cases and provide expert advice</p>
+                    </div>
+                    <div className="bg-amber-50 px-4 py-2 rounded-full hidden md:block border border-amber-200">
+                      <span className="text-amber-700 font-bold text-sm">{secondOpinionRequests.filter(r => r.status === 'Pending').length} Pending Requests</span>
+                    </div>
+                  </div>
+                </div>
+
+                {secondOpinionRequests.length === 0 ? (
+                  <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
+                    <p className="text-slate-500 text-sm">No second opinion requests available.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {secondOpinionRequests.map(request => (
+                      <div key={request.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative shadow-sm hover:shadow-md transition-shadow group">
+                        <div className="absolute top-6 right-6 flex items-center gap-2">
+                          <span className={`inline-block px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${request.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                            {request.status}
+                          </span>
+                        </div>
+
+                        <div className="mb-4">
+                          <h4 className="text-lg font-bold text-slate-800">{request.patientName}</h4>
+                          <p className="text-xs text-slate-500 font-medium">
+                            {request.age} yrs • {request.gender} • Requested on {request.dateRequired}
+                          </p>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-xl border border-slate-100 mb-4">
+                          <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                            <span className="font-bold text-slate-800 mr-2">Case Summary:</span>
+                            {request.summary}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-t border-slate-200/60 pt-4 mt-2">
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase mb-1">Attached Documents</p>
+                            <div className="flex flex-wrap gap-2">
+                              {request.documents.map((doc, idx) => (
+                                <span key={idx} className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm hover:border-teal-300 hover:text-teal-600 cursor-pointer transition-colors">
+                                  <FileText size={12} className="text-teal-500" /> {doc}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 shrink-0">
+                            <button className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
+                              Decline
+                            </button>
+                            <button className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 flex items-center gap-2">
+                              Review Case
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           ) : activeTab === 'Articles' ? (
             <div className="animate-slideUp max-w-4xl mx-auto w-full">
               {/* Your Published Articles List */}

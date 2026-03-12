@@ -62,9 +62,10 @@ const ClickableInfoRow = ({ label, value, icon: Icon, highlight, onClick }) => {
   );
 };
 
-const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request' }) => {
+const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request', userId }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState('payment');
+  const [saveCardDetails, setSaveCardDetails] = useState(false);
 
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -136,6 +137,37 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
   const handlePayment = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
+
+    // Attempt to resolve stored userId from localStorage if prop is missing
+    const finalUserId = userId || localStorage.getItem('patientId') || 'test-debug-id';
+
+    if (saveCardDetails && finalUserId) {
+      try {
+        const response = await fetch('/api/save-card', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: finalUserId,
+            cardNumber,
+            expiryDate: expiry,
+            cardName,
+            cardType,
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          console.error('Server returned error:', errData);
+          alert(`Failed to save card: ${errData.error || 'Server error'}`);
+        } else {
+          console.log("Card saved successfully!");
+        }
+      } catch (error) {
+        console.error('Failed to save card (network error):', error);
+        alert('Network error while saving card details.');
+      }
+    }
+
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsProcessing(false);
     setStep('success');
@@ -253,6 +285,8 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
                 <input
                   type="checkbox"
                   id="saveCard"
+                  checked={saveCardDetails}
+                  onChange={(e) => setSaveCardDetails(e.target.checked)}
                   className="w-4 h-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 accent-teal-600 cursor-pointer"
                 />
                 <label htmlFor="saveCard" className="text-sm font-medium text-slate-700 cursor-pointer select-none">
@@ -1398,6 +1432,7 @@ const PatientDashboard = ({
         onClose={() => setIsPaymentModalOpen(false)}
         amount={paymentDetails.amount}
         serviceName={paymentDetails.serviceName}
+        userId={currentUser?.id}
         onPaymentSuccess={() => {
           // console.log("Payment successful, proceed to form");
         }}
