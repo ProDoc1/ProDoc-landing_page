@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     ShieldCheck,
     Star,
@@ -99,8 +99,19 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
         }
     };
 
+    const hasViewed = useRef(false);
+
     useEffect(() => {
-        if (doctorId) fetchDoctorData();
+        if (doctorId && !hasViewed.current) {
+            hasViewed.current = true;
+            fetchDoctorData();
+            // Record profile view
+            fetch(`/api/profile-views?doctorId=${doctorId}`, { method: 'POST' })
+                .catch(err => {
+                    console.error('Error recording view:', err);
+                    hasViewed.current = false; // Reset on failure if needed
+                });
+        }
     }, [doctorId]);
 
     if (loading) {

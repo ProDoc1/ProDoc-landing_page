@@ -29,8 +29,6 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Navbar from './components/Navbar';
-import Plasma from './components/Plasma';
-import LogoColor from './assets/Logo_with_words.png';
 import DoctorImg from './assets/doctor.png';
 
 const DoctorDashboard = ({
@@ -92,6 +90,7 @@ const DoctorDashboard = ({
     slmcNumber: user?.slmcNumber,
     location: user?.working_hospital || user?.location || 'Colombo, Sri Lanka',
     languages: user?.languages || '',
+    sector: user?.department_type || '',
     qualifications: user?.educational_qualifications || '',
     experience: user?.years_of_experience || '',
     associatedHospitals: user?.associated_hospitals || [],
@@ -100,6 +99,7 @@ const DoctorDashboard = ({
     rating_count: user?.rating_count || 0,
     email_verified: user?.email_verified || false
   });
+  const [viewCount, setViewCount] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -113,6 +113,7 @@ const DoctorDashboard = ({
         slmcNumber: user.slmcNumber || prev.slmcNumber,
         location: user.location || user.working_hospital || prev.location,
         languages: user.languages || prev.languages,
+        sector: user.sector || prev.sector,
         qualifications: user.educational_qualifications || prev.qualifications,
         experience: user.years_of_experience || prev.experience,
         associatedHospitals: user.associated_hospitals || prev.associatedHospitals,
@@ -125,6 +126,15 @@ const DoctorDashboard = ({
       }
       if (user.second_opinion_dates) {
         setAvailability(user.second_opinion_dates);
+      }
+
+      // Fetch Profile Views
+      const dId = user.id || localStorage.getItem('doctorId');
+      if (dId) {
+        fetch(`/api/profile-views?doctorId=${dId}`)
+          .then(res => res.json())
+          .then(data => setViewCount(data.count || 0))
+          .catch(err => console.error("Error fetching views:", err));
       }
     }
   }, [user]);
@@ -151,6 +161,7 @@ const DoctorDashboard = ({
               slmcNumber: data.slmcNumber || prev.slmcNumber,
               location: data.location || data.working_hospital || prev.location,
               languages: data.languages || prev.languages,
+              sector: data.department_type || data.sector || prev.sector,
               qualifications: data.educational_qualifications || prev.qualifications,
               experience: data.years_of_experience || prev.experience,
               associatedHospitals: data.associated_hospitals || prev.associatedHospitals,
@@ -166,6 +177,12 @@ const DoctorDashboard = ({
             if (data.second_opinion_dates) {
               setAvailability(data.second_opinion_dates);
             }
+
+            // Fetch Profile Views
+            fetch(`/api/profile-views?doctorId=${doctorId}`)
+              .then(res => res.json())
+              .then(data => setViewCount(data.count || 0))
+              .catch(err => console.error("Error fetching views:", err));
           }
         })
         .catch(err => console.error("Error fetching doctor profile:", err));
@@ -234,6 +251,7 @@ const DoctorDashboard = ({
         slmcNumber: localUser.slmcNumber,
         location: localUser.location,
         languages: localUser.languages,
+        department_type: localUser.sector,
         educational_qualifications: localUser.qualifications,
         years_of_experience: localUser.experience,
         associated_hospitals: JSON.stringify(
@@ -313,8 +331,8 @@ const DoctorDashboard = ({
         const errData = await response.json();
         setPwdStatus({ type: 'error', message: errData.error || 'Failed to update.' });
       }
-    } catch (err) {
-      setPwdStatus({ type: 'error', message: 'Connection error. Please try again.' });
+    } catch (error) {
+      setPwdStatus({ type: 'error', message: 'Failed to update password.' });
     }
   };
 
@@ -405,7 +423,7 @@ const DoctorDashboard = ({
       } else {
         setArticleStatus({ type: 'error', message: data.error || 'Failed to publish article.' });
       }
-    } catch (err) {
+    } catch (error) {
       setArticleStatus({ type: 'error', message: 'Network error. Please try again.' });
     } finally {
       setIsPublishing(false);
@@ -427,229 +445,154 @@ const DoctorDashboard = ({
         const data = await response.json();
         alert(data.error || 'Failed to delete article');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       alert('Error connecting to the server while trying to delete.');
     }
   };
 
+  const handleReport = (reviewId) => {
+    console.log(`Reporting review ${reviewId}`);
+    alert("Report submitted to administration.");
+  };
+
   const professionalStats = [
-    { label: "Profile Views", value: "1,240", icon: <Activity className="text-green-600" />, color: "bg-green-100" },
-    { label: "Rating", value: `${Number(localUser.average_rating || 0).toFixed(1)}/5`, icon: <Star className="text-green-600" />, color: "bg-green-100" },
-    { label: "Status", value: "Verified", icon: <Verified className="text-green-600" />, color: "bg-green-100" },
+    { label: "Profile Views", value: viewCount.toLocaleString(), icon: <Activity className="text-teal-600" />, color: "bg-teal-100" },
+    { label: "Patient Rating", value: `${Number(localUser.average_rating || 0).toFixed(1)}/5`, subValue: `${localUser.rating_count || 0} reviews`, icon: <Star className="text-amber-500 fill-amber-500" />, color: "bg-amber-50" },
+    { label: "Status", value: "Verified", icon: <Verified className="text-blue-600" />, color: "bg-blue-100" },
   ];
 
   return (
-    <div className="h-screen w-full relative flex flex-col font-sans text-slate-700 bg-slate-50 overflow-hidden">
-      {/* Background Effect */}
-      <div className="fixed inset-0 z-0 h-screen w-screen opacity-30 pointer-events-none">
-        <Plasma color="#0f766e" speed={0.2} scale={1.5} opacity={0.4} />
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
 
-      {/* Insert Navbar Here */}
-      <Navbar
-        currentUser={localUser}
-        onLogout={onLogout}
-        onNavigateHome={onNavigateHome}
-        onNavigateDoctors={onNavigateDoctors}
-        onNavigateAbout={onNavigateAbout}
-        onNavigateLogin={onNavigateLogin}
-        onNavigateSignupPage={onNavigateSignupPage}
-        onNavigateDashboard={() => setActiveTab('Dashboard')}
-        onNavigateContentHub={onNavigateContentHub}
-      />
-
-      <div className="flex flex-1 relative z-10 overflow-hidden">
-        {/* Sidebar Overlay */}
-        {isMobileMenuOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-        )}
-
-        {/* Sidebar Navigation */}
-        <aside className={`fixed md:relative z-50 w-72 bg-white/80 backdrop-blur-2xl flex flex-col transition-all duration-300 ease-in-out 
-          h-full border-r border-slate-200/60 pt-20 
-          md:h-[calc(100vh-9.5rem)] md:mt-32 md:mb-6 md:ml-6 md:rounded-[2.5rem] md:border md:shadow-xl md:shadow-slate-200/50 md:pt-2 
-          ${isMobileMenuOpen ? 'translate-x-0 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]' : '-translate-x-full md:translate-x-0'}`}
-        >
-          <div className="p-6 md:hidden flex justify-between items-center border-b border-slate-100/50 bg-white/50">
-            <h2 className="font-bold text-slate-800 tracking-tight">Navigation</h2>
-            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2.5 bg-slate-100 rounded-2xl text-slate-500 hover:text-slate-800 transition-colors">
-              <X size={18} />
-            </button>
-          </div>
-
-          <div className="px-8 pt-8 pb-4 hidden md:block">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Doctor Portal</p>
-            </div>
-            <h2 className="text-xl font-black text-slate-800">Main Menu</h2>
-          </div>
-
-          <nav className="flex-1 px-5 space-y-2 mt-4 md:mt-2 overflow-y-auto no-scrollbar pb-6">
+      <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-36 md:p-8 md:pt-44 lg:pt-48 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-1 space-y-6 sticky top-44 h-fit">
+          <div className="bg-white rounded-[2rem] p-4 shadow-sm border border-slate-100 space-y-2">
             <NavItem
               icon={<Activity size={18} />}
               label="Dashboard"
               active={activeTab === 'Dashboard'}
-              onClick={() => {
-                setActiveTab('Dashboard');
-                setIsMobileMenuOpen(false);
-              }}
+              onClick={() => setActiveTab('Dashboard')}
             />
             <NavItem
               icon={<FileText size={18} />}
               label="Second Opinions"
               active={activeTab === 'Second Opinions'}
               badge={secondOpinionRequests.length > 0 ? secondOpinionRequests.length : undefined}
-              onClick={() => {
-                setActiveTab('Second Opinions');
-                setIsMobileMenuOpen(false);
-              }}
+              onClick={() => setActiveTab('Second Opinions')}
             />
             <NavItem
               icon={<Star size={18} />}
               label="Reviews"
               active={activeTab === 'Reviews'}
-              onClick={() => {
-                setActiveTab('Reviews');
-                setIsMobileMenuOpen(false);
-              }}
+              onClick={() => setActiveTab('Reviews')}
             />
             <NavItem
               icon={<ShieldCheck size={18} />}
               label="Credential Vault"
               active={activeTab === 'Credential Vault'}
-              onClick={() => {
-                setActiveTab('Credential Vault');
-                setIsMobileMenuOpen(false);
-              }}
+              onClick={() => setActiveTab('Credential Vault')}
             />
             <NavItem
               icon={<PlusSquare size={18} />}
-              label="Create"
+              label="Create Article"
               active={activeTab === 'Create'}
-              onClick={() => {
-                setActiveTab('Create');
-                setIsMobileMenuOpen(false);
-              }}
+              onClick={() => setActiveTab('Create')}
             />
             <NavItem
               icon={<Newspaper size={18} />}
               label="Articles"
               active={activeTab === 'Articles'}
-              onClick={() => {
-                setActiveTab('Articles');
-                setIsMobileMenuOpen(false);
-              }}
+              onClick={() => setActiveTab('Articles')}
             />
-          </nav>
 
-          <div className="p-6 border-t border-slate-100/60 bg-slate-50/40">
-            <button onClick={onLogout} className="group flex items-center justify-center gap-3 w-full px-4 py-4 bg-white border border-red-100 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all font-bold shadow-sm shadow-red-100/50">
-              <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" /> Secure Logout
-            </button>
+            <div className="pt-4 mt-4 border-t border-slate-100">
+              <NavItem
+                icon={<LogOut size={18} className="text-rose-500" />}
+                label="Logout"
+                onClick={onLogout}
+              />
+            </div>
           </div>
-        </aside>
 
-        {/* Dashbaord Mobile Control */}
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="md:hidden fixed bottom-6 right-6 z-50 p-4 bg-teal-600 text-white rounded-full shadow-2xl"
-        >
-          <Menu size={24} />
-        </button>
+          {/* Second Opinion Sidebar Card */}
+          <div className="bg-teal-600 rounded-[2rem] p-6 text-white shadow-lg shadow-teal-900/10 relative overflow-hidden flex flex-col justify-center">
+            <div className="relative z-10">
+              <h3 className="text-lg font-bold mb-1">Second Opinion</h3>
+              <p className="text-teal-100 text-[11px] mb-4">Accepting requests: <span className="font-bold text-white">{isSecondOpinionEnabled ? 'YES' : 'NO'}</span></p>
+              <button
+                onClick={() => {
+                  const newValue = !isSecondOpinionEnabled;
+                  setIsSecondOpinionEnabled(newValue);
+                  updateSecondOpinionSettings({ second_opinion_available: newValue });
+                }}
+                className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${isSecondOpinionEnabled ? 'bg-white text-teal-600' : 'bg-teal-500 text-white border border-teal-400'}`}
+              >
+                {isSecondOpinionEnabled ? 'Pause' : 'Resume'}
+              </button>
+            </div>
+            <ShieldCheck className="absolute -bottom-4 -right-4 w-24 h-24 text-white/5 rotate-12" />
+          </div>
+        </div>
 
-        {/* Main Dashboard Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 pt-32 md:pt-40">
+
+
+        <div className="lg:col-span-3 space-y-6">
           {activeTab === 'Dashboard' ? (
             <div className="animate-fadeIn">
-              {/* --- Profile Header --- */}
-              <div className="relative w-full rounded-[3rem] overflow-hidden shadow-xl mb-12 group border border-teal-100">
-                {/* Dynamic Background */}
-                <div className="absolute inset-0 z-0 bg-gradient-to-br from-teal-500 via-teal-500 to-teal-500/50">
-                  <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-400 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
-                  <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-300 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4"></div>
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
+                {/* Profile Summary Card */}
+                <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 flex flex-col items-center text-center justify-center group hover:shadow-xl hover:shadow-teal-500/5 transition-all">
+                  <div className="w-24 h-24 bg-teal-100 rounded-full mb-4 flex items-center justify-center text-teal-600 relative overflow-hidden ring-4 ring-slate-50">
+                    <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-800 mb-1">{localUser.fullName}</h3>
+                  <p className="text-teal-600 text-sm font-bold uppercase tracking-wider mb-4">{localUser.specialty}</p>
+
+                  <div className="flex flex-wrap justify-center gap-3 mb-6">
+                    {localUser.sector && (
+                      <span className="bg-teal-50 text-teal-700 text-xs font-black uppercase px-3 py-1.5 rounded-xl border border-teal-100">
+                        {localUser.sector} Sector
+                      </span>
+                    )}
+                    {localUser.languages && (
+                      <span className="bg-slate-50 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-100">
+                        {localUser.languages}
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setIsEditingProfile(true)}
+                    className="w-full max-w-xs py-3 bg-slate-50 hover:bg-teal-600 hover:text-white text-slate-600 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 border border-slate-100 hover:border-teal-600 shadow-sm"
+                  >
+                    <Pencil size={18} /> Profile Settings
+                  </button>
                 </div>
 
-                {/* Content Overlay */}
-                <div className="relative z-10 p-6 md:p-10 flex flex-col lg:flex-row items-center lg:items-end gap-6 lg:gap-10">
-
-                  {/* Avatar Section */}
-                  <div className="relative shrink-0 group/avatar">
-                    <div className="w-28 h-28 md:w-36 md:h-36 rounded-[2rem] border-4 border-white shadow-2xl overflow-hidden bg-slate-100 relative group-hover/avatar:border-teal-200 group-hover/avatar:scale-105 transition-all duration-500 ease-out z-10">
-                      <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-teal-900/20 to-transparent"></div>
-                    </div>
-
-                    <div className="absolute -bottom-4 -right-4 bg-teal-500 p-3 rounded-2xl shadow-xl z-20 shadow-teal-500/30 border border-teal-400">
-                      <Verified size={24} className="text-white fill-white/20" />
-                    </div>
+                {/* Welcome Card */}
+                <div className="lg:col-span-3 bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2.5rem] p-10 text-white shadow-lg relative overflow-hidden group min-h-[260px] flex flex-col justify-center">
+                  <div className="relative z-10">
+                    <h2 className="text-4xl font-bold mb-4 tracking-tight">Welcome, {localUser.fullName}!</h2>
+                    <p className="text-teal-50/80 max-w-xl text-lg leading-relaxed">Manage your professional profile, publications, and patient interactions from your unified dashboard.</p>
                   </div>
-
-                  {/* Text & Info Section */}
-                  <div className="flex-1 text-center lg:text-left flex flex-col justify-end w-full lg:mb-1">
-                    <div className="flex flex-col md:flex-row items-center lg:items-center gap-4 mb-4">
-                      <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-teal-950 drop-shadow-sm">
-                        {localUser.fullName}
-                      </h1>
-                      <div className="hidden md:block w-2 h-2 rounded-full bg-teal-400/50 mt-1 md:mt-2"></div>
-                      <span className="md:mt-2 px-3 py-1 bg-teal-100 border border-teal-200 text-teal-800 rounded-full text-xs md:text-sm font-bold uppercase tracking-widest shadow-sm">
-                        {localUser.specialty}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row items-center lg:items-stretch justify-center lg:justify-start gap-4">
-                      {/* SLMC Reg Badge */}
-                      <div className="bg-white backdrop-blur-md border border-teal-100 shadow-sm px-5 py-3 rounded-2xl flex items-center justify-center gap-4">
-                        <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600 group-hover/slmc:scale-110 transition-transform">
-                          <Award size={24} />
-                        </div>
-                        <div className="text-left">
-                          <p className="text-[10px] text-teal-500 font-black uppercase tracking-[0.2em] mb-0.5">SLMC Reg</p>
-                          <p className="text-lg md:text-xl text-teal-950 font-black tracking-wider leading-none">{localUser.slmcNumber}</p>
-                        </div>
-                      </div>
-
-                      {/* Languages Badge */}
-                      <div className="bg-white backdrop-blur-md border border-teal-100 shadow-sm px-5 py-3 rounded-2xl flex flex-row lg:flex-col items-center lg:items-start justify-center gap-2">
-                        <div className="flex flex-col justify-center text-center lg:text-left">
-                          <p className="text-[10px] text-teal-500 font-bold uppercase tracking-widest mb-1 flex items-center gap-1.5 justify-center lg:justify-start">
-                            <Globe size={14} className="text-teal-500" /> Languages
-                          </p>
-                          <p className="text-sm md:text-base text-teal-900 font-bold">{localUser.languages}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-row lg:flex-col gap-3 w-full lg:w-auto shrink-0 justify-center">
-                    <button
-                      onClick={() => setIsEditingProfile(true)}
-                      className="group/btn flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-2xl font-black text-sm transition-all hover:bg-teal-700 hover:shadow-[0_0_2rem_-0.5rem_rgba(13,148,136,0.6)] hover:-translate-y-1 active:scale-95 whitespace-nowrap"
-                    >
-                      <Pencil size={18} className="group-hover/btn:rotate-12 transition-transform" /> Edit Profile
-                    </button>
-                    <button className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-teal-100 shadow-sm text-teal-800 rounded-2xl font-bold text-sm transition-all hover:border-teal-300 hover:shadow hover:-translate-y-1 active:scale-95 whitespace-nowrap">
-                      <Share2 size={18} /> Share Focus
-                    </button>
-                  </div>
+                  <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 transition-transform duration-700 group-hover:scale-110"></div>
+                  <ShieldCheck size={200} className="absolute -bottom-10 -right-10 text-white/10 rotate-12" />
                 </div>
               </div>
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                 {professionalStats.map((stat, i) => (
-                  <div key={i} className="group bg-white p-6 md:p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 hover:-translate-y-1 transition-all duration-300 flex items-center justify-between overflow-hidden relative">
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-gradient-to-br from-teal-50 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="relative z-10">
-                      <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1 dropdown-shadow">{stat.label}</p>
-                      <p className="text-3xl font-black text-slate-800 tracking-tight">{stat.value}</p>
+                  <div key={i} className="group bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{stat.label}</p>
+                      <div className="flex items-baseline gap-2">
+                        <p className="text-2xl font-black text-slate-800">{stat.value}</p>
+                        {stat.subValue && <span className="text-[11px] font-bold text-slate-400">{stat.subValue}</span>}
+                      </div>
                     </div>
-                    <div className={`relative z-10 h-14 w-14 rounded-2xl ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
-                      {stat.icon}
+                    <div className={`h-12 w-12 rounded-xl ${stat.color} flex items-center justify-center`}>
+                      {React.cloneElement(stat.icon, { size: 20 })}
                     </div>
                   </div>
                 ))}
@@ -720,230 +663,207 @@ const DoctorDashboard = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
-                {/* Professional Brief - Main Column */}
-                <div className="lg:col-span-2 space-y-8">
-                  <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 transition-all border border-slate-100 h-full flex flex-col">
-                    <div className="flex items-center gap-4 mb-8">
-                      <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shadow-inner">
-                        <FileText size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-black text-slate-800 tracking-tight">Professional Brief</h3>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Background & Expertise</p>
-                      </div>
+              <div className="space-y-8 pb-10">
+                {/* Professional Brief - Main Section */}
+                <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 transition-all border border-slate-100 flex flex-col">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shadow-inner">
+                      <FileText size={24} />
                     </div>
-
-                    <div className="space-y-8 flex-1">
-                      <section className="bg-slate-50/50 rounded-[2rem] p-6 md:p-8 border border-slate-100">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                          <User size={14} /> About / Bio
-                        </h4>
-                        <p className="text-slate-600 leading-relaxed text-sm md:text-base font-medium">
-                          {localUser.bio || <span className="italic text-slate-400">No bio added yet. Provide details about your career journey.</span>}
-                        </p>
-                      </section>
-
-                      <section className="bg-slate-50/50 rounded-[2rem] p-6 md:p-8 border border-slate-100">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                          <Award size={14} /> Qualifications & Credentials
-                        </h4>
-                        <div className="flex flex-wrap gap-2.5">
-                          {localUser.qualifications ? localUser.qualifications.split(',').map((q, i) => (
-                            <span key={i} className="px-4 py-2 bg-white text-teal-700 rounded-xl text-sm font-bold border border-teal-100/50 shadow-sm hover:border-teal-300 transition-colors cursor-default">
-                              {q.trim()}
-                            </span>
-                          )) : (
-                            <span className="text-slate-400 text-sm italic font-medium">No qualifications listed.</span>
-                          )}
-                        </div>
-                      </section>
+                    <div>
+                      <h3 className="text-xl font-black text-slate-800 tracking-tight">Professional Brief</h3>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Background & Expertise</p>
                     </div>
+                  </div>
+
+                  <div className="space-y-8">
+                    <section className="bg-slate-50/50 rounded-[2rem] p-6 md:p-8 border border-slate-100">
+                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                        <User size={14} /> About / Bio
+                      </h4>
+                      <p className="text-slate-600 leading-relaxed text-sm md:text-base font-medium">
+                        {localUser.bio || <span className="italic text-slate-400">No bio added yet. Provide details about your career journey.</span>}
+                      </p>
+                    </section>
+
+                    <section className="bg-slate-50/50 rounded-[2rem] p-6 md:p-8 border border-slate-100">
+                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                        <Award size={14} /> Qualifications & Credentials
+                      </h4>
+                      <div className="flex flex-wrap gap-2.5">
+                        {localUser.qualifications ? localUser.qualifications.split(',').map((q, i) => (
+                          <span key={i} className="px-4 py-2 bg-white text-teal-700 rounded-xl text-sm font-bold border border-teal-100/50 shadow-sm hover:border-teal-300 transition-colors cursor-default">
+                            {q.trim()}
+                          </span>
+                        )) : (
+                          <span className="text-slate-400 text-sm italic font-medium">No qualifications listed.</span>
+                        )}
+                      </div>
+                    </section>
                   </div>
                 </div>
 
-                {/* Sidebar - Settings & Status */}
-                <div className="space-y-8">
-                  {/* Second Opinion Widget */}
-                  <div className="bg-white rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-teal-500/5 transition-all border border-slate-100 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+                {/* Trust & Verify - Now Underneath */}
+                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all border border-slate-100 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
-                    <div className="flex justify-between items-start mb-6 relative z-10">
-                      <div className="flex gap-4">
-                        <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shadow-inner shrink-0">
-                          <Activity size={24} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-black text-slate-800 tracking-tight">Second Opinion</h3>
-                          <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isSecondOpinionEnabled ? 'text-teal-500' : 'text-slate-400'}`}>
-                            {isSecondOpinionEnabled ? 'Active & Receiving' : 'Currently Paused'}
-                          </p>
-                        </div>
+                  <div className="flex items-center gap-4 mb-8 relative z-10">
+                    <div className="p-3 bg-blue-50 text-teal-500 rounded-2xl shadow-inner shrink-0">
+                      <ShieldCheck size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-slate-800 tracking-tight">Trust & Verify</h3>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Platform Status</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+                    <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <CheckCircle className="text-teal-500 shrink-0 mt-0.5" size={20} />
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm">Identity</p>
+                        <p className="text-xs font-medium text-slate-500 mt-0.5">National ID verified</p>
                       </div>
-                      <button
-                        onClick={() => {
-                          const newValue = !isSecondOpinionEnabled;
-                          setIsSecondOpinionEnabled(newValue);
-                          updateSecondOpinionSettings({ second_opinion_available: newValue });
-                        }}
-                        className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out shrink-0 ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
-                      >
-                        <div
-                          className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-6' : 'translate-x-0'}`}
-                        />
-                      </button>
                     </div>
 
-                    {isSecondOpinionEnabled && (
-                      <div className="mt-6 pt-6 border-t border-slate-100 animate-scaleIn relative z-10">
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">
-                          Consultation Days
-                        </label>
-                        <div className="flex gap-2">
-                          <div className="relative flex-1">
-                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                            <input
-                              type="text"
-                              value={availability}
-                              onChange={(e) => setAvailability(e.target.value)}
-                              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white text-slate-700 transition-all font-bold"
-                              placeholder="e.g. Mon, Wed"
-                            />
-                          </div>
-                          <button
-                            onClick={handleDateSave}
-                            disabled={dateSaveStatus === 'saving'}
-                            className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all min-w-[80px] flex items-center justify-center ${dateSaveStatus === 'success'
-                              ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
-                              : 'bg-teal-500 text-white hover:bg-teal-600 border border-teal-500'
-                              } disabled:opacity-50`}
-                          >
-                            {dateSaveStatus === 'saving' ? <Loader2 size={16} className="animate-spin" /> : dateSaveStatus === 'success' ? 'Saved' : 'Save'}
-                          </button>
+                    <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <CheckCircle className="text-teal-500 shrink-0 mt-0.5" size={20} />
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm">Medical License</p>
+                        <p className="text-xs font-medium text-slate-500 mt-0.5">SLMC Registration verified</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4 p-4 bg-amber-50/50 rounded-2xl border border-amber-100/50">
+                      <Clock className="text-amber-500 shrink-0 mt-0.5" size={20} />
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm">Secondary Audit</p>
+                        <p className="text-xs font-medium text-amber-700/70 mt-0.5">Pending final review</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'Second Opinions' ? (
+            <div className="animate-slideUp max-w-5xl mx-auto w-full">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
+                {/* Second Opinion Availability Widget */}
+                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 relative overflow-hidden h-fit">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+
+                  <div className="flex justify-between items-start mb-6 relative z-10">
+                    <div className="flex gap-3">
+                      <div className="p-2.5 bg-teal-50 text-teal-600 rounded-xl shrink-0">
+                        <Activity size={20} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-800 tracking-tight leading-none mb-1">Status</h3>
+                        <p className={`text-[10px] font-black uppercase tracking-widest ${isSecondOpinionEnabled ? 'text-teal-500' : 'text-slate-400'}`}>
+                          {isSecondOpinionEnabled ? 'Active' : 'Paused'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newValue = !isSecondOpinionEnabled;
+                        setIsSecondOpinionEnabled(newValue);
+                        updateSecondOpinionSettings({ second_opinion_available: newValue });
+                      }}
+                      className={`w-12 h-7 rounded-full p-1 transition-colors duration-300 ease-in-out shrink-0 ${isSecondOpinionEnabled ? 'bg-teal-500' : 'bg-slate-200'}`}
+                    >
+                      <div className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSecondOpinionEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+
+                  {isSecondOpinionEnabled && (
+                    <div className="pt-4 border-t border-slate-100 animate-scaleIn relative z-10">
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                        Consultation Days
+                      </label>
+                      <div className="flex flex-col gap-2">
+                        <div className="relative">
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                          <input
+                            type="text"
+                            value={availability}
+                            onChange={(e) => setAvailability(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-700 font-bold"
+                            placeholder="e.g. Mon, Wed"
+                          />
                         </div>
+                        <button
+                          onClick={handleDateSave}
+                          disabled={dateSaveStatus === 'saving'}
+                          className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center ${dateSaveStatus === 'success' ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' : 'bg-teal-600 text-white hover:bg-teal-700'} disabled:opacity-50`}
+                        >
+                          {dateSaveStatus === 'saving' ? <Loader2 size={14} className="animate-spin" /> : dateSaveStatus === 'success' ? 'Saved' : 'Save Days'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-slate-100 mb-0 w-full">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
+                        <FileText size={32} />
+                      </div>
+                      <div className="flex-1 flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xl font-bold text-slate-800">Second Opinion Requests</h3>
+                          <p className="text-slate-500 text-sm">Review cases and provide advice</p>
+                        </div>
+                        <div className="bg-amber-50 px-4 py-2 rounded-full hidden md:block border border-amber-200">
+                          <span className="text-amber-700 font-bold text-sm">{secondOpinionRequests.filter(r => r.status === 'Pending').length} Pending</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {loadingRequests ? (
+                      <div className="flex justify-center items-center py-12">
+                        <Loader2 className="animate-spin text-teal-500 max-w-full" size={32} />
+                      </div>
+                    ) : secondOpinionRequests.length === 0 ? (
+                      <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
+                        <p className="text-slate-500 text-sm">No second opinion requests available.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {secondOpinionRequests.map(request => (
+                          <div key={request.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative shadow-sm hover:shadow-md transition-shadow group">
+                            <div className="mb-4 flex flex-wrap justify-between items-start gap-4">
+                              <div>
+                                <h4 className="text-lg font-bold text-slate-800">{request.patientName}</h4>
+                                <p className="text-xs text-slate-500 font-medium mt-1">
+                                  {request.age} yrs • {request.gender} • {request.dateRequired}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => setSelectedPatientProfile(request)}
+                                className="text-xs font-bold text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-teal-100 shadow-sm"
+                              >
+                                <User size={14} /> View Profile
+                              </button>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-slate-100 mb-4">
+                              <p className="text-sm text-slate-700 leading-relaxed font-medium line-clamp-2">
+                                <span className="font-bold text-slate-800 mr-2">Case Summary:</span>
+                                {request.summary}
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-end gap-3">
+                              <button className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 flex items-center gap-2">
+                                Review Case
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
-
-                  {/* Verification Widget */}
-                  <div className="bg-white rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all border border-slate-100 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
-
-                    <div className="flex items-center gap-4 mb-8 relative z-10">
-                      <div className="p-3 bg-blue-50 text-teal-500 rounded-2xl shadow-inner shrink-0">
-                        <ShieldCheck size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-black text-slate-800 tracking-tight">Trust & Verify</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Platform Status</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-6 relative z-10">
-                      <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <CheckCircle className="text-teal-500 shrink-0 mt-0.5" size={20} />
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">Identity</p>
-                          <p className="text-xs font-medium text-slate-500 mt-0.5">National ID verified</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <CheckCircle className="text-teal-500 shrink-0 mt-0.5" size={20} />
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">Medical License</p>
-                          <p className="text-xs font-medium text-slate-500 mt-0.5">SLMC Registration verified</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-4 p-4 bg-amber-50/50 rounded-2xl border border-amber-100/50">
-                        <Clock className="text-amber-500 shrink-0 mt-0.5" size={20} />
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">Secondary Audit</p>
-                          <p className="text-xs font-medium text-amber-700/70 mt-0.5">Pending final review</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>            </div>
-          ) : activeTab === 'Second Opinions' ? (
-            <div className="animate-slideUp max-w-4xl mx-auto w-full">
-              <div className="bg-white rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100 mb-4 w-full">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
-                    <FileText size={32} />
-                  </div>
-                  <div className="flex-1 flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold text-slate-800">Second Opinion Requests</h3>
-                      <p className="text-slate-500 text-sm">Review cases and provide expert advice</p>
-                    </div>
-                    <div className="bg-amber-50 px-4 py-2 rounded-full hidden md:block border border-amber-200">
-                      <span className="text-amber-700 font-bold text-sm">{secondOpinionRequests.filter(r => r.status === 'Pending').length} Pending Requests</span>
-                    </div>
-                  </div>
-                </div>
-
-                {loadingRequests ? (
-                  <div className="flex justify-center items-center py-12">
-                     <Loader2 className="animate-spin text-teal-500 max-w-full" size={32} />
-                  </div>
-                ) : secondOpinionRequests.length === 0 ? (
-                  <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
-                    <p className="text-slate-500 text-sm">No second opinion requests available.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {secondOpinionRequests.map(request => (
-                      <div key={request.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative shadow-sm hover:shadow-md transition-shadow group">
-                        <div className="mb-4 flex flex-wrap justify-between items-start gap-4">
-                          <div>
-                            <h4 className="text-lg font-bold text-slate-800">{request.patientName}</h4>
-                            <p className="text-xs text-slate-500 font-medium mt-1">
-                              {request.age} yrs • {request.gender} • Requested on {request.dateRequired}
-                            </p>
-                          </div>
-                          <button 
-                            onClick={() => setSelectedPatientProfile(request)}
-                            className="text-xs font-bold text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-teal-100 shadow-sm"
-                          >
-                            <User size={14} /> View Profile
-                          </button>
-                        </div>
-
-                        <div className="bg-white p-4 rounded-xl border border-slate-100 mb-4">
-                          <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                            <span className="font-bold text-slate-800 mr-2">Case Summary:</span>
-                            {request.summary}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-t border-slate-200/60 pt-4 mt-2">
-                          <div>
-                            <p className="text-xs text-slate-500 font-bold uppercase mb-1">Attached Documents</p>
-                            <div className="flex flex-wrap gap-2">
-                              {request.documents.map((doc, idx) => (
-                                <span key={idx} className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm hover:border-teal-300 hover:text-teal-600 cursor-pointer transition-colors">
-                                  <FileText size={12} className="text-teal-500" /> {doc}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 shrink-0">
-                            <button className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors shadow-sm">
-                              Decline
-                            </button>
-                            <button className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 flex items-center gap-2">
-                              Review Case
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           ) : activeTab === 'Articles' ? (
@@ -1165,7 +1085,7 @@ const DoctorDashboard = ({
                                           {review.treatment_plan || '--'}
                                         </span>
                                       </div>
-                                      <div className="flex items-centerjustify-between bg-teal-50 p-2 rounded-lg border border-teal-100">
+                                      <div className="flex items-center justify-between bg-teal-50 p-2 rounded-lg border border-teal-100">
                                         <span className="font-semibold text-slate-700">Overall:</span>
                                         <span className="flex items-center gap-1 text-teal-700 font-bold">
                                           <Star size={12} className="fill-teal-400" />
@@ -1195,9 +1115,9 @@ const DoctorDashboard = ({
               </div>
             </div>
           ) : activeTab === 'Credential Vault' ? (
-            /* CREDENTIAL VAULT PAGE */
-            <div className="max-w-2xl mx-auto animate-slideUp">
-              <div className="bg-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-10 shadow-xl border border-slate-100">
+            <div className="max-w-4xl mx-auto animate-slideUp">
+              {/* CREDENTIAL VAULT PAGE */}
+              <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl border border-slate-100">
                 <div className="flex items-center gap-4 mb-10">
                   <div className="p-4 bg-teal-100 rounded-2xl text-teal-600">
                     <ShieldCheck size={32} />
@@ -1328,7 +1248,7 @@ const DoctorDashboard = ({
               </div>
             </div>
           ) : null}
-        </main>
+        </div>
       </div>
 
       {/* Edit Profile Modal */}
@@ -1377,6 +1297,8 @@ const DoctorDashboard = ({
                     Verified Provider
                   </div>
                 </div>
+
+
               </div>
 
               {/* Form Content */}
@@ -1425,6 +1347,14 @@ const DoctorDashboard = ({
                             onChange={(v) => setLocalUser({ ...localUser, slmcNumber: v })}
                             disabled={isSaving}
                             placeholder="REG-12345"
+                          />
+                          <InputField
+                            label="Practice Sector"
+                            name="sector"
+                            value={localUser.sector}
+                            onChange={(v) => setLocalUser({ ...localUser, sector: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. Government, Private"
                           />
                         </div>
                       </div>
@@ -1661,63 +1591,63 @@ const DoctorDashboard = ({
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-slate-50">
-              
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6">
-                 <div className="w-24 h-24 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shadow-inner border border-teal-100 shrink-0 mx-auto md:mx-0">
-                    <User size={40} />
-                 </div>
-                 <div className="flex-1 space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                       <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
-                          Age: {selectedPatientProfile.age}
-                       </span>
-                       <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
-                          Gender: {selectedPatientProfile.gender}
-                       </span>
-                       <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shadow-sm border border-rose-100">
-                          Blood: {selectedPatientProfile.bloodGroup || 'N/A'}
-                       </span>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
-                             <Activity size={14} />
-                          </div>
-                          <div>
-                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contact</p>
-                             <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.contact || 'Not Provided'}</p>
-                          </div>
-                       </div>
-                       <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
-                             <FileText size={14} />
-                          </div>
-                          <div>
-                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Email</p>
-                             <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.email || 'Not Provided'}</p>
-                          </div>
-                       </div>
-                       <div className="flex items-center gap-2 md:col-span-2">
-                          <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
-                             <MapPin size={14} />
-                          </div>
-                          <div>
-                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Address</p>
-                             <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.address || 'Not Provided'}</p>
-                          </div>
-                       </div>
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6">
+                <div className="w-24 h-24 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shadow-inner border border-teal-100 shrink-0 mx-auto md:mx-0">
+                  <User size={40} />
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                      Age: {selectedPatientProfile.age}
+                    </span>
+                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                      Gender: {selectedPatientProfile.gender}
+                    </span>
+                    <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shadow-sm border border-rose-100">
+                      Blood: {selectedPatientProfile.bloodGroup || 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <Activity size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contact</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.contact || 'Not Provided'}</p>
+                      </div>
                     </div>
-                 </div>
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <FileText size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Email</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.email || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 md:col-span-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <MapPin size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Address</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.address || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
-                 <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-3">
-                    <Activity size={16} className="text-teal-600" /> Medical History
-                 </h4>
-                 <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-sm text-slate-700 font-medium">
-                    {selectedPatientProfile.medicalHistory || 'No medical history provided.'}
-                 </div>
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-3">
+                  <Activity size={16} className="text-teal-600" /> Medical History
+                </h4>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-sm text-slate-700 font-medium">
+                  {selectedPatientProfile.medicalHistory || 'No medical history provided.'}
+                </div>
               </div>
 
             </div>
@@ -1753,16 +1683,16 @@ const InputField = ({ label, value, onChange, disabled, placeholder, type = "tex
 const NavItem = ({ icon, label, active = false, badge, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl cursor-pointer transition-all duration-300 group border ${active ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20 border-teal-400' : 'bg-transparent text-slate-500 border-transparent hover:bg-slate-50 hover:border-slate-100 hover:text-slate-800'}`}
+    className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${active ? 'bg-teal-50 text-teal-600' : 'text-slate-600 hover:bg-slate-50'}`}
   >
-    <div className="flex items-center gap-3 w-full">
-      <div className={`p-2 rounded-xl transition-all ${active ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-white group-hover:text-teal-600 group-hover:shadow-sm'}`}>
+    <div className="flex items-center gap-3">
+      <div className={`transition-colors ${active ? 'text-teal-600' : 'text-slate-400 group-hover:text-teal-600'}`}>
         {icon}
       </div>
-      <span className={`font-semibold text-sm ${active ? 'text-white' : ''}`}>{label}</span>
+      <span>{label}</span>
     </div>
     {badge && (
-      <span className={`flex-shrink-0 text-[10px] font-black px-2.5 py-1 rounded-full ${active ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600 group-hover:bg-rose-500 group-hover:text-white transition-colors'}`}>
+      <span className={`ml-auto text-xs px-2 py-1 rounded-full ${active ? 'bg-teal-100 text-teal-600' : 'bg-slate-200 text-slate-600'}`}>
         {badge}
       </span>
     )}
