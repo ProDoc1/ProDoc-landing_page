@@ -65,31 +65,10 @@ const DoctorDashboard = ({
   // local filter for doctor view: show all, ratings only, or reviews only
   const [reviewFilter, setReviewFilter] = useState('all');
 
-  // Second Opinion Requests Mock Data
-  const [secondOpinionRequests, setSecondOpinionRequests] = useState([
-    {
-      id: 1,
-      patientName: 'John Doe',
-      age: 45,
-      gender: 'Male',
-      dateRequired: '2026-03-12',
-      status: 'Pending',
-      summary: 'Seeking second opinion regarding recent MRI scan results for lower back pain. Advised surgery but want exploring alternatives.',
-      documents: ['MRI_Scan_Lumbar.pdf', 'Initial_Consultation_Notes.pdf'],
-      amount: 'Rs. 2500'
-    },
-    {
-      id: 2,
-      patientName: 'Jane Smith',
-      age: 32,
-      gender: 'Female',
-      dateRequired: '2026-03-15',
-      status: 'Pending',
-      summary: 'Second opinion requested for persistent migraines. Current medication is not effective.',
-      documents: ['Neurology_Report_Feb.pdf'],
-      amount: 'Rs. 2500'
-    }
-  ]);
+  const [secondOpinionRequests, setSecondOpinionRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
+  const [selectedPatientProfile, setSelectedPatientProfile] = useState(null);
 
   // Article State
   const [articleForm, setArticleForm] = useState({ content: '', image: null });
@@ -203,6 +182,19 @@ const DoctorDashboard = ({
         })
         .catch(err => console.error("Error fetching reviews:", err))
         .finally(() => setReviewsLoading(false));
+    }
+
+    if (activeTab === 'Second Opinions' && localUser.id) {
+      setLoadingRequests(true);
+      fetch(`/api/second-opinion-requests?doctorId=${localUser.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setSecondOpinionRequests(data);
+          }
+        })
+        .catch(err => console.error("Error fetching second opinion requests:", err))
+        .finally(() => setLoadingRequests(false));
     }
 
     if ((activeTab === 'Create' || activeTab === 'Dashboard' || activeTab === 'Articles') && localUser.id) {
@@ -893,7 +885,11 @@ const DoctorDashboard = ({
                   </div>
                 </div>
 
-                {secondOpinionRequests.length === 0 ? (
+                {loadingRequests ? (
+                  <div className="flex justify-center items-center py-12">
+                     <Loader2 className="animate-spin text-teal-500 max-w-full" size={32} />
+                  </div>
+                ) : secondOpinionRequests.length === 0 ? (
                   <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200">
                     <p className="text-slate-500 text-sm">No second opinion requests available.</p>
                   </div>
@@ -901,17 +897,19 @@ const DoctorDashboard = ({
                   <div className="space-y-6">
                     {secondOpinionRequests.map(request => (
                       <div key={request.id} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative shadow-sm hover:shadow-md transition-shadow group">
-                        <div className="absolute top-6 right-6 flex items-center gap-2">
-                          <span className={`inline-block px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${request.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                            {request.status}
-                          </span>
-                        </div>
-
-                        <div className="mb-4">
-                          <h4 className="text-lg font-bold text-slate-800">{request.patientName}</h4>
-                          <p className="text-xs text-slate-500 font-medium">
-                            {request.age} yrs • {request.gender} • Requested on {request.dateRequired}
-                          </p>
+                        <div className="mb-4 flex flex-wrap justify-between items-start gap-4">
+                          <div>
+                            <h4 className="text-lg font-bold text-slate-800">{request.patientName}</h4>
+                            <p className="text-xs text-slate-500 font-medium mt-1">
+                              {request.age} yrs • {request.gender} • Requested on {request.dateRequired}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => setSelectedPatientProfile(request)}
+                            className="text-xs font-bold text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-teal-100 shadow-sm"
+                          >
+                            <User size={14} /> View Profile
+                          </button>
                         </div>
 
                         <div className="bg-white p-4 rounded-xl border border-slate-100 mb-4">
@@ -1633,6 +1631,95 @@ const DoctorDashboard = ({
                   </div>
                 </form>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Patient View Profile Modal */}
+      {selectedPatientProfile && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fadeIn">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+            {/* Header */}
+            <div className="p-6 md:p-8 bg-gradient-to-r from-teal-700 to-teal-600 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0 mt-1 shadow-inner">
+                  <User size={28} />
+                </div>
+                <div className="text-white">
+                  <h3 className="text-2xl font-bold">{selectedPatientProfile.patientName}'s Profile</h3>
+                  <p className="text-teal-100/80 text-sm">Patient Details & Medical History</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPatientProfile(null)}
+                className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all shrink-0"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-slate-50">
+              
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6">
+                 <div className="w-24 h-24 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shadow-inner border border-teal-100 shrink-0 mx-auto md:mx-0">
+                    <User size={40} />
+                 </div>
+                 <div className="flex-1 space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                       <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                          Age: {selectedPatientProfile.age}
+                       </span>
+                       <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                          Gender: {selectedPatientProfile.gender}
+                       </span>
+                       <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shadow-sm border border-rose-100">
+                          Blood: {selectedPatientProfile.bloodGroup || 'N/A'}
+                       </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                             <Activity size={14} />
+                          </div>
+                          <div>
+                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contact</p>
+                             <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.contact || 'Not Provided'}</p>
+                          </div>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                             <FileText size={14} />
+                          </div>
+                          <div>
+                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Email</p>
+                             <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.email || 'Not Provided'}</p>
+                          </div>
+                       </div>
+                       <div className="flex items-center gap-2 md:col-span-2">
+                          <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                             <MapPin size={14} />
+                          </div>
+                          <div>
+                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Address</p>
+                             <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.address || 'Not Provided'}</p>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+
+              <div className="space-y-4">
+                 <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-3">
+                    <Activity size={16} className="text-teal-600" /> Medical History
+                 </h4>
+                 <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-sm text-slate-700 font-medium">
+                    {selectedPatientProfile.medicalHistory || 'No medical history provided.'}
+                 </div>
+              </div>
+
             </div>
           </div>
         </div>
