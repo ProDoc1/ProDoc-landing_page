@@ -1299,7 +1299,7 @@ const PatientDashboard = ({
                             </div>
                             <button
                               onClick={() => {
-                                setPaymentDetails({ amount: price, serviceName: `Second Opinion - ${doctorName}` });
+                                setPaymentDetails({ amount: price, serviceName: `Second Opinion - ${doctorName}`, doctorId: doc.id || doc.doctor_id });
                                 setIsPaymentModalOpen(true);
                               }}
                               className="px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors shrink-0"
@@ -1433,8 +1433,22 @@ const PatientDashboard = ({
         amount={paymentDetails.amount}
         serviceName={paymentDetails.serviceName}
         userId={currentUser?.id}
-        onPaymentSuccess={() => {
-          // console.log("Payment successful, proceed to form");
+        onPaymentSuccess={async () => {
+          try {
+            await fetch('/api/second-opinion-requests', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                patientId: currentUser?.id,
+                doctorId: paymentDetails.doctorId,
+                summary: paymentDetails.serviceName,
+                amount: paymentDetails.amount,
+                documents: []
+              })
+            });
+          } catch (error) {
+            console.error('Failed to submit second opinion request:', error);
+          }
         }}
       />
     </div>
