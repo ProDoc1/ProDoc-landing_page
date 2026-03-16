@@ -28,7 +28,22 @@ body,
   height: 100%;
   margin: 0;
 }
+.chatbot-root {
+  height: 100vh;
+  margin: 0;
+  font-family: "Manrope", "Segoe UI", "Helvetica Neue", sans-serif;
+  color: var(--prodoc-slate-800);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(45, 212, 191, 0.16), transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(20, 184, 166, 0.16), transparent 45%),
+    linear-gradient(180deg, #f8fafc 0%, #eef8f7 100%);
+  overflow: hidden;
+}
 
+.chatbot-root a {
+  color: inherit;
+  text-decoration: none;
+}
 body {
   font-family: "Manrope", "Segoe UI", "Helvetica Neue", sans-serif;
   color: var(--prodoc-slate-800);
@@ -562,6 +577,7 @@ a {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 .doctor-footer {
@@ -606,6 +622,54 @@ a {
 .doctor-contact-btn:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.24);
+}
+
+.markdown-content {
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.markdown-content p {
+  margin-bottom: 0.75rem;
+  white-space: pre-wrap;
+}
+
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.markdown-content ul {
+  list-style-type: disc;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+}
+
+.markdown-content li {
+  margin-bottom: 0.35rem;
+}
+
+.markdown-content li>p {
+  margin-bottom: 0;
+  display: inline;
+}
+
+.markdown-content strong {
+  font-weight: 800;
+}
+
+.markdown-content a {
+  color: var(--prodoc-teal-600);
+  text-decoration: underline;
+  font-weight: 600;
 }
 
 @media (min-width: 640px) {
