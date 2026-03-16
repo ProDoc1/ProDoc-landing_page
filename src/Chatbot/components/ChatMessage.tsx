@@ -3,12 +3,15 @@ import React from 'react';
 import { Message } from '../types';
 import DoctorCard from './DoctorCard';
 import Logo from '../assets/Logo_white.png';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatMessageProps {
   message: Message;
+  onViewProfile?: (id: string) => void;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, onViewProfile }) => {
   const isUser = message.role === 'user';
   const isTyping = message.text === '...';
 
@@ -31,12 +34,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                     <span className="typing-dot" style={{ animationDelay: '0.3s' }}></span>
                  </div>
             ) : (
-                <p>{message.text}</p>
+                <div className="markdown-content text-[15px] leading-relaxed">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.text}
+                    </ReactMarkdown>
+                </div>
             )}
         </div>
         {message.doctor && (
             <div className="doctor-card-wrap">
-                <DoctorCard doctor={message.doctor} />
+                <DoctorCard doctor={message.doctor} onViewProfile={onViewProfile} />
             </div>
         )}
       </div>
