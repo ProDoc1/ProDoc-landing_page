@@ -13,6 +13,7 @@ import {
 import { NavBar } from './ui/tubelight-navbar';
 import LogoColor from '../assets/Logo_with_words.png';
 import LogoWhite from '../assets/logo_with_words_white.png';
+import LogoIcon from '../assets/Logo.png';
 
 const Navbar = ({
   currentPage,
@@ -161,11 +162,18 @@ const Navbar = ({
         {/* Logo Section */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={onNavigateHome}>
           <div className={`p-0 group-hover:scale-105 transition-transform rounded-lg ${currentPage === 'doctors' || currentPage === 'doctor-view' ? currentStyle.logoBg : ''}`}>
-            <img
-              src={currentPage === 'home' ? LogoWhite : LogoColor}
-              alt="ProDoc"
-              className="h-12 md:h-16 lg:h-20 object-contain w-auto"
-            />
+            <div className="flex items-center gap-2">
+              <img
+                src={LogoIcon}
+                alt="ProDoc logo"
+                className="h-8 w-8 md:h-10 md:w-10 object-contain"
+              />
+              <img
+                src={currentPage === 'home' ? LogoWhite : LogoColor}
+                alt="ProDoc"
+                className="h-10 md:h-12 lg:h-14 object-contain w-auto"
+              />
+            </div>
           </div>
         </div>
 

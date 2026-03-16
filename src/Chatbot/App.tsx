@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, Chat, GenerateContentResponse } from '@google/genai';
 import { Language, Message, Doctor } from './types';
-import { SYSTEM_PROMPT_TEMPLATE, LANGUAGE_OPTIONS, INITIAL_GREETINGS } from './constants';
+import { SYSTEM_PROMPT_TEMPLATE, INITIAL_GREETINGS } from './constants';
 import { DOCTORS } from './doctors';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
-import LanguageSelector from './components/LanguageSelector';
+
 import Header from './components/Header';
 import Disclaimer from './components/Disclaimer';
 const ai = new GoogleGenAI({
@@ -13,7 +13,6 @@ const ai = new GoogleGenAI({
 });
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [language, setLanguage] = useState<Language>(Language.EN);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [chat, setChat] = useState<Chat | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -43,7 +42,6 @@ const doctorsList = DOCTORS.map(d => ({
         experience: d.years_of_experience
       }));
       const systemInstruction = SYSTEM_PROMPT_TEMPLATE
-        .replace('{language}', language)
         .replace('{doctors}', JSON.stringify(doctorsList));
       
       const newChat = ai.chats.create({
@@ -54,7 +52,7 @@ const doctorsList = DOCTORS.map(d => ({
       });
       setChat(newChat);
 
-      const greeting = INITIAL_GREETINGS[language];
+      const greeting = `${INITIAL_GREETINGS[Language.EN]}\n\n${INITIAL_GREETINGS[Language.SI]}\n\n${INITIAL_GREETINGS[Language.TA]}`;
 
       setMessages([
         {
@@ -67,12 +65,12 @@ const doctorsList = DOCTORS.map(d => ({
        console.error("Failed to initialize chat:", error);
        setMessages([{ id: 'error-init', role: 'bot', text: 'Error: Could not initialize AI chat. Please check the API key and refresh.' }]);
     }
-  }, [language]);
+  }, []);
   
   useEffect(() => {
     initializeChat();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language]);
+  }, [initializeChat]);
 
   const handleSendMessage = async (inputText: string) => {
     if (!inputText.trim() || isLoading || !chat) return;
@@ -113,11 +111,14 @@ const doctorsList = DOCTORS.map(d => ({
       if (fullResponseText.startsWith(recommendationPrefix)) {
           const jsonString = fullResponseText.substring(recommendationPrefix.length);
           try {
-              const recommendation: { doctor_id: string; reason: string } = JSON.parse(jsonString);
+              const recommendation: { doctor_id: string; reason: string; translated_name: string } = JSON.parse(jsonString);
               const foundDoctor = DOCTORS.find(d => d.doctor_id === recommendation.doctor_id);
               if (foundDoctor) {
-                  doctor = { ...foundDoctor, reason: recommendation.reason } as Doctor;
-                  finalText = `${recommendation.reason}`;
+                    doctor = { 
+                    ...foundDoctor, 
+                    reason: recommendation.reason,
+                    translated_name: recommendation.translated_name 
+                  } as Doctor;
               } else {
                   finalText = fullResponseText;
               }
@@ -160,13 +161,7 @@ const doctorsList = DOCTORS.map(d => ({
     <div className="app-shell">
       <div className="app-frame">
         <Header />
-        <LanguageSelector
-          selectedLanguage={language}
-          onLanguageChange={(lang: Language) => {
-            setLanguage(lang);
-          }}
-          languages={LANGUAGE_OPTIONS}
-        />
+        
         <Disclaimer />
         <div
           ref={chatContainerRef}

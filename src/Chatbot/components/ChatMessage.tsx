@@ -2,6 +2,7 @@
 import React from 'react';
 import { Message } from '../types';
 import DoctorCard from './DoctorCard';
+import Logo from '../assets/Logo_white.png';
 
 interface ChatMessageProps {
   message: Message;
@@ -18,7 +19,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
     <div className={wrapperClasses}>
       {!isUser && (
         <div className="ai-avatar">
-          AI
+          <img src={Logo} alt="AI Avatar" className="ai-avatar-image" />
         </div>
       )}
       <div className="message-content">
