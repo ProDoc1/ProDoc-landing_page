@@ -27,6 +27,8 @@ import {
   Mail,
   MapPin,
   AlertCircle,
+  AlertTriangle,
+  Trash2,
   Clock,
   Edit,
   Activity
@@ -61,6 +63,117 @@ const ClickableInfoRow = ({ label, value, icon: Icon, highlight, onClick }) => {
     </div>
   );
 };
+
+
+const RecordTypeModal = ({ isOpen, onClose, onSelect }) => {
+  if (!isOpen) return null;
+  const types = [
+    { id: 'lab', label: 'Lab Reports', icon: FileText, color: 'text-rose-600', bg: 'bg-rose-100' },
+    { id: 'prescription', label: 'Prescriptions', icon: FileText, color: 'text-green-600', bg: 'bg-green-100' },
+    { id: 'scan', label: 'Scans', icon: Stethoscope, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { id: 'vaccination', label: 'Vaccinations', icon: ShieldCheck, color: 'text-purple-600', bg: 'bg-purple-100' }
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="text-xl font-bold">Pick Category</h2>
+            <p className="text-teal-100 text-sm mt-1">What kind of record is this?</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-8 grid grid-cols-1 gap-3">
+          {types.map(t => (
+            <button
+              key={t.id}
+              onClick={() => {
+                onSelect(t.id);
+                onClose();
+              }}
+              className="flex items-center gap-4 p-5 rounded-2xl border border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group text-left"
+            >
+              <div className={`w-14 h-14 rounded-full ${t.bg} ${t.color} flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110`}>
+                <t.icon size={28} />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-slate-800 text-lg group-hover:text-teal-600 transition-colors">{t.label}</p>
+                <p className="text-sm text-slate-500">Securely store this document</p>
+              </div>
+              <ChevronRight size={20} className="text-slate-300 group-hover:text-teal-500" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Toast = ({ message, type = 'success', onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 5000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] animate-in fade-in slide-in-from-bottom-8 duration-300">
+      <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border ${
+        type === 'success' 
+          ? 'bg-teal-600 border-teal-500 text-white' 
+          : 'bg-rose-600 border-rose-500 text-white'
+      }`}>
+        {type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+        <p className="font-bold whitespace-nowrap">{message}</p>
+        <button onClick={onClose} className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors">
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, itemTitle }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="p-8 text-center">
+          <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+            <Trash2 size={40} />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-800 mb-2">Delete Record?</h3>
+          <p className="text-slate-500 mb-2">Are you sure you want to delete <span className="font-bold text-slate-700">"{itemTitle}"</span>?</p>
+          <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 mb-8">
+            <p className="text-rose-700 text-sm font-medium flex items-start gap-2 text-left">
+              <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+              Warning: You can't redo this move. Your medical records will be erased from our secure cloud storage permanently.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={onConfirm}
+              className="w-full py-4 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-colors shadow-lg shadow-rose-200"
+            >
+              Confirm Delete
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full py-4 bg-white text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors border border-slate-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request', userId }) => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -348,6 +461,15 @@ const PatientDashboard = ({
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion' });
 
+  const [reportFilter, setReportFilter] = useState('All');
+  const [isRecordTypeModalOpen, setIsRecordTypeModalOpen] = useState(false);
+  const [selectedUploadType, setSelectedUploadType] = useState('lab');
+  
+  const [reportToDelete, setReportToDelete] = useState(null);
+  const [isDeletingBlob, setIsDeletingBlob] = useState(false);
+  const [openReportMenu, setOpenReportMenu] = useState(null);
+  const [notification, setNotification] = useState(null);
+
   const [currentUser, setCurrentUser] = useState({
     id: null,
     fullName: '',
@@ -375,6 +497,123 @@ const PatientDashboard = ({
 
   const [savedDoctors, setSavedDoctors] = useState([]);
   const [loadingSavedDoctors, setLoadingSavedDoctors] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = React.useRef(null);
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const fileData = await file.arrayBuffer();
+      
+      const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+        },
+        body: fileData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error response:', errorText);
+        let errorMessage = 'Upload failed';
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorJson.error || errorMessage;
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const newBlob = await response.json();
+
+      // Save metadata to database
+      if (currentUser.id) {
+        const dbResponse = await fetch('/api/medical-records', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientId: currentUser.id,
+            title: file.name,
+            type: selectedUploadType,
+            url: newBlob.url,
+            fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+            status: 'Encrypted'
+          })
+        });
+
+        if (dbResponse.ok) {
+          const savedRecord = await dbResponse.json();
+          const newReport = {
+            ...savedRecord,
+            reportDate: new Date(savedRecord.report_date).toISOString().split('T')[0],
+            doctorName: 'Self Uploaded',
+            hospital: 'Personal Records'
+          };
+          setReports(prev => [newReport, ...prev]);
+        }
+      } else {
+        // Fallback for demo if id is missing
+        const newReport = {
+          id: Date.now(),
+          title: file.name,
+          type: selectedUploadType,
+          reportDate: new Date().toISOString().split('T')[0],
+          doctorName: 'Self Uploaded',
+          hospital: 'Personal Records',
+          url: newBlob.url,
+          fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+          status: 'Encrypted'
+        };
+        setReports(prev => [newReport, ...prev]);
+      }
+      
+      setNotification({ message: 'File uploaded and encrypted successfully!', type: 'success' });
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setNotification({ message: 'Upload failed: ' + error.message, type: 'error' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteReport = async () => {
+    if (!reportToDelete) return;
+
+    setIsDeletingBlob(true);
+    try {
+      if (reportToDelete.url) {
+        const response = await fetch(`/api/delete-blob?url=${encodeURIComponent(reportToDelete.url)}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Deletion from storage failed');
+        }
+      }
+
+      // Delete from database
+      const dbDeleteResponse = await fetch(`/api/medical-records?id=${reportToDelete.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!dbDeleteResponse.ok) console.error('Failed to delete metadata from DB');
+
+      setReports(prev => prev.filter(r => r.id !== reportToDelete.id));
+      setReportToDelete(null);
+      setNotification({ message: 'Medical record permanently erased.', type: 'success' });
+    } catch (error) {
+      console.error('Delete failed:', error);
+      setNotification({ message: 'Failed to erase record: ' + error.message, type: 'error' });
+    } finally {
+      setIsDeletingBlob(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -460,6 +699,16 @@ const PatientDashboard = ({
         })
         .catch(err => console.error("Error fetching saved doctors:", err))
         .finally(() => setLoadingSavedDoctors(false));
+
+      // Fetch Medical Records
+      fetch(`/api/medical-records?patientId=${userId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setReports(data);
+          }
+        })
+        .catch(err => console.error("Error fetching medical records:", err));
     }
   }, [currentUser?.id]);
 
@@ -598,20 +847,8 @@ const PatientDashboard = ({
           </div>
         </div>
       )}
-      <Navbar
-        currentPage="dashboard"
-        currentUser={currentUser}
-        onNavigateHome={onNavigateHome}
-        onNavigateAbout={onNavigateAbout}
-        onNavigateDoctors={onNavigateDoctors}
-        onNavigateLogin={onNavigateLogin}
-        onNavigateSignupPage={onNavigateSignupPage}
-        onLogout={onLogout}
-        onNavigateDashboard={onNavigateDashboard}
-        onNavigateContentHub={onNavigateContentHub}
-      />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-28 md:p-8 md:pt-32 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-36 md:p-8 md:pt-48 grid grid-cols-1 lg:grid-cols-4 gap-10">
 
         {currentUser && (
           <div className="lg:col-span-1 space-y-6">
@@ -700,10 +937,10 @@ const PatientDashboard = ({
           </div>
         )}
 
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-10">
 
           {activeTab === 'overview' && (
-            <div className="space-y-6">
+            <div className="space-y-10">
               <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg">
                 <h2 className="text-3xl font-bold mb-2">Welcome back, {(currentUser?.fullName || currentUser?.name || 'Patient').split(' ')[0]}! </h2>
                 <p className="text-slate-300">Manage your medical records and doctor reviews in one place.</p>
@@ -713,7 +950,7 @@ const PatientDashboard = ({
 
                 <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-2">
                       <User className="text-teal-600" size={24} />
                       Personal Information
                     </h3>
@@ -748,8 +985,8 @@ const PatientDashboard = ({
                     </button>
                   </div>
 
-                  <div className="mb-6">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Known Allergies</p>
+                  <div className="mb-10">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Known Allergies</p>
                     {currentUser.allergies && currentUser.allergies.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {currentUser.allergies.map((allergy, idx) => (
@@ -768,8 +1005,8 @@ const PatientDashboard = ({
                     )}
                   </div>
 
-                  <div className="mb-6">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Chronic Conditions</p>
+                  <div className="mb-10">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Chronic Conditions</p>
                     {currentUser.chronicConditions && currentUser.chronicConditions.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {currentUser.chronicConditions.map((condition, idx) => (
@@ -1028,11 +1265,6 @@ const PatientDashboard = ({
                             <h4 className="text-xl font-semibold text-slate-800">Ratings</h4>
                             {ratingsOnly.map(review => (
                               <div key={review.id} className={`bg-white border rounded-[2rem] p-4 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
-                                <div className="absolute top-4 right-4">
-                                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                    {review.status}
-                                  </span>
-                                </div>
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                                   <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-lg">
@@ -1094,11 +1326,6 @@ const PatientDashboard = ({
                             <h4 className="text-xl font-semibold text-slate-800">Written Reviews</h4>
                             {textReviews.map(review => (
                               <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
-                                <div className="absolute top-1 right-8">
-                                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wide ${review.status === 'rejected' ? 'bg-rose-100 text-rose-600' : review.status === 'pending' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                    {review.status}
-                                  </span>
-                                </div>
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
                                   <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl">
@@ -1157,9 +1384,24 @@ const PatientDashboard = ({
                       <p className="text-3xl font-bold">24.5 MB</p>
                       <p className="text-teal-100 text-sm">of 100 MB used</p>
                     </div>
-                    <button className="bg-white text-teal-600 px-4 py-3 rounded-xl font-bold hover:bg-teal-50 transition-colors flex items-center gap-2">
-                      <Plus size={18} /> Upload
+                    <button
+                      onClick={() => setIsRecordTypeModalOpen(true)}
+                      disabled={uploading}
+                      className="bg-white text-teal-600 px-6 py-3 rounded-xl font-bold hover:bg-teal-50 transition-all flex items-center gap-2 shadow-sm"
+                    >
+                      {uploading ? (
+                        <><div className="w-4 h-4 border-2 border-teal-600/30 border-t-teal-600 rounded-full animate-spin" /> Uploading...</>
+                      ) : (
+                        <><Plus size={18} /> Upload Record</>
+                      )}
                     </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    />
                   </div>
                 </div>
                 <div className="mt-6 bg-white/20 rounded-full h-2">
@@ -1168,10 +1410,11 @@ const PatientDashboard = ({
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {['All', 'Lab Reports', 'Prescriptions', 'Scans', 'Vaccinations'].map((filter, idx) => (
+                {['All', 'Lab Reports', 'Prescriptions', 'Scans', 'Vaccinations'].map((filter) => (
                   <button
                     key={filter}
-                    className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${idx === 0 ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    onClick={() => setReportFilter(filter)}
+                    className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${reportFilter === filter ? 'bg-teal-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   >
                     {filter}
                   </button>
@@ -1179,7 +1422,16 @@ const PatientDashboard = ({
               </div>
 
               <div className="space-y-3">
-                {reports.map(report => (
+                {reports
+                  .filter(r => {
+                    if (reportFilter === 'All') return true;
+                    if (reportFilter === 'Lab Reports') return r.type === 'lab';
+                    if (reportFilter === 'Prescriptions') return r.type === 'prescription';
+                    if (reportFilter === 'Scans') return r.type === 'scan';
+                    if (reportFilter === 'Vaccinations') return r.type === 'vaccination';
+                    return true;
+                  })
+                  .map(report => (
                   <div key={report.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all">
                     <div className="p-6 flex items-center justify-between cursor-pointer" onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}>
                       <div className="flex items-center gap-4">
@@ -1191,6 +1443,10 @@ const PatientDashboard = ({
                           </h4>
                           <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
                             <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">{getReportTypeLabel(report.type)}</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-teal-600 font-medium">
+                              <ShieldCheck size={12} /> {report.status || 'Encrypted'}
+                            </span>
                             <span>•</span>
                             <span>{report.reportDate}</span>
                             {report.doctorName && (
@@ -1215,18 +1471,51 @@ const PatientDashboard = ({
                             <p className="text-slate-600">{report.description}</p>
                           </div>
                           <div className="flex flex-wrap gap-3">
-                            <button className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm">
-                              <Download size={18} /> Download PDF
-                            </button>
-                            <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">
+                            <a 
+                              href={`/api/proxy-blob?url=${encodeURIComponent(report.url)}`}
+                              download 
+                              className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm"
+                            >
+                              <Download size={18} /> Download
+                            </a>
+                            <a 
+                              href={`/api/proxy-blob?url=${encodeURIComponent(report.url)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                            >
                               <FileText size={18} /> View Online
-                            </button>
+                            </a>
                             <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">
                               <Share size={18} /> Share
                             </button>
-                            <button className="ml-auto p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">
-                              <MoreVertical size={20} />
-                            </button>
+                            <div className="relative ml-auto text-right">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenReportMenu(openReportMenu === report.id ? null : report.id);
+                                }}
+                                className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+                              >
+                                <MoreVertical size={20} />
+                              </button>
+                              
+                              {openReportMenu === report.id && (
+                                <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setReportToDelete(report);
+                                      setOpenReportMenu(null);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-4 text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
+                                  >
+                                    <Trash2 size={18} />
+                                    Remove Record
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1427,6 +1716,22 @@ const PatientDashboard = ({
         initialSection={editProfileSection}
       />
 
+      <DeleteConfirmModal 
+        isOpen={!!reportToDelete}
+        onClose={() => setReportToDelete(null)}
+        onConfirm={handleDeleteReport}
+        itemTitle={reportToDelete?.title}
+      />
+
+      <RecordTypeModal
+        isOpen={isRecordTypeModalOpen}
+        onClose={() => setIsRecordTypeModalOpen(false)}
+        onSelect={(type) => {
+          setSelectedUploadType(type);
+          setTimeout(() => fileInputRef.current.click(), 100);
+        }}
+      />
+
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
@@ -1451,6 +1756,15 @@ const PatientDashboard = ({
           }
         }}
       />
+
+
+      {notification && (
+        <Toast 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification(null)} 
+        />
+      )}
     </div>
   );
 };

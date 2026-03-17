@@ -357,13 +357,9 @@ export default function App() {
          const currentScrollY = window.scrollY;
          setScrolled(currentScrollY > 20);
 
-         const hideablePages = ['doctor-view', 'content-hub'];
-         if (hideablePages.includes(currentPage)) {
-            if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
-               setHideNavbar(true);
-            } else {
-               setHideNavbar(false);
-            }
+         // Apply auto-hide navbar logic to all pages
+         if (currentScrollY > lastScrollYRef.current && currentScrollY > 150) {
+            setHideNavbar(true);
          } else {
             setHideNavbar(false);
          }

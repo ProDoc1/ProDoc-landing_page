@@ -155,7 +155,7 @@ const Navbar = ({
   const isDoctor = userRole === 'doctor' || currentUser?.user_type === 'doctor' || currentUser?.role === 'doctor';
 
   return (
-    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-transform duration-300 ${(['doctor-view', 'content-hub'].includes(currentPage)) && hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`} >
+    <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hideNavbar ? '-translate-y-[150%] opacity-0 scale-95' : 'translate-y-0 opacity-100 scale-100'}`} >
       <div className="flex items-center justify-between">
 
         {/* Logo Section */}
