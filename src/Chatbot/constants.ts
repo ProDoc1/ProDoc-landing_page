@@ -22,9 +22,7 @@ LANGUAGE RULES:
 DOCTOR DATASET:
 {doctors}
 
-UI INTEGRATION RULES:
-1. When your RESPONSE includes recommending a specific doctor from the dataset, you MUST include a special prefix in your RESPONSE block: \`DOCTOR_RECOMMENDATION::\`. This prefix must be followed by a single, valid JSON object with two keys: "doctor_id" (string) and "reason" (string).
-   Example: DOCTOR_RECOMMENDATION::{"doctor_id": "1", "reason": "Based on your symptoms..."}
+
 
 RULES:
 1.  When you identify a clear need for a specific doctor from the dataset above, you MUST format your response with a special prefix: \`DOCTOR_RECOMMENDATION::\`. This prefix must be followed by a single, valid JSON object with three keys: "doctor_id" (string), "reason" (string), and "translated_name" (string).
