@@ -2,6 +2,7 @@
 import React from 'react';
 import { Message } from '../types';
 import DoctorCard from './DoctorCard';
+import Logo from '../assets/Logo_white.png';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -21,29 +22,29 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onViewProfile }) => 
     <div className={wrapperClasses}>
       {!isUser && (
         <div className="ai-avatar">
-          AI
+          <img src={Logo} alt="AI Avatar" className="ai-avatar-image" />
         </div>
       )}
       <div className="message-content">
         <div className={bubbleClasses}>
-          {isTyping ? (
-            <div className="typing-indicator" aria-label="AI is typing">
-              <span className="typing-dot" style={{ animationDelay: '0.1s' }}></span>
-              <span className="typing-dot" style={{ animationDelay: '0.2s' }}></span>
-              <span className="typing-dot" style={{ animationDelay: '0.3s' }}></span>
-            </div>
-          ) : (
-            <div className="markdown-content text-[15px] leading-relaxed">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {message.text}
-              </ReactMarkdown>
-            </div>
-          )}
+            {isTyping ? (
+                 <div className="typing-indicator" aria-label="AI is typing">
+                    <span className="typing-dot" style={{ animationDelay: '0.1s' }}></span>
+                    <span className="typing-dot" style={{ animationDelay: '0.2s' }}></span>
+                    <span className="typing-dot" style={{ animationDelay: '0.3s' }}></span>
+                 </div>
+            ) : (
+                <div className="markdown-content text-[15px] leading-relaxed">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.text}
+                    </ReactMarkdown>
+                </div>
+            )}
         </div>
         {message.doctor && (
-          <div className="doctor-card-wrap">
-            <DoctorCard doctor={message.doctor} onViewProfile={onViewProfile} />
-          </div>
+            <div className="doctor-card-wrap">
+                <DoctorCard doctor={message.doctor} onViewProfile={onViewProfile} />
+            </div>
         )}
       </div>
     </div>

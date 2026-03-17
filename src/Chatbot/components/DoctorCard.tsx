@@ -1,4 +1,4 @@
-import React from 'react';
+ import React from 'react';
 import { Doctor } from '../types';
 
 interface DoctorCardProps {
@@ -29,7 +29,9 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewProfile }) => {
             </svg>
           </div>
           <div className="doctor-meta">
-            <h3 className="doctor-name">{doctor.full_name}</h3>
+            <h3 className="doctor-name">{doctor.translated_name && doctor.translated_name !== doctor.full_name 
+                ? `${doctor.translated_name} (${doctor.full_name})` 
+                : doctor.full_name}</h3>
             <p className="doctor-specialty">{doctor.specialty}</p>
             <div className="doctor-stats">
               <span>{doctor.years_of_experience} Years Experience</span>
@@ -74,6 +76,9 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewProfile }) => {
           <p className="doctor-reg">
             <span className="doctor-label-inline">SLMC:</span> {doctor.slmc_number}
           </p>
+          <a href={`mailto:${doctor.contact_email}`} className="doctor-contact-btn">
+            Contact Doctor
+          </a>
           <button
             type="button"
             className="doctor-contact-btn text-sm font-semibold hover:bg-teal-500 hover:text-white transition-colors"
