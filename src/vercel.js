@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "/ProDoc-Backend/api/:path*"
+      "destination": "/api/:path*"
     }
   ]
 }    
