@@ -5,13 +5,18 @@ import { SYSTEM_PROMPT_TEMPLATE, INITIAL_GREETINGS } from './constants';
 import { DOCTORS } from './doctors';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
-
 import Header from './components/Header';
 import Disclaimer from './components/Disclaimer';
+import './index.css';
+
+interface AppProps {
+  onViewProfile?: (id: string) => void;
+}
+
 const ai = new GoogleGenAI({
   apiKey: import.meta.env.VITE_GEMINI_API_KEY
 });
-const App: React.FC = () => {
+const App: React.FC<AppProps> = ({ onViewProfile }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [chat, setChat] = useState<Chat | null>(null);
