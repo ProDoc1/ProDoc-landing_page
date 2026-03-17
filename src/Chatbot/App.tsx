@@ -13,9 +13,43 @@ interface AppProps {
   onViewProfile?: (id: string) => void;
 }
 
-const ai = new GoogleGenAI({
-  apiKey: import.meta.env.VITE_GEMINI_API_KEY
-});
+interface RecommendationPayload {
+  doctor_id: string | number;
+  reason?: string;
+  translated_name?: string;
+}
+
+const extractDoctorRecommendation = (responseText: string): RecommendationPayload | null => {
+  const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';
+  const prefixIndex = responseText.indexOf(recommendationPrefix);
+  if (prefixIndex === -1) return null;
+
+  const jsonStart = responseText.indexOf('{', prefixIndex + recommendationPrefix.length);
+  if (jsonStart === -1) return null;
+
+  let bracketDepth = 0;
+  let jsonEnd = -1;
+  for (let i = jsonStart; i < responseText.length; i += 1) {
+    if (responseText[i] === '{') bracketDepth += 1;
+    if (responseText[i] === '}') {
+      bracketDepth -= 1;
+      if (bracketDepth === 0) {
+        jsonEnd = i;
+        break;
+      }
+    }
+  }
+
+  if (jsonEnd === -1) return null;
+
+  const jsonString = responseText.slice(jsonStart, jsonEnd + 1);
+  try {
+    return JSON.parse(jsonString) as RecommendationPayload;
+  } catch {
+    return null;
+  }
+};
+
 const App: React.FC<AppProps> = ({ onViewProfile }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -109,28 +143,25 @@ const doctorsList = DOCTORS.map(d => ({
         );
       }
       
-      const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';
       let doctor: Doctor | undefined;
       let finalText = fullResponseText;
 
-      if (fullResponseText.startsWith(recommendationPrefix)) {
-          const jsonString = fullResponseText.substring(recommendationPrefix.length);
-          try {
-              const recommendation: { doctor_id: string; reason: string; translated_name: string } = JSON.parse(jsonString);
-              const foundDoctor = DOCTORS.find(d => d.doctor_id === recommendation.doctor_id);
-              if (foundDoctor) {
-                    doctor = { 
-                    ...foundDoctor, 
-                    reason: recommendation.reason,
-                    translated_name: recommendation.translated_name 
-                  } as Doctor;
-              } else {
-                  finalText = fullResponseText;
-              }
-          } catch (e) {
-              console.error("Failed to parse doctor recommendation JSON:", e);
-              finalText = fullResponseText; // Fallback to showing raw response
-          }
+      const recommendation = extractDoctorRecommendation(fullResponseText);
+      if (recommendation) {
+        const doctorId = String(recommendation.doctor_id).trim();
+        const foundDoctor = DOCTORS.find((d) => d.doctor_id === doctorId);
+        const reasonText = (recommendation.reason || '').trim();
+
+        if (foundDoctor) {
+          doctor = {
+            ...foundDoctor,
+            reason: reasonText || foundDoctor.reason || 'Please consult this specialist for further evaluation.',
+            translated_name: recommendation.translated_name || foundDoctor.translated_name
+          } as Doctor;
+          finalText = doctor.reason;
+        } else if (reasonText) {
+          finalText = reasonText;
+        }
       }
 
       setMessages((prev) =>
