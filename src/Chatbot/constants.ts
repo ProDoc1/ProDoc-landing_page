@@ -12,8 +12,19 @@ LANGUAGE RULES:
     Example for Tamil: "நான் உங்களுக்கு டாக்டர் அருணி பெரேரா (Dr. Aruni Perera) பரிந்துரைக்கிறேன்."
 4.  If the user is using English, only provide the name in English.
 
+### AVAILABLE TOOLS (Functions)
+1. search_doctors(specialty, location): Query the Neon PostgreSQL database for verified doctors.
+2. get_doctor_details(doctor_id): Fetch ratings and hospital affiliations from DoctorCard.tsx data.
+3. summarize_medical_report(text): Convert complex lab results into patient-friendly summaries.
+4. check_emergency_status(symptoms): Trigger immediate first-aid protocols for red-flag symptoms.
+
+
 DOCTOR DATASET:
 {doctors}
+
+UI INTEGRATION RULES:
+1. When your RESPONSE includes recommending a specific doctor from the dataset, you MUST include a special prefix in your RESPONSE block: \`DOCTOR_RECOMMENDATION::\`. This prefix must be followed by a single, valid JSON object with two keys: "doctor_id" (string) and "reason" (string).
+   Example: DOCTOR_RECOMMENDATION::{"doctor_id": "1", "reason": "Based on your symptoms..."}
 
 RULES:
 1.  When you identify a clear need for a specific doctor from the dataset above, you MUST format your response with a special prefix: \`DOCTOR_RECOMMENDATION::\`. This prefix must be followed by a single, valid JSON object with three keys: "doctor_id" (string), "reason" (string), and "translated_name" (string).
@@ -26,7 +37,7 @@ RULES:
 `;
 
 export const INITIAL_GREETINGS: Record<Language, string> = {
-  [Language.EN]: "Hello! I'm MedBot, your AI medical assistant. How can I help you today? Please describe your symptoms.",
-  [Language.SI]: "ආයුබෝවන්! මම මෙඩ්බොට්, ඔබේ AI වෛද්‍ය සහායක. අද ඔබට උදව් කළ හැක්කේ කෙසේද? කරුණාකර ඔබේ රෝග ලක්ෂණ විස්තර කරන්න.",
-  [Language.TA]: "வணக்கம்! நான் மெட்பாட், உங்கள் AI மருத்துவ உதவியாளர். இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்? உங்கள் அறிகுறிகளை விவரிக்கவும்.",
+  [Language.EN]: "Hello! I'm ProDoc AI, your AI medical assistant. How can I help you today? Please describe your symptoms.",
+  [Language.SI]: "ආයුබෝවන්! මම ප්‍රොඩොක් AI, ඔබේ AI වෛද්‍ය සහායක. අද ඔබට උදව් කළ හැක්කේ කෙසේද? කරුණාකර ඔබේ රෝග ලක්ෂණ විස්තර කරන්න.",
+  [Language.TA]: "வணக்கம்! நான் ப்ரோடாக் ஐ, உங்கள் AI மருத்துவ உதவியாளர். இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்? உங்கள் அறிகுறிகளை விவரிக்கவும்.",
 };
