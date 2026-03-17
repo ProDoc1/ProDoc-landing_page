@@ -50,6 +50,7 @@ export default async function handler(req, res) {
       const result = await sql`
         SELECT 
           r.id,
+          r.patient_id,
           r.status,
           r.summary,
           r.documents,
@@ -103,7 +104,8 @@ export default async function handler(req, res) {
           email: row.email,
           bloodGroup: row.blood_type || 'Unknown',
           medicalHistory: medHistory,
-          address: row.address || 'Not provided'
+          address: row.address || 'Not provided',
+          patientId: row.patient_id
         };
       });
       
