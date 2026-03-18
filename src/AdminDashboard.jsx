@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import {
     CheckCircle, XCircle, AlertTriangle,
     MessageSquare, Star, FileText, ArrowLeft, Loader2,
-    Users, Stethoscope, Search, Trash2, LogOut
+    Users, Stethoscope, Search, Trash2, LogOut, ShieldAlert, ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminDashboard = ({ onBack }) => {
     const [reviews, setReviews] = useState([]);
     const [directory, setDirectory] = useState({ users: [], doctors: [] });
+    const [doctorRequests, setDoctorRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeHub, setActiveHub] = useState('moderation');
@@ -23,18 +24,21 @@ const AdminDashboard = ({ onBack }) => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [reviewsRes, directoryRes] = await Promise.all([
+            const [reviewsRes, directoryRes, requestsRes] = await Promise.all([
                 fetch('/api/reviews'),
-                fetch('/api/admin-directory')
+                fetch('/api/admin-directory'),
+                fetch('/api/doctor-request')
             ]);
 
-            if (!reviewsRes.ok || !directoryRes.ok) throw new Error('Data sync failed');
+            if (!reviewsRes.ok || !directoryRes.ok || !requestsRes.ok) throw new Error('Data sync failed');
 
             const reviewsData = await reviewsRes.json();
             const directoryData = await directoryRes.json();
+            const requestsData = await requestsRes.json();
 
             setReviews(reviewsData);
             setDirectory(directoryData);
+            setDoctorRequests(requestsData);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -75,37 +79,52 @@ const AdminDashboard = ({ onBack }) => {
             });
         }
     };
-    const deleteUser = async (userId) => {
+    const deleteUser = async (userId, type = 'user') => {
         setPopup({
             show: true,
             type: 'confirm',
-            title: 'Delete User?',
-            message: 'This will permanently remove the patient profile and all associated data from the system.',
+            title: 'Authorize Deletion',
+            message: `You are about to permanently remove this ${type} from the database. All associated historical records will be archived and hidden.`,
             onConfirm: async () => {
                 try {
-                    setDirectory(prev => ({
-                        ...prev,
-                        users: prev.users.filter(u => u.id !== userId)
-                    }));
-
-                    const res = await fetch(`/api/admin-directory?userId=${userId}`, {
+                    const res = await fetch(`/api/admin-directory?userId=${userId}&type=${type}`, {
                         method: 'DELETE'
                     });
-
-                    if (!res.ok) throw new Error('Deletion failed');
-                    fetchReviews();
+                    if (!res.ok) throw new Error('Deletion sequence failed');
+                    fetchAllData();
                 } catch (err) {
                     console.error(err);
-                    fetchAllData();
                     setPopup({
                         show: true,
                         type: 'error',
-                        title: 'Deletion Failed',
-                        message: 'Could not complete the request. Please synchronize and try once more.'
+                        title: 'Operation Conflict',
+                        message: 'A system error occurred during deletion. The record remains intact.'
                     });
                 }
             }
         });
+    };
+
+    const moderateDoctorRequest = async (id, action) => {
+        try {
+            setDoctorRequests(prev => prev.map(r => r.id === id ? { ...r, status: action === 'approve' ? 'approved' : 'rejected' } : r));
+            const res = await fetch('/api/doctor-request', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, action })
+            });
+
+            if (!res.ok) throw new Error('Action failed');
+            if (action === 'approve') fetchAllData(); // Refresh directory as well
+        } catch (err) {
+            console.error(err);
+            setPopup({
+                show: true,
+                type: 'error',
+                title: 'Operation Failed',
+                message: 'Failed to update doctor request status.'
+            });
+        }
     };
 
     const filteredReviews = reviews.filter(review => {
@@ -117,11 +136,19 @@ const AdminDashboard = ({ onBack }) => {
         return matchesFilter && matchesSearch;
     });
 
-    const filteredUsers = directory.users.filter(user =>
+    const filteredUsers = (directory.users || []).filter(user =>
         searchQuery === '' ||
         (user.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (user.id || '').toString().includes(searchQuery) ||
         (user.email || '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const filteredDoctors = (directory.doctors || []).filter(doctor =>
+        searchQuery === '' ||
+        (doctor.full_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (doctor.id || '').toString().includes(searchQuery) ||
+        (doctor.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (doctor.specialty || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (loading) {
@@ -154,7 +181,9 @@ const AdminDashboard = ({ onBack }) => {
                         <p className="text-slate-500 font-medium max-w-xl">
                             {activeHub === 'moderation'
                                 ? 'Review patient narratives and security flags to maintain system integrity.'
-                                : 'Comprehensive database of all registered patients.'}
+                                : activeHub === 'requests'
+                                    ? 'Verify and approve medical professionals joining the ProDoc network.'
+                                    : 'Comprehensive database of all registered platform members.'}
                         </p>
                     </div>
 
@@ -162,18 +191,24 @@ const AdminDashboard = ({ onBack }) => {
                     <div className="flex p-1.5 bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 shrink-0">
                         {[
                             { id: 'moderation', label: 'Moderation Hub', icon: AlertTriangle },
+                            { id: 'requests', label: 'Doctor Requests', icon: ShieldAlert },
                             { id: 'directory', label: 'Directory Hub', icon: FileText }
                         ].map(hub => (
                             <button
                                 key={hub.id}
                                 onClick={() => { setActiveHub(hub.id); setSearchQuery(''); }}
-                                className={`flex items-center gap-3 px-8 py-3.5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all ${activeHub === hub.id
+                                className={`flex items-center gap-3 px-8 py-3.5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all relative ${activeHub === hub.id
                                     ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20'
                                     : 'text-slate-400 hover:text-slate-600'
                                     }`}
                             >
                                 <hub.icon size={16} />
                                 {hub.label}
+                                {hub.id === 'requests' && (doctorRequests || []).filter(r => r.status === 'pending').length > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white animate-pulse">
+                                        {(doctorRequests || []).filter(r => r.status === 'pending').length}
+                                    </span>
+                                )}
                             </button>
                         ))}
                     </div>
@@ -243,7 +278,7 @@ const AdminDashboard = ({ onBack }) => {
                                                         {review.user_name}
                                                     </h3>
                                                     <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">
-                                                        Reviewed <span className="text-slate-600">DR. {review.doctor_name}</span>
+                                                        Reviewed <span className="text-slate-600">{review.doctor_name}</span>
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-3 p-1.5 bg-slate-50 rounded-lg w-fit">
                                                         <Star size={12} className="fill-amber-400 text-amber-400" />
@@ -302,6 +337,116 @@ const AdminDashboard = ({ onBack }) => {
                         </AnimatePresence>
                     )}
                 </div>
+            ) : activeHub === 'requests' ? (
+                /* Doctor Registration Requests Hub */
+                <div className="space-y-6">
+                    {(doctorRequests || []).filter(r => r.status === 'pending').length === 0 ? (
+                        <div className="bg-white rounded-[3rem] p-20 text-center border-2 border-dashed border-slate-100">
+                            <ShieldAlert size={64} className="mx-auto text-teal-500 mb-6 opacity-20" />
+                            <h3 className="text-xl font-black text-slate-900 mb-2">No Pending Approvals</h3>
+                            <p className="text-slate-400 font-medium">Any new doctor registration requests will appear here after verification.</p>
+                        </div>
+                    ) : (
+                        <AnimatePresence mode="popLayout">
+                            {(doctorRequests || []).filter(r => r.status === 'pending').map((request) => (
+                                <motion.div
+                                    key={request.id}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/30 border border-slate-50 overflow-hidden relative"
+                                >
+                                    <div className="flex flex-col lg:flex-row gap-12">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-6 mb-8">
+                                                 <div className="w-20 h-20 rounded-[1.5rem] bg-teal-50 flex items-center justify-center text-teal-600 font-black text-3xl border border-teal-100 shadow-sm shrink-0 uppercase overflow-hidden">
+                                                     {request.image_url ? (
+                                                         <img src={request.image_url} alt="Doctor" className="w-full h-full object-cover" />
+                                                     ) : (
+                                                         request.full_name?.[0] || 'D'
+                                                     )}
+                                                 </div>
+                                                 <div>
+                                                     <h3 className="text-2xl font-black text-slate-900 leading-tight">{request.full_name}</h3>
+                                                     <p className="text-teal-600 font-bold text-xs uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
+                                                         <ShieldCheck size={14} /> SLMC: {request.slmc_number}
+                                                     </p>
+                                                 </div>
+                                             </div>
+
+                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                                                 <div className="space-y-1">
+                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Specialty</span>
+                                                     <p className="text-sm font-bold text-slate-700">{request.specialty}</p>
+                                                 </div>
+                                                 <div className="space-y-1">
+                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sector</span>
+                                                     <p className="text-sm font-bold text-slate-700">{request.department_type || 'N/A'}</p>
+                                                 </div>
+                                                 <div className="space-y-1">
+                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gender</span>
+                                                     <p className="text-sm font-bold text-slate-700">{request.gender || 'N/A'}</p>
+                                                 </div>
+                                                 <div className="space-y-1">
+                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Experience</span>
+                                                     <p className="text-sm font-bold text-slate-700">{request.years_of_experience} Years</p>
+                                                 </div>
+                                                 <div className="space-y-1">
+                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Qualifications</span>
+                                                     <p className="text-sm font-bold text-slate-700">{request.educational_qualifications}</p>
+                                                 </div>
+                                                 <div className="space-y-1">
+                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Languages</span>
+                                                     <p className="text-sm font-bold text-slate-700">{request.languages}</p>
+                                                 </div>
+                                                 <div className="space-y-1">
+                                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</span>
+                                                     <p className="text-sm font-bold text-slate-700">{request.email}</p>
+                                                 </div>
+                                             </div>
+
+                                            <div className="bg-slate-50/70 rounded-[2rem] p-6 border border-slate-100 mb-8">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Professional Bio</span>
+                                                <p className="text-slate-600 font-medium leading-relaxed italic text-sm">
+                                                    "{request.bio}"
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Affiliated Hospitals</span>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {(Array.isArray(request.associated_hospitals) 
+                                                        ? request.associated_hospitals 
+                                                        : JSON.parse(request.associated_hospitals || '[]')
+                                                    ).map((hospital, idx) => (
+                                                        <span key={idx} className="bg-white text-slate-600 px-4 py-2 rounded-xl border border-slate-100 text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                                            {hospital}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="lg:w-72 flex flex-col justify-end gap-3">
+                                            <button 
+                                                onClick={() => moderateDoctorRequest(request.id, 'reject')}
+                                                className="w-full bg-white border-2 border-red-50 text-red-500 py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-red-50 transition-all flex items-center justify-center gap-3"
+                                            >
+                                                <XCircle size={18} /> Deny Onboarding
+                                            </button>
+                                            <button 
+                                                onClick={() => moderateDoctorRequest(request.id, 'approve')}
+                                                className="w-full bg-teal-500 text-white py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-teal-600 transition-all shadow-xl shadow-teal-500/20 flex items-center justify-center gap-3"
+                                            >
+                                                <CheckCircle size={18} /> Approve Profile
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    )}
+                </div>
             ) : (
                 /* Directory View */
                 <div className="space-y-8">
@@ -350,7 +495,7 @@ const AdminDashboard = ({ onBack }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
-                                    {filteredUsers.length === 0 ? (
+                                    {filteredUsers.length === 0 && filteredDoctors.length === 0 ? (
                                         <tr>
                                             <td colSpan="4" className="px-8 py-20 text-center">
                                                 <div className="opacity-20 mb-4 flex justify-center"><AlertTriangle size={48} /></div>
@@ -358,40 +503,86 @@ const AdminDashboard = ({ onBack }) => {
                                             </td>
                                         </tr>
                                     ) : (
-                                        filteredUsers.map(user => (
-                                            <tr key={user.id} className="group hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-8 py-4">
-                                                    <span className="font-mono text-xs font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-100 italic">
-                                                        #{user.id}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 border border-white shadow-sm">
-                                                            {user.full_name?.[0]}
-                                                        </div>
-                                                        <span className="font-black text-slate-900 uppercase text-xs tracking-tight group-hover:text-teal-600 transition-colors">
-                                                            {user.full_name}
+                                        <>
+                                            {filteredUsers.map(user => (
+                                                <tr key={`user-${user.id}`} className="group hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-8 py-4">
+                                                        <span className="font-mono text-xs font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-100 italic">
+                                                            #{user.id}
                                                         </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-4">
-                                                    <span className="text-xs font-bold text-slate-500">
-                                                        {user.email}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => deleteUser(user.id)}
-                                                            className="p-2.5 bg-white rounded-xl border border-red-50 text-red-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 hover:shadow-lg transition-all shadow-sm"
-                                                        >
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
+                                                    </td>
+                                                    <td className="px-8 py-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 border border-white shadow-sm">
+                                                                {user.full_name?.[0]}
+                                                            </div>
+                                                            <span className="font-black text-slate-900 uppercase text-xs tracking-tight group-hover:text-teal-600 transition-colors">
+                                                                {user.full_name}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-4">
+                                                        <span className="text-xs font-bold text-slate-500">
+                                                            {user.email}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => deleteUser(user.id, 'user')}
+                                                                className="p-2.5 bg-white rounded-xl border border-red-50 text-red-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 hover:shadow-lg transition-all shadow-sm"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+
+                                            {filteredDoctors.length > 0 && (
+                                                <tr className="bg-slate-50/20">
+                                                    <td colSpan="4" className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest border-t border-slate-100">Verified Doctors</td>
+                                                </tr>
+                                            )}
+
+                                            {filteredDoctors.map(doctor => (
+                                                <tr key={`doc-${doctor.id}`} className="group hover:bg-teal-50/20 transition-colors">
+                                                    <td className="px-8 py-4">
+                                                        <span className="font-mono text-xs font-black text-teal-600 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-100 italic">
+                                                            #{doctor.id}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-4">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center font-black text-teal-600 border border-white shadow-sm">
+                                                                {doctor.full_name?.[0]}
+                                                            </div>
+                                                            <div>
+                                                                <span className="font-black text-slate-900 uppercase text-xs tracking-tight group-hover:text-teal-600 transition-colors block">
+                                                                    {doctor.full_name}
+                                                                </span>
+                                                                <span className="text-[9px] font-bold text-teal-600 uppercase tracking-tighter">{doctor.specialty}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-4">
+                                                        <span className="text-xs font-bold text-slate-500">
+                                                            {doctor.email}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => deleteUser(doctor.id, 'doctor')}
+                                                                className="p-2.5 bg-white rounded-xl border border-red-50 text-red-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200 hover:shadow-lg transition-all shadow-sm"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </>
                                     )}
                                 </tbody>
                             </table>

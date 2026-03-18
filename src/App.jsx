@@ -18,9 +18,10 @@ const AdminDashboard = lazy(() => import('./AdminDashboard'));
 const AdminLogin = lazy(() => import('./AdminLogin'));
 import MiniBot from './components/MiniBot';
 import ChatbotApp from './Chatbot/App';
+import DoctorRegistration from './DoctorRegistration';
 
 
-const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms, onNavigateChatbot }) => {
+const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms, onNavigateChatbot, onNavigateDoctorRegistration }) => {
 
    useEffect(() => {
       document.documentElement.style.scrollBehavior = 'smooth';
@@ -303,7 +304,10 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
 
                   <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
                      <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
-                     <button className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                     <button 
+                        onClick={onNavigateDoctorRegistration}
+                        className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95"
+                     >
                         Join ProDoc Network
                      </button>
                   </div>
@@ -327,7 +331,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
-   const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'privacy', 'terms', 'content-hub', 'admin', 'chatbot'];
+   const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'privacy', 'terms', 'content-hub', 'admin', 'chatbot', 'doctor-registration'];
 
    const [currentPage, setCurrentPage] = useState(() => {
       const segments = window.location.pathname.split('/').filter(Boolean);
@@ -405,7 +409,7 @@ export default function App() {
          'privacy': 'ProDoc | Privacy Policy',
          'terms': 'ProDoc | Terms of Service',
          'content-hub': 'ProDoc | Content Hub',
-         'admin': 'ProDoc | Admin Dashboard'
+         'admin': 'ProDoc | Admin Dashboard',
       };
 
       document.title = titles[currentPage] || 'ProDoc';
@@ -629,7 +633,7 @@ export default function App() {
    return (
       <main className="relative min-h-screen">
          {/* Navbar visibility logic */}
-         {currentPage !== 'login' && currentPage !== 'signup' && (currentPage !== 'admin' || adminUser) && (
+         {currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'doctor-registration' && (currentPage !== 'admin' || adminUser) && (
             <Navbar
                currentPage={currentPage}
                currentUser={currentUser}
@@ -643,6 +647,7 @@ export default function App() {
                onNavigateAdmin={() => navigateTo('admin')}
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
+               onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
                onLogout={handleLogout}
                onNavigateDashboard={() => {
                   const role = localStorage.getItem('userRole');
@@ -663,6 +668,7 @@ export default function App() {
                   window.history.pushState(null, '', '/chatbot');
                   navigateTo('chatbot');
                }}
+               onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
             />
          )}
 
@@ -675,7 +681,10 @@ export default function App() {
          )}
 
          {currentPage === 'about' && (
-            <AboutPage onBack={() => navigateTo('home')} />
+            <AboutPage 
+               onBack={() => navigateTo('home')} 
+               onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
+            />
          )}
 
          {currentPage === 'login' && (
@@ -690,6 +699,7 @@ export default function App() {
             <SignupPage
                onBack={() => navigateTo('home')}
                onNavigateLogin={() => navigateTo('login')}
+               onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
                onLoginSuccess={handleLoginSuccess}
             />
          )}
@@ -698,6 +708,7 @@ export default function App() {
             <DoctorsPage
                onBack={() => navigateTo('home')}
                onViewProfile={(id) => navigateTo('doctor-view', id)}
+               onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
             />
          )}
 
@@ -763,6 +774,14 @@ export default function App() {
                   />
                )}
             </Suspense>
+         )}
+
+         {currentPage === 'doctor-registration' && (
+            <DoctorRegistration 
+               onBack={() => navigateTo('home')}
+               onNavigateLogin={() => navigateTo('login')}
+               onNavigateTerms={() => navigateTo('terms')}
+            />
          )}
 
          <div className={`fixed inset-0 z-[200] bg-white transition-opacity ${currentPage === 'chatbot' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>

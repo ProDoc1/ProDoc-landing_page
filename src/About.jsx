@@ -217,7 +217,7 @@ const Timeline = ({ events }) => {
   );
 };
 
-const AboutPage = () => {
+const AboutPage = ({ onNavigateDoctorRegistration }) => {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -655,7 +655,10 @@ const AboutPage = () => {
 
               <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
                 <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
-                <button className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95">
+                <button 
+                  onClick={onNavigateDoctorRegistration}
+                  className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95"
+                >
                   Join ProDoc Network
                 </button>
               </div>

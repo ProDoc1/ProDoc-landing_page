@@ -16,7 +16,7 @@ import LogoColor from './assets/Logo_with_words.png';
 import Plasma from './components/Plasma';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
-const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess }) => { // <-- ACCEPT PROP HERE
+const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorRegistration }) => { // <-- ACCEPT PROP HERE
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -93,6 +93,11 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess }) => { // <-- ACC
       return;
     }
 
+    // Title Case Name
+    const formattedName = formData.fullName.trim().split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
     if (!validateEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address.';
     }
@@ -113,7 +118,7 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess }) => { // <-- ACC
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: formData.fullName,
+          fullName: formattedName,
           email: formData.email,
           password: formData.password
         }),
@@ -227,6 +232,16 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess }) => { // <-- ACC
 
                 <div className="mt-6 text-center text-xs text-slate-500">
                   Already have an account? <button onClick={(e) => { e.preventDefault(); onNavigateLogin(); }} className="text-teal-600 hover:text-teal-500 font-bold underline underline-offset-2">Log In</button>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Are you a medical professional?</p>
+                  <button 
+                    onClick={(e) => { e.preventDefault(); onNavigateDoctorRegistration(); }}
+                    className="text-slate-900 hover:text-teal-600 font-black text-xs uppercase tracking-widest transition-colors"
+                  >
+                    Apply to Join ProDoc Network
+                  </button>
                 </div>
 
               </div>
