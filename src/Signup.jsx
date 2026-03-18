@@ -14,8 +14,9 @@ import {
 
 import LogoColor from './assets/Logo_with_words.png';
 import Plasma from './components/Plasma';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
-const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
+const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess }) => { // <-- ACCEPT PROP HERE
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,6 +28,7 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorAlert, setErrorAlert] = useState({ show: false, message: '' });
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Track errors for specific fields
   const [errors, setErrors] = useState({
@@ -44,6 +46,42 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
     // Clear errors when user starts typing
     setErrors({ ...errors, [e.target.name]: '' });
   };
+
+  const signUpWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/google-callback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: tokenResponse.access_token,
+            role: 'patient'
+          })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          localStorage.setItem('userRole', data.role);
+          if (data.token) localStorage.setItem('authToken', data.token);
+          if (data.user && data.user.id) {
+            localStorage.setItem('patientId', data.user.id);
+          }
+          onLoginSuccess(data.user, data.role);
+        } else {
+          setErrorAlert({ show: true, message: data.error || "Google auth failed. Please try again." });
+        }
+      } catch (err) {
+        console.error("Google auth error:", err);
+        setErrorAlert({ show: true, message: "Connection error with Google Login." });
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: errorResponse => {
+      console.error("Google Auth Failed", errorResponse);
+      setErrorAlert({ show: true, message: "Google authorization failed." });
+    },
+  });
 
   const handleCreateAccount = async (e) => {
     e.preventDefault();
@@ -69,6 +107,7 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
     }
 
     // API CALL
+    setLoading(true);
     try {
       const response = await fetch('/api/sign-up', {
         method: 'POST',
@@ -96,6 +135,8 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
     } catch (err) {
       console.error("Connection Error:", err);
       setErrorAlert({ show: true, message: "Could not connect. Ensure server is running." });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -179,8 +220,8 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
                   </div>
 
 
-                  <button onClick={handleCreateAccount} className="w-full bg-teal-500 hover:bg-teal-500 text-white font-bold py-3.5 rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 mt-2">
-                    Create Account <ArrowRight size={18} />
+                  <button onClick={handleCreateAccount} disabled={loading} className="w-full bg-teal-500 hover:bg-teal-500 text-white font-bold py-3.5 rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)] transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 mt-2">
+                    {loading ? 'Creating...' : 'Create Account'} <ArrowRight size={18} />
                   </button>
                 </div>
 
@@ -207,8 +248,8 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
                   Create your account to start managing your health records securely and efficiently.
                 </p>
                 <div className="flex gap-4">
-                  <button className="flex items-center justify-center gap-2 bg-white text-teal-600 font-bold py-2.5 px-6 rounded-xl hover:bg-teal-50 transition-all shadow-lg text-xs">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-4 h-4" /> Google
+                  <button onClick={() => signUpWithGoogle()} disabled={loading} className="flex items-center justify-center gap-2 bg-white text-teal-600 font-bold py-2.5 px-6 rounded-xl hover:bg-teal-50 transition-all shadow-lg text-xs">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-4 h-4" /> {loading ? "Connecting..." : "Google"}
                   </button>
                 </div>
               </div>
@@ -331,5 +372,11 @@ const SignupPage = ({ onBack, onNavigateLogin }) => { // <-- ACCEPT PROP HERE
     </div>
   );
 };
-
-export default SignupPage;
+export default function SignupPageWrapper(props) {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "10415383182-q66i5k4nbl68erfiv9eopab75sctd6l4.apps.googleusercontent.com";
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      <SignupPage {...props} />
+    </GoogleOAuthProvider>
+  );
+}

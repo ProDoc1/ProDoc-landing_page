@@ -375,11 +375,7 @@ const DoctorsPage = ({ onBack, onViewProfile }) => {
                       className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm hover:shadow-lg hover:border-teal-300 flex flex-col justify-between h-full transition-all duration-300 group"
                     >
                       <div className="flex flex-col sm:flex-row gap-6 items-start">
-                        {/* Status absolute tag */}
-                        <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-100 rounded-md">
-                          <CheckCircle size={10} className="text-green-600" />
-                          <span className="text-[9px] font-bold text-green-700 uppercase tracking-widest font-mono">Verified</span>
-                        </div>
+
 
                         {/* Image */}
                         <div className="shrink-0">

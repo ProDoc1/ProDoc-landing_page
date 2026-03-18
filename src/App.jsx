@@ -690,6 +690,7 @@ export default function App() {
             <SignupPage
                onBack={() => navigateTo('home')}
                onNavigateLogin={() => navigateTo('login')}
+               onLoginSuccess={handleLoginSuccess}
             />
          )}
 
