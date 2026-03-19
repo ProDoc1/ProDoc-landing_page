@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     ShieldCheck,
     Star,
@@ -18,13 +18,14 @@ import {
 } from 'lucide-react';
 import DoctorRating from './components/DoctorRating';
 
-const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigateLogin, onNavigateSignupPage }) => {
+const DoctorViewProfile = ({ doctorId, initialSection = 'overview', onBack, currentUser, onLogout, onNavigateLogin, onNavigateSignupPage }) => {
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSaved, setIsSaved] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [reviews, setReviews] = useState([]);
+    const reviewSectionRef = useRef(null);
 
     // derived collections
     const ratingsOnly = reviews.filter(r => !r.comment || r.comment.trim() === '');
@@ -72,6 +73,19 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
 
         if (doctorId) fetchDoctorData();
     }, [doctorId]);
+
+    useEffect(() => {
+        if (loading || !doctor || initialSection !== 'reviews') return;
+
+        const timer = setTimeout(() => {
+            reviewSectionRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }, 250);
+
+        return () => clearTimeout(timer);
+    }, [loading, doctor, initialSection]);
 
     if (loading) {
         return (
@@ -322,7 +336,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                 </div>
 
                 {/* Rating and Reviews Section */}
-                <div className="mt-8 space-y-8">
+                <div id="doctor-review-section" ref={reviewSectionRef} className="mt-8 space-y-8">
                     
 
                     {/* two-card layout for ratings and reviews */}

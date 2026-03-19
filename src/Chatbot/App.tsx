@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, Chat, GenerateContentResponse } from '@google/genai';
-import { Language, Message, Doctor } from './types';
+import { Language, Message, Doctor, DoctorAction } from './types';
 import { SYSTEM_PROMPT_TEMPLATE, INITIAL_GREETINGS } from './constants';
 import { DOCTORS } from './doctors';
 import ChatMessage from './components/ChatMessage';
@@ -10,7 +10,10 @@ import Disclaimer from './components/Disclaimer';
 import './index.css';
 
 interface AppProps {
-  onViewProfile?: (id: string) => void;
+  onViewProfile?: (
+    id: string,
+    options?: { section?: 'overview' | 'reviews' }
+  ) => void;
 }
 
 interface RecommendationPayload {
@@ -19,12 +22,14 @@ interface RecommendationPayload {
   translated_name?: string;
 }
 
-const extractDoctorRecommendation = (responseText: string): RecommendationPayload | null => {
-  const recommendationPrefix = 'DOCTOR_RECOMMENDATION::';
-  const prefixIndex = responseText.indexOf(recommendationPrefix);
+const extractPayloadWithPrefix = (
+  responseText: string,
+  prefix: string
+): RecommendationPayload | null => {
+  const prefixIndex = responseText.indexOf(prefix);
   if (prefixIndex === -1) return null;
 
-  const jsonStart = responseText.indexOf('{', prefixIndex + recommendationPrefix.length);
+  const jsonStart = responseText.indexOf('{', prefixIndex + prefix.length);
   if (jsonStart === -1) return null;
 
   let bracketDepth = 0;
@@ -144,20 +149,30 @@ const doctorsList = DOCTORS.map(d => ({
       }
       
       let doctor: Doctor | undefined;
+      let doctorAction: DoctorAction | undefined;
       let finalText = fullResponseText;
 
-      const recommendation = extractDoctorRecommendation(fullResponseText);
-      if (recommendation) {
-        const doctorId = String(recommendation.doctor_id).trim();
+      const reviewRedirect = extractPayloadWithPrefix(fullResponseText, 'DOCTOR_REVIEW_REDIRECT::');
+      const recommendation = extractPayloadWithPrefix(fullResponseText, 'DOCTOR_RECOMMENDATION::');
+      const activePayload = reviewRedirect || recommendation;
+
+      if (activePayload) {
+        const currentAction: DoctorAction = reviewRedirect ? 'leave_review' : 'view_profile';
+        const doctorId = String(activePayload.doctor_id).trim();
         const foundDoctor = DOCTORS.find((d) => d.doctor_id === doctorId);
-        const reasonText = (recommendation.reason || '').trim();
+        const reasonText = (activePayload.reason || '').trim();
 
         if (foundDoctor) {
           doctor = {
             ...foundDoctor,
-            reason: reasonText || foundDoctor.reason || 'Please consult this specialist for further evaluation.',
-            translated_name: recommendation.translated_name || foundDoctor.translated_name
+            reason:
+              reasonText ||
+              (currentAction === 'leave_review'
+                ? `You can leave a review for ${foundDoctor.full_name}. Use the button below to open the review form.`
+                : foundDoctor.reason || 'Please consult this specialist for further evaluation.'),
+            translated_name: activePayload.translated_name || foundDoctor.translated_name
           } as Doctor;
+          doctorAction = currentAction;
           finalText = doctor.reason;
         } else if (reasonText) {
           finalText = reasonText;
@@ -166,7 +181,9 @@ const doctorsList = DOCTORS.map(d => ({
 
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === botMessageId ? { ...msg, text: finalText, doctor } : msg
+          msg.id === botMessageId
+            ? { ...msg, text: finalText, doctor, doctorAction }
+            : msg
         )
       );
 
@@ -203,11 +220,16 @@ const doctorsList = DOCTORS.map(d => ({
           ref={chatContainerRef}
           className="chat-scroll"
         >
+          
           {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
+            <ChatMessage key={msg.id} message={msg} onViewProfile={onViewProfile} />
           ))}
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
-            <ChatMessage key="loading" message={{ id: 'loading', role: 'bot', text: '...' }} />
+            <ChatMessage
+              key="loading"
+              message={{ id: 'loading', role: 'bot', text: '...' }}
+              onViewProfile={onViewProfile}
+            />
           )}
         </div>
         <div className="chat-input-wrap">

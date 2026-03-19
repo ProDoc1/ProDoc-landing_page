@@ -1,12 +1,17 @@
- import React from 'react';
-import { Doctor } from '../types';
+import React from 'react';
+import { Doctor, DoctorAction } from '../types';
 
 interface DoctorCardProps {
   doctor: Doctor;
-  onViewProfile?: (id: string) => void;
+  actionType?: DoctorAction;
+  onViewProfile?: (
+    id: string,
+    options?: { section?: 'overview' | 'reviews' }
+  ) => void;
 }
 
-const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewProfile }) => {
+const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, actionType = 'view_profile', onViewProfile }) => {
+  const isReviewAction = actionType === 'leave_review';
   const hospitals = (() => {
     try {
       const parsed = JSON.parse(doctor.associated_hospitals || '[]');
@@ -82,15 +87,16 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onViewProfile }) => {
           <button
             type="button"
             className="doctor-contact-btn text-sm font-semibold hover:bg-teal-500 hover:text-white transition-colors"
-            onClick={() => {
-              if (onViewProfile) {
-                onViewProfile(doctor.doctor_id);
-              } else {
-                window.location.href = `mailto:${doctor.contact_email}`;
-              }
-            }}
+            onClick={() =>
+              onViewProfile?.(
+                doctor.doctor_id,
+                isReviewAction ? { section: 'reviews' } : { section: 'overview' }
+              )
+            }
+            disabled={!onViewProfile}
+            aria-disabled={!onViewProfile}
           >
-            View Profile
+            {isReviewAction ? 'Leave Review' : 'View Profile'}
           </button>
         </div>
       </div>

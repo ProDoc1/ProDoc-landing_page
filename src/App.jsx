@@ -332,6 +332,7 @@ export default function App() {
    });
    const [currentUser, setCurrentUser] = useState(null);
    const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+   const [selectedDoctorSection, setSelectedDoctorSection] = useState('overview');
    const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
    const [showVerifyModal, setShowVerifyModal] = useState(false);
    const [verifyStep, setVerifyStep] = useState('prompt');
@@ -435,11 +436,16 @@ export default function App() {
       return () => window.removeEventListener('popstate', handlePopState);
    }, []);
 
-   const navigateTo = (page, data = null) => {
+   const navigateTo = (page, data = null, options = {}) => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setCurrentPage(page);
-      if (data && page === 'doctor-view') {
-         setSelectedDoctorId(data);
+      if (page === 'doctor-view') {
+         if (data) {
+            setSelectedDoctorId(data);
+         }
+         setSelectedDoctorSection(options.section === 'reviews' ? 'reviews' : 'overview');
+      } else {
+         setSelectedDoctorSection('overview');
       }
       // Save current page to local storage
       localStorage.setItem('currentPage', page);
@@ -692,13 +698,14 @@ export default function App() {
          {currentPage === 'doctors' && (
             <DoctorsPage
                onBack={() => navigateTo('home')}
-               onViewProfile={(id) => navigateTo('doctor-view', id)}
+               onViewProfile={(id, options = {}) => navigateTo('doctor-view', id, options)}
             />
          )}
 
          {currentPage === 'doctor-view' && (
             <DoctorViewProfile
                doctorId={selectedDoctorId}
+               initialSection={selectedDoctorSection}
                onBack={() => navigateTo('doctors')}
                currentUser={currentUser}
                onLogout={handleLogout}
@@ -741,7 +748,7 @@ export default function App() {
                hideNavbar={hideNavbar}
                onNavigateHome={() => navigateTo('home')}
                onNavigateDoctors={() => navigateTo('doctors')}
-               onViewProfile={(id) => navigateTo('doctor-view', id)}
+               onViewProfile={(id, options = {}) => navigateTo('doctor-view', id, options)}
             />
          )}
 
