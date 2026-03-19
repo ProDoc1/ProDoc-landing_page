@@ -371,8 +371,115 @@ a {
 
 .chat-input-form {
   display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.chat-input-main {
+  display: flex;
   align-items: flex-end;
   gap: 0.72rem;
+  width: 100%;
+}
+
+.chat-file-input {
+  display: none;
+}
+
+.chat-file-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.66rem;
+  border-radius: 12px;
+  border: 1px solid rgba(20, 184, 166, 0.28);
+  background: linear-gradient(135deg, #ffffff, #f0fdfa);
+}
+
+.chat-file-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.chat-file-icon {
+  width: 0.92rem;
+  height: 0.92rem;
+  color: var(--prodoc-teal-600);
+  flex-shrink: 0;
+}
+
+.chat-file-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--prodoc-slate-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-file-remove {
+  border: none;
+  background: transparent;
+  color: var(--prodoc-slate-500);
+  border-radius: 8px;
+  padding: 0.25rem;
+  line-height: 0;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.chat-file-remove:hover {
+  color: var(--prodoc-slate-900);
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.chat-file-remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.22);
+}
+
+.chat-file-remove-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.attach-button {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--prodoc-slate-300);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--prodoc-slate-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.attach-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  color: var(--prodoc-teal-600);
+  border-color: var(--prodoc-teal-500);
+  box-shadow: 0 10px 18px rgba(20, 184, 166, 0.16);
+}
+
+.attach-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.2);
+}
+
+.attach-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.attach-button-icon {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .chat-textarea {
@@ -746,7 +853,17 @@ a {
   }
 
   .chat-input-form {
+    gap: 0.45rem;
+  }
+
+  .chat-input-main {
     gap: 0.55rem;
+  }
+
+  .attach-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
   }
 
   .chat-textarea {

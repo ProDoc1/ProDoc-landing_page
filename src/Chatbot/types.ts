@@ -28,6 +28,10 @@ export interface Doctor {
   reason: string; // Added by the AI to explain why this doctor was chosen
   translated_name?: string; // Added by the AI for the doctor's name in the user's language
 }
+export interface ReportAnalysis {
+  status: 'red' | 'yellow' | 'green';
+  overview: string;
+}
 
 export interface Message {
   id: string;
@@ -35,4 +39,10 @@ export interface Message {
   text: string;
   doctor?: Doctor;
   doctorAction?: DoctorAction;
+  reportAnalysis?: ReportAnalysis;
+  attachment?: {
+    url: string;
+    mimeType: string;
+    name: string;
+  };
 }

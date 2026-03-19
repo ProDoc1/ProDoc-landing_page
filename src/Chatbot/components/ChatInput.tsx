@@ -1,30 +1,35 @@
 import React, { useState, useRef } from 'react';
+import { LoaderCircle, Paperclip, SendHorizontal, X } from 'lucide-react';
 
 interface ChatInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (text: string, file?: File) => void | Promise<void>;
   isLoading: boolean;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {
   const [text, setText] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
-    // Auto-resize textarea
     if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   };
 
   const submitMessage = () => {
-    if (text.trim() && !isLoading) {
-      onSendMessage(text);
+    if ((text.trim() || selectedFile) && !isLoading) {
+      onSendMessage(text, selectedFile || undefined);
       setText('');
-      // Reset the textarea height after sending
+      setSelectedFile(null);
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
     }
   };
@@ -41,35 +46,80 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, isLoading }) => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="chat-input-form">
-      <textarea
-        ref={textareaRef}
-        value={text}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyPress}
-        placeholder="Type your symptoms here..."
-        className="chat-textarea"
-        rows={1}
-        disabled={isLoading}
-      />
-      <button
-        type="submit"
-        disabled={isLoading || !text.trim()}
-        className="send-button"
-        aria-label={isLoading ? 'Sending message' : 'Send message'}
-      >
-        {isLoading ? (
-          <svg className="send-button-icon spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="send-button-icon">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-          </svg>
-        )}
-      </button>
+      {selectedFile && (
+        <div className="chat-file-pill">
+          <div className="chat-file-meta">
+            <Paperclip className="chat-file-icon" />
+            <span className="chat-file-name" title={selectedFile.name}>
+              {selectedFile.name}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="chat-file-remove"
+            aria-label="Remove selected file"
+            onClick={() => {
+              setSelectedFile(null);
+              if (fileInputRef.current) fileInputRef.current.value = '';
+            }}
+          >
+            <X className="chat-file-remove-icon" />
+          </button>
+        </div>
+      )}
+
+      <div className="chat-input-main">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept=".pdf,.jpg,.jpeg,.png,.webp"
+          className="chat-file-input"
+        />
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="attach-button"
+          disabled={isLoading}
+          aria-label="Upload medical report"
+          title="Upload medical report (PDF or image)"
+        >
+          <Paperclip className="attach-button-icon" />
+        </button>
+
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
+          placeholder="Type your symptoms here..."
+          className="chat-textarea"
+          rows={1}
+          disabled={isLoading}
+        />
+
+        <button
+          type="submit"
+          disabled={isLoading || (!text.trim() && !selectedFile)}
+          className="send-button"
+          aria-label={isLoading ? 'Sending message' : 'Send message'}
+        >
+          {isLoading ? (
+            <LoaderCircle className="send-button-icon spin" />
+          ) : (
+            <SendHorizontal className="send-button-icon" />
+          )}
+        </button>
+      </div>
     </form>
   );
 };
