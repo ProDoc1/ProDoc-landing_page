@@ -642,9 +642,9 @@ const PatientDashboard = ({
     }
   };
 
-  const handleViewReport = async (reportUrl, originalTitle) => {
+  const handleViewReport = async (reportUrl, originalTitle, status) => {
     try {
-      if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg')) {
+      if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg') || status === 'Encrypted') {
         const privateKey = localStorage.getItem(`private_key_${currentUser.email || user.email}`);
         if (!privateKey) {
           alert("Private key not found. Cannot decrypt this report.");
@@ -662,7 +662,8 @@ const PatientDashboard = ({
         const localUrl = URL.createObjectURL(decryptedBlob);
         window.open(localUrl);
       } else {
-        window.open(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`, '_blank');
+        const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
+        window.open(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}&type=${encodeURIComponent(mimeType)}`, '_blank');
       }
     } catch (error) {
       console.error("Decryption failed:", error);
@@ -1534,7 +1535,7 @@ const PatientDashboard = ({
                               <Download size={18} /> Download
                             </a>
                             <button 
-                              onClick={() => handleViewReport(report.url, report.title)}
+                              onClick={() => handleViewReport(report.url, report.title, report.status)}
                               className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
                             >
                               <FileText size={18} /> View Online

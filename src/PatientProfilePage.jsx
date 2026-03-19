@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Activity, FileText, MapPin, Loader2, ShieldCheck, ChevronDown, Eye, ArrowLeft } from 'lucide-react';
+import { decryptFile, getMimeTypeFromUrl } from './utils/cryptoDetails';
 
 const PatientProfilePage = ({ requestData, onBack }) => {
   const [patientRecords, setPatientRecords] = useState([]);
@@ -23,6 +24,41 @@ const PatientProfilePage = ({ requestData, onBack }) => {
         .finally(() => setLoadingPatientRecords(false));
     }
   }, [requestData]);
+
+  const handleViewDocument = async (recordUrl, patientEmail, originalFileName, status) => {
+    try {
+      if (recordUrl.endsWith('.gpg') || originalFileName?.endsWith('.gpg') || status === 'Encrypted') {
+        let privateKey = null;
+        if (patientEmail) {
+          privateKey = localStorage.getItem(`private_key_${patientEmail}`);
+        }
+        
+        if (!privateKey) {
+          const manualKey = prompt("Patient's private key not detected in this browser session. For this demo, please paste the Patient's private key:");
+          if (manualKey) {
+            privateKey = manualKey;
+          } else {
+            alert("Cannot decrypt without the patient's private key.");
+            return;
+          }
+        }
+        
+        const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`);
+        const encryptedBlob = await response.blob();
+        
+        const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
+        const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
+        const localUrl = URL.createObjectURL(decryptedBlob);
+        window.open(localUrl);
+      } else {
+        const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
+        window.open(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}&type=${encodeURIComponent(mimeType)}&disposition=inline`, '_blank');
+      }
+    } catch (error) {
+      console.error("Decryption failed:", error);
+      alert("Failed to decrypt report.");
+    }
+  };
 
   if (!requestData) {
     return (
@@ -162,18 +198,16 @@ const PatientProfilePage = ({ requestData, onBack }) => {
                       </div>
 
                       {expandedRecord === record.id && (
-                        <div className="px-5 pb-5 pt-3 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
-                          <div className="flex flex-wrap gap-3">
-                            <a
-                              href={`/api/proxy-blob?url=${encodeURIComponent(record.url)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1 flex items-center justify-center gap-2 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-sm"
-                            >
-                              <Eye size={18} /> View Document
-                            </a>
+                          <div className="px-5 pb-5 pt-3 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
+                            <div className="flex flex-wrap gap-3">
+                              <button
+                                onClick={() => handleViewDocument(record.url, requestData?.email, record.title, record.status)}
+                                className="flex-1 flex items-center justify-center gap-2 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-sm"
+                              >
+                                <Eye size={18} /> View Document
+                              </button>
+                            </div>
                           </div>
-                        </div>
                       )}
                     </div>
                   ))}

@@ -16,7 +16,7 @@ if (!process.env.BLOB_READ_WRITE_TOKEN) {
 }
 
 export default async function handler(req, res) {
-  const { url } = req.query;
+  const { url, type } = req.query;
   if (!url) return res.status(400).send('Missing URL');
 
   try {
@@ -34,7 +34,8 @@ export default async function handler(req, res) {
     }
 
     const contentType = response.headers.get('content-type');
-    res.setHeader('Content-Type', contentType || 'application/octet-stream');
+    res.setHeader('Content-Type', type || contentType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', 'inline');
     
     // Convert to buffer and send
     const blob = await response.arrayBuffer();

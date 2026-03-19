@@ -264,9 +264,9 @@ const DoctorDashboard = ({
     }
   };
 
-  const handleViewDocument = async (recordUrl, patientEmail, originalFileName) => {
+  const handleViewDocument = async (recordUrl, patientEmail, originalFileName, status) => {
     try {
-      if (recordUrl.endsWith('.gpg') || originalFileName?.endsWith('.gpg')) {
+      if (recordUrl.endsWith('.gpg') || originalFileName?.endsWith('.gpg') || status === 'Encrypted') {
         let privateKey = null;
         if (patientEmail) {
           privateKey = localStorage.getItem(`private_key_${patientEmail}`);
@@ -293,7 +293,8 @@ const DoctorDashboard = ({
         const localUrl = URL.createObjectURL(decryptedBlob);
         window.open(localUrl);
       } else {
-        window.open(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`, '_blank');
+        const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
+        window.open(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}&type=${encodeURIComponent(mimeType)}`, '_blank');
       }
     } catch (error) {
       console.error("Decryption failed:", error);
@@ -1631,8 +1632,6 @@ const DoctorDashboard = ({
         </div>
       )}
 
-<<<<<<< Updated upstream
-=======
       {/* Patient View Profile Modal */}
       {selectedPatientProfile && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fadeIn">
@@ -1761,7 +1760,7 @@ const DoctorDashboard = ({
                           <div className="px-4 pb-4 pt-2 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
                             <div className="flex flex-wrap gap-2">
                               <button 
-                                onClick={() => handleViewDocument(record.url, selectedPatientProfile?.email, record.title)}
+                                onClick={() => handleViewDocument(record.url, selectedPatientProfile?.email, record.title, record.status)}
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 transition-colors shadow-sm"
                               >
                                 <Eye size={14} /> View Document
@@ -1774,12 +1773,10 @@ const DoctorDashboard = ({
                   </div>
                 )}
               </div>
-
             </div>
           </div>
         </div>
       )}
->>>>>>> Stashed changes
     </div>
   );
 };
