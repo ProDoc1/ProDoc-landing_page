@@ -19,7 +19,7 @@ const AdminLogin = lazy(() => import('./AdminLogin'));
 import MiniBot from './components/MiniBot';
 import ChatbotApp from './Chatbot/App';
 import DoctorRegistration from './DoctorRegistration';
-
+import PatientProfilePage from './PatientProfilePage';
 
 const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms, onNavigateChatbot, onNavigateDoctorRegistration }) => {
 
@@ -331,7 +331,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
-   const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'privacy', 'terms', 'content-hub', 'admin', 'chatbot', 'doctor-registration'];
+   const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'patient-profile', 'privacy', 'terms', 'content-hub', 'admin', 'chatbot', 'doctor-registration'];
 
    const [currentPage, setCurrentPage] = useState(() => {
       const segments = window.location.pathname.split('/').filter(Boolean);
@@ -340,6 +340,7 @@ export default function App() {
    });
    const [currentUser, setCurrentUser] = useState(null);
    const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+   const [selectedPatientRequest, setSelectedPatientRequest] = useState(null);
    const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
    const [showVerifyModal, setShowVerifyModal] = useState(false);
    const [verifyStep, setVerifyStep] = useState('prompt');
@@ -444,6 +445,9 @@ export default function App() {
       setCurrentPage(page);
       if (data && page === 'doctor-view') {
          setSelectedDoctorId(data);
+      }
+      if (data && page === 'patient-profile') {
+         setSelectedPatientRequest(data);
       }
       // Save current page to local storage
       localStorage.setItem('currentPage', page);
@@ -748,6 +752,14 @@ export default function App() {
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
                onNavigateContentHub={() => navigateTo('content-hub')}
+               onViewPatientProfile={(requestData) => navigateTo('patient-profile', requestData)}
+            />
+         )}
+
+         {currentPage === 'patient-profile' && (
+            <PatientProfilePage 
+               requestData={selectedPatientRequest}
+               onBack={() => navigateTo('doctor-dashboard')}
             />
          )}
 
