@@ -66,7 +66,8 @@ export default async function handler(request, response) {
     const blob = await put(`medical-records/${filename}`, fileBuffer, {
       access: 'private',
       addRandomSuffix: true,
-      token: process.env.BLOB_READ_WRITE_TOKEN
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      contentType: 'application/octet-stream'
     });
 
     return response.status(200).json(blob);

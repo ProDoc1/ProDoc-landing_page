@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import DoctorImg from './assets/doctor.png';
+import { decryptFile, getMimeTypeFromUrl } from './utils/cryptoDetails';
 
 const DoctorDashboard = ({
   user,
@@ -260,6 +261,43 @@ const DoctorDashboard = ({
     } finally {
       setLoadingPosts(false);
 
+    }
+  };
+
+  const handleViewDocument = async (recordUrl, patientEmail, originalFileName) => {
+    try {
+      if (recordUrl.endsWith('.gpg') || originalFileName?.endsWith('.gpg')) {
+        let privateKey = null;
+        if (patientEmail) {
+          privateKey = localStorage.getItem(`private_key_${patientEmail}`);
+        }
+        
+        if (!privateKey) {
+          const manualKey = prompt("Patient's private key not detected in this browser session. In a production app, the patient would grant access using the Doctor's public key. For this demo, please paste the Patient's private key:");
+          if (manualKey) {
+            privateKey = manualKey;
+          } else {
+            alert("Cannot decrypt without the patient's private key.");
+            return;
+          }
+        }
+        
+        const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`);
+        const encryptedBlob = await response.blob();
+        
+        // Find correct MIME Type so images open as images, PDFs as PDFs
+        const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
+        
+        // Removed the password prompt for a smoother demo experience
+        const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
+        const localUrl = URL.createObjectURL(decryptedBlob);
+        window.open(localUrl);
+      } else {
+        window.open(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`, '_blank');
+      }
+    } catch (error) {
+      console.error("Decryption failed:", error);
+      alert("Failed to decrypt report. Ensure the private key and password are correct.");
     }
   };
 
@@ -1593,6 +1631,155 @@ const DoctorDashboard = ({
         </div>
       )}
 
+<<<<<<< Updated upstream
+=======
+      {/* Patient View Profile Modal */}
+      {selectedPatientProfile && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fadeIn">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+            {/* Header */}
+            <div className="p-6 md:p-8 bg-gradient-to-r from-teal-700 to-teal-600 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0 mt-1 shadow-inner">
+                  <User size={28} />
+                </div>
+                <div className="text-white">
+                  <h3 className="text-2xl font-bold">{selectedPatientProfile.patientName}'s Profile</h3>
+                  <p className="text-teal-100/80 text-sm">Patient Details & Medical History</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPatientProfile(null)}
+                className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all shrink-0"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-slate-50">
+
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6">
+                <div className="w-24 h-24 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shadow-inner border border-teal-100 shrink-0 mx-auto md:mx-0">
+                  <User size={40} />
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                      Age: {selectedPatientProfile.age}
+                    </span>
+                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                      Gender: {selectedPatientProfile.gender}
+                    </span>
+                    <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shadow-sm border border-rose-100">
+                      Blood: {selectedPatientProfile.bloodGroup || 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <Activity size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contact</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.contact || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <FileText size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Email</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.email || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 md:col-span-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <MapPin size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Address</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.address || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pb-4">
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-3">
+                  <Activity size={16} className="text-teal-600" /> Patient Medical Shared Records
+                </h4>
+                
+                {loadingPatientRecords ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="animate-spin text-teal-500" size={32} />
+                  </div>
+                ) : patientRecords.length === 0 ? (
+                  <div className="bg-white p-8 rounded-3xl border border-dashed border-slate-200 text-center">
+                    <FileText className="mx-auto text-slate-300 mb-3" size={40} />
+                    <p className="text-slate-500 font-medium text-sm">No medical records uploaded by this patient yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    {patientRecords.map((record) => (
+                      <div key={record.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:border-teal-200 transition-all group">
+                        <div 
+                          className="p-4 flex items-center justify-between cursor-pointer"
+                          onClick={() => setExpandedRecord(expandedRecord === record.id ? null : record.id)}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              record.type === 'lab' ? 'bg-rose-50 text-rose-500' :
+                              record.type === 'prescription' ? 'bg-emerald-50 text-emerald-500' :
+                              record.type === 'scan' ? 'bg-blue-50 text-blue-500' :
+                              'bg-purple-50 text-purple-500'
+                            }`}>
+                              <FileText size={20} />
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="font-bold text-slate-800 text-sm truncate">{record.title}</h5>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                                <span>{record.type}</span>
+                                <span>•</span>
+                                <span>{record.reportDate}</span>
+                                <span>•</span>
+                                <span className="text-teal-500 flex items-center gap-1">
+                                  <ShieldCheck size={10} /> {record.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className={`p-1.5 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500 transition-all ${expandedRecord === record.id ? 'rotate-180 bg-teal-50 text-teal-500' : ''}`}>
+                            <ChevronDown size={16} />
+                          </div>
+                        </div>
+                        
+                        {expandedRecord === record.id && (
+                          <div className="px-4 pb-4 pt-2 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
+                            <div className="flex flex-wrap gap-2">
+                              <button 
+                                onClick={() => handleViewDocument(record.url, selectedPatientProfile?.email, record.title)}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 transition-colors shadow-sm"
+                              >
+                                <Eye size={14} /> View Document
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+>>>>>>> Stashed changes
     </div>
   );
 };

@@ -36,6 +36,7 @@ import {
 
 import Navbar from './components/Navbar';
 import EditProfileModal from './EditProfileModal';
+import { encryptFile, decryptFile, getMimeTypeFromUrl } from './utils/cryptoDetails';
 
 const ClickableInfoRow = ({ label, value, icon: Icon, highlight, onClick }) => {
   const isEmpty = !value || value === '';
@@ -506,14 +507,41 @@ const PatientDashboard = ({
 
     setUploading(true);
     try {
-      const fileData = await file.arrayBuffer();
+      let publicKey = currentUser?.public_key || user?.public_key;
+      let bodyData;
+      let filename = file.name;
       
-      const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+      if (!publicKey) {
+        // Fallback or warning if user didn't register after the encryption sync.
+        // We will notify the user but also generate a temporary key for the session to ensure encryption executes!
+        alert("Account missing permanent keys. Generating a temporary session key so encryption will proceed...");
+        
+        // Generate a temporary OpenPGP key pair to fulfill the encryption requirement
+        const { privateKey: tempPriv, publicKey: tempPub } = await import('openpgp').then(openpgp => openpgp.generateKey({
+          type: 'ecc',
+          curve: 'curve25519',
+          userIDs: [{ name: 'Test User', email: 'test@example.com' }]
+        }));
+        
+        publicKey = tempPub;
+        // Save the private key so the temporary file can still be viewed
+        localStorage.setItem(`private_key_${currentUser?.email || user?.email || 'test@example.com'}`, tempPriv);
+      }
+      
+      const encryptedBlob = await encryptFile(file, publicKey);
+      
+      // Override mime type to application/octet-stream if you prefer it completely binary/unrecognizable.
+      // Send the array buffer of the encrypted data to your API route.
+      bodyData = await encryptedBlob.arrayBuffer();
+      filename = `${file.name}.gpg`;
+
+      
+      const response = await fetch(`/api/upload?filename=${encodeURIComponent(filename)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/octet-stream',
         },
-        body: fileData,
+        body: bodyData,
       });
 
       if (!response.ok) {
@@ -610,8 +638,35 @@ const PatientDashboard = ({
     } catch (error) {
       console.error('Delete failed:', error);
       setNotification({ message: 'Failed to erase record: ' + error.message, type: 'error' });
-    } finally {
       setIsDeletingBlob(false);
+    }
+  };
+
+  const handleViewReport = async (reportUrl, originalTitle) => {
+    try {
+      if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg')) {
+        const privateKey = localStorage.getItem(`private_key_${currentUser.email || user.email}`);
+        if (!privateKey) {
+          alert("Private key not found. Cannot decrypt this report.");
+          return;
+        }
+        
+        // Removed the password prompt to make viewing seamless
+        const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`);
+        const encryptedBlob = await response.blob();
+        
+        // Find correct MIME Type so images open as images, PDFs as PDFs
+        const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
+        
+        const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
+        const localUrl = URL.createObjectURL(decryptedBlob);
+        window.open(localUrl);
+      } else {
+        window.open(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`, '_blank');
+      }
+    } catch (error) {
+      console.error("Decryption failed:", error);
+      alert("Failed to decrypt report. Ensure your password is correct.");
     }
   };
 
@@ -1478,14 +1533,12 @@ const PatientDashboard = ({
                             >
                               <Download size={18} /> Download
                             </a>
-                            <a 
-                              href={`/api/proxy-blob?url=${encodeURIComponent(report.url)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button 
+                              onClick={() => handleViewReport(report.url, report.title)}
                               className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
                             >
                               <FileText size={18} /> View Online
-                            </a>
+                            </button>
                             <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">
                               <Share size={18} /> Share
                             </button>

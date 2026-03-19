@@ -34,14 +34,14 @@ export default async function handler(req, res) {
             }
 
             const token = jwt.sign(
-                { id: user.id, email: user.email, role: 'patient', fullName: user.full_name },
+                { id: user.id, email: user.email, role: 'patient', fullName: user.full_name, publicKey: user.public_key },
                 JWT_SECRET,
                 { expiresIn: '30d' }
             );
 
             return res.status(200).json({
                 success: true,
-                user: { id: user.id, name: user.full_name, email: user.email, email_verified: user.email_verified },
+                user: { id: user.id, name: user.full_name, email: user.email, email_verified: user.email_verified, public_key: user.public_key },
                 token
             });
 

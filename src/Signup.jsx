@@ -15,6 +15,7 @@ import {
 import LogoColor from './assets/Logo_with_words.png';
 import Plasma from './components/Plasma';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
+import * as openpgp from 'openpgp';
 
 const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorRegistration }) => { // <-- ACCEPT PROP HERE
   const [showPassword, setShowPassword] = useState(false);
@@ -114,13 +115,20 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
     // API CALL
     setLoading(true);
     try {
+      const { privateKey, publicKey } = await openpgp.generateKey({
+        type: 'ecc',
+        curve: 'curve25519',
+        userIDs: [{ name: formattedName, email: formData.email }]
+      });
+
       const response = await fetch('/api/sign-up', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: formattedName,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          publicKey
         }),
       });
 
@@ -133,6 +141,7 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
       }
 
       if (response.ok) {
+        localStorage.setItem(`private_key_${formData.email}`, privateKey);
         setShowSuccessModal(true);
       } else {
         setErrorAlert({ show: true, message: result.error || "Signup failed. Please try again." });
