@@ -8,7 +8,10 @@ import remarkGfm from 'remark-gfm';
 
 interface ChatMessageProps {
   message: Message;
-  onViewProfile?: (id: string) => void;
+  onViewProfile?: (
+    id: string,
+    options?: { section?: 'overview' | 'reviews' }
+  ) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, onViewProfile }) => {
@@ -43,7 +46,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onViewProfile }) => 
         </div>
         {message.doctor && (
             <div className="doctor-card-wrap">
-                <DoctorCard doctor={message.doctor} onViewProfile={onViewProfile} />
+                <DoctorCard
+                  doctor={message.doctor}
+                  actionType={message.doctorAction}
+                  onViewProfile={onViewProfile}
+                />
             </div>
         )}
       </div>

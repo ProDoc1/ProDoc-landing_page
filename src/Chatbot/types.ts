@@ -6,6 +6,7 @@ export enum Language {
 }
 
 export type Role = 'user' | 'bot';
+export type DoctorAction = 'view_profile' | 'leave_review';
 
 export interface Doctor {
   doctor_id: string;
@@ -33,4 +34,5 @@ export interface Message {
   role: Role;
   text: string;
   doctor?: Doctor;
+  doctorAction?: DoctorAction;
 }
