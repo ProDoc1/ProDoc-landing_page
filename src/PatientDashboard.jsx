@@ -525,9 +525,9 @@ const PatientDashboard = ({
           userIDs: [{ name: 'Test User', email: 'test@example.com' }]
         });
 
-        publicKey = tempPub.armor(); // Save as armored string
+        publicKey = tempPub; // Save as armored string
         // Save the private key so the temporary file can still be viewed
-        localStorage.setItem(`private_key_${(currentUser?.email || user?.email || 'test@example.com').toLowerCase()}`, tempPriv.armor());
+        localStorage.setItem(`private_key_${(currentUser?.email || user?.email || 'test@example.com').toLowerCase()}`, tempPriv);
       }
 
       const encryptedBlob = await encryptFile(file, publicKey);
