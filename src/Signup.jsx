@@ -245,7 +245,7 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
 
                 <div className="mt-4 pt-4 border-t border-slate-100 text-center">
                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Are you a medical professional?</p>
-                  <button
+                  <button 
                     onClick={(e) => { e.preventDefault(); onNavigateDoctorRegistration(); }}
                     className="text-slate-900 hover:text-teal-600 font-black text-xs uppercase tracking-widest transition-colors"
                   >

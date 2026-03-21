@@ -264,43 +264,36 @@ const DoctorDashboard = ({
     }
   };
 
-  const handleViewDocument = async (recordUrl, patientEmail, originalFileName, status) => {
+  const handleViewDocument = async (recordUrl, patientEmail, originalFileName) => {
     try {
-      if (recordUrl.endsWith('.gpg') || originalFileName?.endsWith('.gpg') || status === 'Encrypted') {
+      if (recordUrl.endsWith('.gpg') || originalFileName?.endsWith('.gpg')) {
         let privateKey = null;
         if (patientEmail) {
           privateKey = localStorage.getItem(`private_key_${patientEmail}`);
         }
-
+        
         if (!privateKey) {
-          const canUsePrompt = import.meta?.env?.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          if (canUsePrompt) {
-            const manualKey = prompt("Patient's private key not detected in this browser session. In a production app, the patient would grant access using the Doctor's public key. For this demo, please paste the Patient's private key:");
-            if (manualKey) {
-              privateKey = manualKey;
-            } else {
-              alert("Cannot decrypt without the patient's private key.");
-              return;
-            }
+          const manualKey = prompt("Patient's private key not detected in this browser session. In a production app, the patient would grant access using the Doctor's public key. For this demo, please paste the Patient's private key:");
+          if (manualKey) {
+            privateKey = manualKey;
           } else {
-            alert("Patient's private key not available in this browser session. In production request patient access or use the patient's account to view records.");
+            alert("Cannot decrypt without the patient's private key.");
             return;
           }
         }
-
+        
         const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`);
         const encryptedBlob = await response.blob();
-
+        
         // Find correct MIME Type so images open as images, PDFs as PDFs
         const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
-
+        
         // Removed the password prompt for a smoother demo experience
         const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
         const localUrl = URL.createObjectURL(decryptedBlob);
         window.open(localUrl);
       } else {
-        const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
-        window.open(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}&type=${encodeURIComponent(mimeType)}`, '_blank');
+        window.open(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`, '_blank');
       }
     } catch (error) {
       console.error("Decryption failed:", error);
@@ -1638,6 +1631,8 @@ const DoctorDashboard = ({
         </div>
       )}
 
+<<<<<<< Updated upstream
+=======
       {/* Patient View Profile Modal */}
       {selectedPatientProfile && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fadeIn">
@@ -1717,7 +1712,7 @@ const DoctorDashboard = ({
                 <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-3">
                   <Activity size={16} className="text-teal-600" /> Patient Medical Shared Records
                 </h4>
-
+                
                 {loadingPatientRecords ? (
                   <div className="flex justify-center py-10">
                     <Loader2 className="animate-spin text-teal-500" size={32} />
@@ -1731,16 +1726,17 @@ const DoctorDashboard = ({
                   <div className="grid grid-cols-1 gap-3">
                     {patientRecords.map((record) => (
                       <div key={record.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:border-teal-200 transition-all group">
-                        <div
+                        <div 
                           className="p-4 flex items-center justify-between cursor-pointer"
                           onClick={() => setExpandedRecord(expandedRecord === record.id ? null : record.id)}
                         >
                           <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${record.type === 'lab' ? 'bg-rose-50 text-rose-500' :
-                                record.type === 'prescription' ? 'bg-emerald-50 text-emerald-500' :
-                                  record.type === 'scan' ? 'bg-blue-50 text-blue-500' :
-                                    'bg-purple-50 text-purple-500'
-                              }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              record.type === 'lab' ? 'bg-rose-50 text-rose-500' :
+                              record.type === 'prescription' ? 'bg-emerald-50 text-emerald-500' :
+                              record.type === 'scan' ? 'bg-blue-50 text-blue-500' :
+                              'bg-purple-50 text-purple-500'
+                            }`}>
                               <FileText size={20} />
                             </div>
                             <div className="min-w-0">
@@ -1760,12 +1756,12 @@ const DoctorDashboard = ({
                             <ChevronDown size={16} />
                           </div>
                         </div>
-
+                        
                         {expandedRecord === record.id && (
                           <div className="px-4 pb-4 pt-2 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
                             <div className="flex flex-wrap gap-2">
-                              <button
-                                onClick={() => handleViewDocument(record.url, selectedPatientProfile?.email, record.title, record.status)}
+                              <button 
+                                onClick={() => handleViewDocument(record.url, selectedPatientProfile?.email, record.title)}
                                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 transition-colors shadow-sm"
                               >
                                 <Eye size={14} /> View Document
@@ -1778,10 +1774,12 @@ const DoctorDashboard = ({
                   </div>
                 )}
               </div>
+
             </div>
           </div>
         </div>
       )}
+>>>>>>> Stashed changes
     </div>
   );
 };

@@ -122,10 +122,11 @@ const Toast = ({ message, type = 'success', onClose }) => {
 
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] animate-in fade-in slide-in-from-bottom-8 duration-300">
-      <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border ${type === 'success'
-          ? 'bg-teal-600 border-teal-500 text-white'
+      <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border ${
+        type === 'success' 
+          ? 'bg-teal-600 border-teal-500 text-white' 
           : 'bg-rose-600 border-rose-500 text-white'
-        }`}>
+      }`}>
         {type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
         <p className="font-bold whitespace-nowrap">{message}</p>
         <button onClick={onClose} className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors">
@@ -464,7 +465,7 @@ const PatientDashboard = ({
   const [reportFilter, setReportFilter] = useState('All');
   const [isRecordTypeModalOpen, setIsRecordTypeModalOpen] = useState(false);
   const [selectedUploadType, setSelectedUploadType] = useState('lab');
-
+  
   const [reportToDelete, setReportToDelete] = useState(null);
   const [isDeletingBlob, setIsDeletingBlob] = useState(false);
   const [openReportMenu, setOpenReportMenu] = useState(null);
@@ -509,35 +510,32 @@ const PatientDashboard = ({
       let publicKey = currentUser?.public_key || user?.public_key;
       let bodyData;
       let filename = file.name;
-
+      
       if (!publicKey) {
         // Fallback or warning if user didn't register after the encryption sync.
         // We will notify the user but also generate a temporary key for the session to ensure encryption executes!
         alert("Account missing permanent keys. Generating a temporary session key so encryption will proceed...");
-
-        // Use the already imported openpgp from cryptoDetails or dynamic import
-        const openpgp = await import('openpgp');
-
+        
         // Generate a temporary OpenPGP key pair to fulfill the encryption requirement
-        const { privateKey: tempPriv, publicKey: tempPub } = await openpgp.generateKey({
+        const { privateKey: tempPriv, publicKey: tempPub } = await import('openpgp').then(openpgp => openpgp.generateKey({
           type: 'ecc',
-          curve: 'ed25519', // ed25519 will create a primary signing key and encryption subkey
+          curve: 'curve25519',
           userIDs: [{ name: 'Test User', email: 'test@example.com' }]
-        });
-
-        publicKey = tempPub; // Save as armored string
+        }));
+        
+        publicKey = tempPub;
         // Save the private key so the temporary file can still be viewed
-        localStorage.setItem(`private_key_${(currentUser?.email || user?.email || 'test@example.com').toLowerCase()}`, tempPriv);
+        localStorage.setItem(`private_key_${currentUser?.email || user?.email || 'test@example.com'}`, tempPriv);
       }
-
+      
       const encryptedBlob = await encryptFile(file, publicKey);
-
+      
       // Override mime type to application/octet-stream if you prefer it completely binary/unrecognizable.
       // Send the array buffer of the encrypted data to your API route.
       bodyData = await encryptedBlob.arrayBuffer();
       filename = `${file.name}.gpg`;
 
-
+      
       const response = await fetch(`/api/upload?filename=${encodeURIComponent(filename)}`, {
         method: 'POST',
         headers: {
@@ -558,7 +556,7 @@ const PatientDashboard = ({
         }
         throw new Error(errorMessage);
       }
-
+      
       const newBlob = await response.json();
 
       // Save metadata to database
@@ -601,7 +599,7 @@ const PatientDashboard = ({
         };
         setReports(prev => [newReport, ...prev]);
       }
-
+      
       setNotification({ message: 'File uploaded and encrypted successfully!', type: 'success' });
     } catch (error) {
       console.error('Upload failed:', error);
@@ -620,7 +618,7 @@ const PatientDashboard = ({
         const response = await fetch(`/api/delete-blob?url=${encodeURIComponent(reportToDelete.url)}`, {
           method: 'DELETE',
         });
-
+        
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.message || 'Deletion from storage failed');
@@ -631,7 +629,7 @@ const PatientDashboard = ({
       const dbDeleteResponse = await fetch(`/api/medical-records?id=${reportToDelete.id}`, {
         method: 'DELETE'
       });
-
+      
       if (!dbDeleteResponse.ok) console.error('Failed to delete metadata from DB');
 
       setReports(prev => prev.filter(r => r.id !== reportToDelete.id));
@@ -644,28 +642,27 @@ const PatientDashboard = ({
     }
   };
 
-  const handleViewReport = async (reportUrl, originalTitle, status) => {
+  const handleViewReport = async (reportUrl, originalTitle) => {
     try {
-      if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg') || status === 'Encrypted') {
+      if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg')) {
         const privateKey = localStorage.getItem(`private_key_${currentUser.email || user.email}`);
         if (!privateKey) {
           alert("Private key not found. Cannot decrypt this report.");
           return;
         }
-
+        
         // Removed the password prompt to make viewing seamless
         const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`);
         const encryptedBlob = await response.blob();
-
+        
         // Find correct MIME Type so images open as images, PDFs as PDFs
         const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
-
+        
         const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
         const localUrl = URL.createObjectURL(decryptedBlob);
         window.open(localUrl);
       } else {
-        const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
-        window.open(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}&type=${encodeURIComponent(mimeType)}`, '_blank');
+        window.open(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`, '_blank');
       }
     } catch (error) {
       console.error("Decryption failed:", error);
@@ -1490,94 +1487,94 @@ const PatientDashboard = ({
                     return true;
                   })
                   .map(report => (
-                    <div key={report.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all">
-                      <div className="p-6 flex items-center justify-between cursor-pointer" onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}>
-                        <div className="flex items-center gap-4">
-                          {getReportIcon(report.type)}
-                          <div>
-                            <h4 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
-                              {report.title}
-                              {report.isConfidential && <Lock size={16} className="text-teal-500" />}
-                            </h4>
-                            <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                              <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">{getReportTypeLabel(report.type)}</span>
-                              <span>•</span>
-                              <span className="flex items-center gap-1 text-teal-600 font-medium">
-                                <ShieldCheck size={12} /> {report.status || 'Encrypted'}
-                              </span>
-                              <span>•</span>
-                              <span>{report.reportDate}</span>
-                              {report.doctorName && (
-                                <><span>•</span><span>{report.doctorName}</span></>
+                  <div key={report.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all">
+                    <div className="p-6 flex items-center justify-between cursor-pointer" onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}>
+                      <div className="flex items-center gap-4">
+                        {getReportIcon(report.type)}
+                        <div>
+                          <h4 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
+                            {report.title}
+                            {report.isConfidential && <Lock size={16} className="text-teal-500" />}
+                          </h4>
+                          <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                            <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">{getReportTypeLabel(report.type)}</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-teal-600 font-medium">
+                              <ShieldCheck size={12} /> {report.status || 'Encrypted'}
+                            </span>
+                            <span>•</span>
+                            <span>{report.reportDate}</span>
+                            {report.doctorName && (
+                              <><span>•</span><span>{report.doctorName}</span></>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm text-slate-400 hidden md:block">{report.fileSize}</span>
+                        <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                          {expandedReport === report.id ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {expandedReport === report.id && (
+                      <div className="px-6 pb-6 pt-0 bg-slate-50 border-t border-slate-100">
+                        <div className="pt-4">
+                          <div className="bg-white rounded-2xl p-4 mb-4 border border-slate-200">
+                            <h5 className="font-bold text-slate-700 mb-2">Description</h5>
+                            <p className="text-slate-600">{report.description}</p>
+                          </div>
+                          <div className="flex flex-wrap gap-3">
+                            <a 
+                              href={`/api/proxy-blob?url=${encodeURIComponent(report.url)}`}
+                              download 
+                              className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm"
+                            >
+                              <Download size={18} /> Download
+                            </a>
+                            <button 
+                              onClick={() => handleViewReport(report.url, report.title)}
+                              className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                            >
+                              <FileText size={18} /> View Online
+                            </button>
+                            <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">
+                              <Share size={18} /> Share
+                            </button>
+                            <div className="relative ml-auto text-right">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenReportMenu(openReportMenu === report.id ? null : report.id);
+                                }}
+                                className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+                              >
+                                <MoreVertical size={20} />
+                              </button>
+                              
+                              {openReportMenu === report.id && (
+                                <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setReportToDelete(report);
+                                      setOpenReportMenu(null);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-4 text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
+                                  >
+                                    <Trash2 size={18} />
+                                    Remove Record
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <span className="text-sm text-slate-400 hidden md:block">{report.fileSize}</span>
-                          <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                            {expandedReport === report.id ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
-                          </button>
-                        </div>
                       </div>
-
-                      {expandedReport === report.id && (
-                        <div className="px-6 pb-6 pt-0 bg-slate-50 border-t border-slate-100">
-                          <div className="pt-4">
-                            <div className="bg-white rounded-2xl p-4 mb-4 border border-slate-200">
-                              <h5 className="font-bold text-slate-700 mb-2">Description</h5>
-                              <p className="text-slate-600">{report.description}</p>
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                              <a
-                                href={`/api/proxy-blob?url=${encodeURIComponent(report.url)}`}
-                                download
-                                className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm"
-                              >
-                                <Download size={18} /> Download
-                              </a>
-                              <button
-                                onClick={() => handleViewReport(report.url, report.title, report.status)}
-                                className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
-                              >
-                                <FileText size={18} /> View Online
-                              </button>
-                              <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">
-                                <Share size={18} /> Share
-                              </button>
-                              <div className="relative ml-auto text-right">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenReportMenu(openReportMenu === report.id ? null : report.id);
-                                  }}
-                                  className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
-                                >
-                                  <MoreVertical size={20} />
-                                </button>
-
-                                {openReportMenu === report.id && (
-                                  <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setReportToDelete(report);
-                                        setOpenReportMenu(null);
-                                      }}
-                                      className="w-full flex items-center gap-3 px-4 py-4 text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
-                                    >
-                                      <Trash2 size={18} />
-                                      Remove Record
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -1772,7 +1769,7 @@ const PatientDashboard = ({
         initialSection={editProfileSection}
       />
 
-      <DeleteConfirmModal
+      <DeleteConfirmModal 
         isOpen={!!reportToDelete}
         onClose={() => setReportToDelete(null)}
         onConfirm={handleDeleteReport}
@@ -1815,10 +1812,10 @@ const PatientDashboard = ({
 
 
       {notification && (
-        <Toast
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification(null)}
+        <Toast 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification(null)} 
         />
       )}
     </div>
