@@ -516,16 +516,19 @@ const PatientDashboard = ({
         // We will notify the user but also generate a temporary key for the session to ensure encryption executes!
         alert("Account missing permanent keys. Generating a temporary session key so encryption will proceed...");
         
-        // Generate a temporary OpenPGP key pair to fulfill the encryption requirement
-        const { privateKey: tempPriv, publicKey: tempPub } = await import('openpgp').then(openpgp => openpgp.generateKey({
-          type: 'ecc',
-          curve: 'curve25519',
-          userIDs: [{ name: 'Test User', email: 'test@example.com' }]
-        }));
+        // Use the already imported openpgp from cryptoDetails or dynamic import
+        const openpgp = await import('openpgp');
         
-        publicKey = tempPub;
+        // Generate a temporary OpenPGP key pair to fulfill the encryption requirement
+        const { privateKey: tempPriv, publicKey: tempPub } = await openpgp.generateKey({
+          type: 'ecc',
+          curve: 'ed25519', // ed25519 will create a primary signing key and encryption subkey
+          userIDs: [{ name: 'Test User', email: 'test@example.com' }]
+        });
+        
+        publicKey = tempPub.armor(); // Save as armored string
         // Save the private key so the temporary file can still be viewed
-        localStorage.setItem(`private_key_${currentUser?.email || user?.email || 'test@example.com'}`, tempPriv);
+        localStorage.setItem(`private_key_${(currentUser?.email || user?.email || 'test@example.com').toLowerCase()}`, tempPriv.armor());
       }
       
       const encryptedBlob = await encryptFile(file, publicKey);

@@ -6,9 +6,16 @@ import PatientDashboard from './PatientDashboard';
 global.fetch = vi.fn(() =>
   Promise.resolve({
     ok: true,
-    json: () => Promise.resolve([]), // Simulates an empty list of doctors/reports
+    json: () => Promise.resolve([]),
   })
 );
+
+// FIX: Mock cryptoDetails so the test doesn't load OpenPGP
+vi.mock('./utils/cryptoDetails', () => ({
+  encryptFile: vi.fn(),
+  decryptFile: vi.fn(),
+  getMimeTypeFromUrl: vi.fn(() => 'application/pdf')
+}));
 
 describe('PatientDashboard Component', () => {
   it('should display the Medical Records heading', async () => {
