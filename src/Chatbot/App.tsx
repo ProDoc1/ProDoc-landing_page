@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleGenAI, Chat, GenerateContentResponse } from '@google/genai';
-import { Language, Message, Doctor, DoctorAction } from './types';
+import { Language, Message, Doctor, DoctorAction, ReportAnalysis } from './types';
 import { SYSTEM_PROMPT_TEMPLATE, INITIAL_GREETINGS } from './constants';
 import { DOCTORS } from './doctors';
 import ChatMessage from './components/ChatMessage';
@@ -8,6 +8,15 @@ import ChatInput from './components/ChatInput';
 import Header from './components/Header';
 import Disclaimer from './components/Disclaimer';
 import './index.css';
+
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
 
 interface AppProps {
   onViewProfile?: (
@@ -22,10 +31,15 @@ interface RecommendationPayload {
   translated_name?: string;
 }
 
-const extractPayloadWithPrefix = (
+interface ReportAnalysisPayload extends RecommendationPayload {
+  status: ReportAnalysis['status'];
+  overview: string;
+}
+
+const extractPayloadWithPrefix = <T extends object = RecommendationPayload>(
   responseText: string,
   prefix: string
-): RecommendationPayload | null => {
+): T | null => {
   const prefixIndex = responseText.indexOf(prefix);
   if (prefixIndex === -1) return null;
 
@@ -49,7 +63,7 @@ const extractPayloadWithPrefix = (
 
   const jsonString = responseText.slice(jsonStart, jsonEnd + 1);
   try {
-    return JSON.parse(jsonString) as RecommendationPayload;
+    return JSON.parse(jsonString) as T;
   } catch {
     return null;
   }
@@ -116,13 +130,15 @@ const doctorsList = DOCTORS.map(d => ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initializeChat]);
 
-  const handleSendMessage = async (inputText: string) => {
-    if (!inputText.trim() || isLoading || !chat) return;
+  const handleSendMessage = async (inputText: string, file?: File) => {
+    if ((!inputText.trim() && !file) || isLoading || !chat) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       text: inputText,
+      attachment: file ? { url: URL.createObjectURL(file), mimeType: file.type, name: file.name } : undefined
+    
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setIsLoading(true);
@@ -131,7 +147,16 @@ const doctorsList = DOCTORS.map(d => ({
     const botMessageId = (Date.now() + 1).toString();
 
     try {
-      const stream = await chat.sendMessageStream({ message: inputText });
+      let messageContent: any = inputText;
+      if (file) {
+        const base64 = await fileToBase64(file);
+        const base64Data = base64.split(',')[1];
+        messageContent = [
+          { text: inputText || "Please analyze this medical report." },
+          { inlineData: { data: base64Data, mimeType: file.type } }
+        ];
+      }
+      const stream = await chat.sendMessageStream({ message: messageContent });
 
       // Create a placeholder for the bot's message
       setMessages((prev) => [...prev, { id: botMessageId, role: 'bot', text: '...' }]);
@@ -147,13 +172,18 @@ const doctorsList = DOCTORS.map(d => ({
           )
         );
       }
+
+
+      const reportPrefix = 'REPORT_ANALYSIS::';
+      let reportAnalysis: ReportAnalysis | undefined;
       
       let doctor: Doctor | undefined;
       let doctorAction: DoctorAction | undefined;
       let finalText = fullResponseText;
 
-      const reviewRedirect = extractPayloadWithPrefix(fullResponseText, 'DOCTOR_REVIEW_REDIRECT::');
-      const recommendation = extractPayloadWithPrefix(fullResponseText, 'DOCTOR_RECOMMENDATION::');
+      const reviewRedirect = extractPayloadWithPrefix<RecommendationPayload>(fullResponseText, 'DOCTOR_REVIEW_REDIRECT::');
+      const recommendation = extractPayloadWithPrefix<RecommendationPayload>(fullResponseText, 'DOCTOR_RECOMMENDATION::');
+      const reportPayload = extractPayloadWithPrefix<ReportAnalysisPayload>(fullResponseText, reportPrefix);
       const activePayload = reviewRedirect || recommendation;
 
       if (activePayload) {
@@ -177,12 +207,46 @@ const doctorsList = DOCTORS.map(d => ({
         } else if (reasonText) {
           finalText = reasonText;
         }
+      } else if (reportPayload) {
+        try {
+          const rawStatus = String(reportPayload.status || '').toLowerCase();
+          const normalizedStatus: ReportAnalysis['status'] =
+            rawStatus === 'red' || rawStatus === 'yellow' || rawStatus === 'green'
+              ? rawStatus
+              : 'green';
+
+          const analysis: ReportAnalysisPayload = {
+            ...reportPayload,
+            status: normalizedStatus
+          };
+
+          reportAnalysis = {
+            status: analysis.status,
+            overview: analysis.overview
+          };
+
+          if (analysis.doctor_id) {
+            const foundDoctor = DOCTORS.find((d) => d.doctor_id === String(analysis.doctor_id));
+            if (foundDoctor) {
+              doctor = {
+                ...foundDoctor,
+                reason: analysis.reason || foundDoctor.reason,
+                translated_name: analysis.translated_name || foundDoctor.translated_name
+              } as Doctor;
+            }
+          }
+
+          finalText = 'Here is the analysis of your medical report:';
+        } catch (e) {
+          console.error('Failed to parse report analysis JSON:', e);
+          finalText = fullResponseText;
+        }
       }
 
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === botMessageId
-            ? { ...msg, text: finalText, doctor, doctorAction }
+            ? { ...msg, text: finalText, doctor, doctorAction, reportAnalysis }
             : msg
         )
       );
@@ -205,7 +269,9 @@ const doctorsList = DOCTORS.map(d => ({
           return [...prev, { id: botMessageId, role: 'bot', text: errorMessage, doctor: undefined }];
         }
       });
-    } finally {
+    } 
+    
+    finally {
       setIsLoading(false);
     }
   };

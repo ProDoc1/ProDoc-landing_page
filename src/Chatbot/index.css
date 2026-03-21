@@ -751,6 +751,30 @@ a {
   box-shadow: none;
 }
 
+.report-color-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
+}
+
+.report-color-swatch {
+  height: 0.46rem;
+  flex: 1;
+  border-radius: 999px;
+}
+
+.report-color-pill {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
 .markdown-content {
   font-size: 0.95rem;
   line-height: 1.55;
