@@ -13,13 +13,13 @@ global.fetch = vi.fn(() =>
 describe('PatientDashboard Component', () => {
   it('should display the Medical Records heading', async () => {
     render(<PatientDashboard />);
-    
+
     // FIX #2: Use getByRole + level: 3 to target the specific <h3> heading
     // FIX #3: Use waitFor + async/await to handle the background fetch state update
     await waitFor(() => {
-      const headingElement = screen.getByRole('heading', { 
-        name: /Medical Records/i, 
-        level: 3 
+      const headingElement = screen.getByRole('heading', {
+        name: /Medical Records/i,
+        level: 3
       });
       expect(headingElement).toBeInTheDocument();
     });
