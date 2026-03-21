@@ -36,10 +36,10 @@ interface ReportAnalysisPayload extends RecommendationPayload {
   overview: string;
 }
 
-const extractPayloadWithPrefix = (
+const extractPayloadWithPrefix = <T extends object = RecommendationPayload>(
   responseText: string,
   prefix: string
-): RecommendationPayload | null => {
+): T | null => {
   const prefixIndex = responseText.indexOf(prefix);
   if (prefixIndex === -1) return null;
 
@@ -63,7 +63,7 @@ const extractPayloadWithPrefix = (
 
   const jsonString = responseText.slice(jsonStart, jsonEnd + 1);
   try {
-    return JSON.parse(jsonString) as RecommendationPayload;
+    return JSON.parse(jsonString) as T;
   } catch {
     return null;
   }
@@ -181,8 +181,9 @@ const doctorsList = DOCTORS.map(d => ({
       let doctorAction: DoctorAction | undefined;
       let finalText = fullResponseText;
 
-      const reviewRedirect = extractPayloadWithPrefix(fullResponseText, 'DOCTOR_REVIEW_REDIRECT::');
-      const recommendation = extractPayloadWithPrefix(fullResponseText, 'DOCTOR_RECOMMENDATION::');
+      const reviewRedirect = extractPayloadWithPrefix<RecommendationPayload>(fullResponseText, 'DOCTOR_REVIEW_REDIRECT::');
+      const recommendation = extractPayloadWithPrefix<RecommendationPayload>(fullResponseText, 'DOCTOR_RECOMMENDATION::');
+      const reportPayload = extractPayloadWithPrefix<ReportAnalysisPayload>(fullResponseText, reportPrefix);
       const activePayload = reviewRedirect || recommendation;
 
       if (activePayload) {
@@ -206,10 +207,19 @@ const doctorsList = DOCTORS.map(d => ({
         } else if (reasonText) {
           finalText = reasonText;
         }
-      } else if (fullResponseText.startsWith(reportPrefix)) {
-        const jsonString = fullResponseText.substring(reportPrefix.length).trim();
+      } else if (reportPayload) {
         try {
-          const analysis = JSON.parse(jsonString) as ReportAnalysisPayload;
+          const rawStatus = String(reportPayload.status || '').toLowerCase();
+          const normalizedStatus: ReportAnalysis['status'] =
+            rawStatus === 'red' || rawStatus === 'yellow' || rawStatus === 'green'
+              ? rawStatus
+              : 'green';
+
+          const analysis: ReportAnalysisPayload = {
+            ...reportPayload,
+            status: normalizedStatus
+          };
+
           reportAnalysis = {
             status: analysis.status,
             overview: analysis.overview
