@@ -23,11 +23,11 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const { patientId, doctorId, summary, documents, amount } = req.body;
-    
+
     if (!patientId || !doctorId) {
       return res.status(400).json({ error: 'Patient ID and Doctor ID required' });
     }
-    
+
     try {
       const result = await sql`
         INSERT INTO second_opinion_requests (patient_id, doctor_id, summary, documents, amount, status)
@@ -41,11 +41,11 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     const { doctorId } = req.query;
-    
+
     if (!doctorId) {
       return res.status(400).json({ error: 'Doctor ID required' });
     }
-    
+
     try {
       const result = await sql`
         SELECT 
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
         WHERE r.doctor_id = ${doctorId}
         ORDER BY r.created_at DESC;
       `;
-      
+
       const formattedRequests = result.rows.map(row => {
         // Calculate age
         let age = 'N/A';
@@ -81,15 +81,15 @@ export default async function handler(req, res) {
           const ageDate = new Date(ageDifMs);
           age = Math.abs(ageDate.getUTCFullYear() - 1970);
         }
-        
+
         let medHistory = 'No medical history provided.';
         const allergies = Array.isArray(row.allergies) ? row.allergies.join(', ') : '';
         const conditions = Array.isArray(row.chronic_conditions) ? row.chronic_conditions.join(', ') : '';
-        
+
         if (allergies || conditions) {
           medHistory = `Allergies: ${allergies || 'None'}\nConditions: ${conditions || 'None'}`;
         }
-        
+
         return {
           id: row.id,
           patientName: row.patient_name || 'Unknown Patient',
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
           patientId: row.patient_id
         };
       });
-      
+
       return res.status(200).json(formattedRequests);
     } catch (err) {
       console.error('GET /api/second-opinion-requests error:', err);
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
   } else if (req.method === 'PUT') {
     const { id, status } = req.body;
     if (!id || !status) return res.status(400).json({ error: 'ID and Status required' });
-    
+
     try {
       await sql`UPDATE second_opinion_requests SET status = ${status} WHERE id = ${id}`;
       return res.status(200).json({ success: true });
@@ -125,6 +125,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: err.message });
     }
   }
-  
+
   return res.status(405).json({ error: 'Method not allowed' });
 }

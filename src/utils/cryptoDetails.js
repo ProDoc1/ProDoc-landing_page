@@ -40,7 +40,12 @@ export const decryptFile = async (encryptedBlob, privateKeyArmored, passphrase, 
             // we will gently ask for it just once so it doesn't crash.
             let promptPass = passphrase;
             if (!promptPass) {
-                promptPass = window.prompt("Legacy Secure Key detected. Please enter your ProDoc password to decrypt:");
+                const canPrompt = import.meta?.env?.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                if (canPrompt) {
+                    promptPass = window.prompt("Legacy Secure Key detected. Please enter your ProDoc password to decrypt:");
+                } else {
+                    throw new Error("Passphrase required but not provided. In production, request access from the patient or use the patient's account to view records.");
+                }
             }
             if (promptPass === null) throw new Error("Decryption cancelled.");
 

@@ -32,20 +32,26 @@ const PatientProfilePage = ({ requestData, onBack }) => {
         if (patientEmail) {
           privateKey = localStorage.getItem(`private_key_${patientEmail}`);
         }
-        
+
         if (!privateKey) {
-          const manualKey = prompt("Patient's private key not detected in this browser session. For this demo, please paste the Patient's private key:");
-          if (manualKey) {
-            privateKey = manualKey;
+          const canUsePrompt = import.meta?.env?.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          if (canUsePrompt) {
+            const manualKey = prompt("Patient's private key not detected in this browser session. For this demo, please paste the Patient's private key:");
+            if (manualKey) {
+              privateKey = manualKey;
+            } else {
+              alert("Cannot decrypt without the patient's private key.");
+              return;
+            }
           } else {
-            alert("Cannot decrypt without the patient's private key.");
+            alert("Patient's private key not available in this browser session. Please request access from the patient or use the patient's account to view records.");
             return;
           }
         }
-        
+
         const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`);
         const encryptedBlob = await response.blob();
-        
+
         const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
         const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
         const localUrl = URL.createObjectURL(decryptedBlob);
@@ -198,16 +204,16 @@ const PatientProfilePage = ({ requestData, onBack }) => {
                       </div>
 
                       {expandedRecord === record.id && (
-                          <div className="px-5 pb-5 pt-3 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
-                            <div className="flex flex-wrap gap-3">
-                              <button
-                                onClick={() => handleViewDocument(record.url, requestData?.email, record.title, record.status)}
-                                className="flex-1 flex items-center justify-center gap-2 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-sm"
-                              >
-                                <Eye size={18} /> View Document
-                              </button>
-                            </div>
+                        <div className="px-5 pb-5 pt-3 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              onClick={() => handleViewDocument(record.url, requestData?.email, record.title, record.status)}
+                              className="flex-1 flex items-center justify-center gap-2 py-3 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-sm"
+                            >
+                              <Eye size={18} /> View Document
+                            </button>
                           </div>
+                        </div>
                       )}
                     </div>
                   ))}
