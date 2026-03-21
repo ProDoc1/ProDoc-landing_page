@@ -8,7 +8,13 @@ import emailjs from '@emailjs/browser';
 import {
   ShieldCheck, Target, Users, Building2, HeartPulse, CheckCircle, Search, Cpu,
   Facebook, Instagram, Linkedin, Mail, Phone, ArrowRight, AlertCircle, Star,
+<<<<<<< Updated upstream
   ChevronRight, UserCheck, FileLock, MoveRight
+=======
+  ChevronRight, UserCheck, FileLock, MoveRight,
+  Youtube,
+  YoutubeIcon
+>>>>>>> Stashed changes
 } from 'lucide-react';
 import { GradientBackground } from './components/ui/gradient-background';
 import DisplayCards from './components/ui/display-cards';
@@ -596,7 +602,7 @@ const AboutPage = ({ onNavigateDoctorRegistration }) => {
                 ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
               </p>
               <div className="flex gap-3 mt-2">
-                <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+                <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><YoutubeIcon size={18} /></a>
                 <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
                 <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
               </div>
@@ -608,8 +614,12 @@ const AboutPage = ({ onNavigateDoctorRegistration }) => {
                 {[
                   { name: 'Find a Doctor', url: '/doctors' },
                   { name: 'How it Works', url: '/how-it-works' },
+<<<<<<< Updated upstream
                   { name: 'Our Team', url: '/team' },
                   { name: 'Reviews', url: '/reviews' }
+=======
+                  { name: 'Our Team', url: '/about' },
+>>>>>>> Stashed changes
                 ].map((item) => (
                   <li key={item.name}><a href={item.url} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                     <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
@@ -624,7 +634,10 @@ const AboutPage = ({ onNavigateDoctorRegistration }) => {
               <ul className="space-y-4 text-sm">
                 {[
                   { name: 'About Us', url: '/about' },
+<<<<<<< Updated upstream
                   { name: 'Careers', url: '/careers' },
+=======
+>>>>>>> Stashed changes
                   { name: 'Privacy Policy', url: '/privacy' },
                   { name: 'Terms of Service', url: '/terms' }
                 ].map((item) => (

@@ -1,5 +1,9 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+<<<<<<< Updated upstream
 import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin, AlertTriangle, X } from 'lucide-react';
+=======
+import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin, AlertTriangle, X, LucideYoutube } from 'lucide-react';
+>>>>>>> Stashed changes
 import emailjs from '@emailjs/browser';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
@@ -234,7 +238,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                      ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
                   </p>
                   <div className="flex gap-3 mt-2">
-                     <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+                     <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><LucideYoutube size={18} /></a>
                      <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
                      <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
                   </div>
@@ -247,7 +251,11 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                         { name: 'Find a Doctor', url: '/doctors', action: onFindSpecialist },
                         { name: 'How it Works', url: '/how-it-works', action: onNavigateHowitWorks },
                         { name: 'Our Team', url: '/team', action: null },
+<<<<<<< Updated upstream
                         { name: 'Reviews', url: '/reviews', action: null }
+=======
+                        
+>>>>>>> Stashed changes
                      ].map((item) => (
                         <li key={item.name}><a href={item.url} onClick={(e) => { if (item.action) { e.preventDefault(); item.action(); } }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
@@ -266,13 +274,17 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                            About Us
                         </a>
                      </li>
+                     
                      <li>
+<<<<<<< Updated upstream
                         <a href="/careers" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            Careers
                         </a>
                      </li>
                      <li>
+=======
+>>>>>>> Stashed changes
                         <a href="/privacy" onClick={(e) => { e.preventDefault(); onNavigatePrivacy(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            Privacy Policy
@@ -771,6 +783,14 @@ export default function App() {
                onNavigateHome={() => navigateTo('home')}
                onNavigateDoctors={() => navigateTo('doctors')}
                onViewProfile={(id) => navigateTo('doctor-view', id)}
+<<<<<<< Updated upstream
+=======
+               onNavigateHowitWorks={() => navigateToSection('how-it-works')}
+               onNavigateAbout={() => navigateTo('about')}
+               onNavigatePrivacy={() => navigateTo('privacy')}
+               onNavigateTerms={() => navigateTo('terms')}
+               onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
+>>>>>>> Stashed changes
             />
          )}
 

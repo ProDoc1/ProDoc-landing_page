@@ -76,16 +76,52 @@ const Navbar = ({
       profileBtn: "bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100",
     },
     dashboard: {
-      wrapper: `${baseWrapper} bg-white border-slate-200 shadow-sm `,
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "bg-transparent border-transparent"}`,
       text: "text-slate-800",
       btnPrimary: "bg-teal-500 text-white",
       mobileToggle: "text-slate-800 hover:bg-slate-100",
       tubelightBg: "#14B8A6",
       tubelightText: "text-white",
-      profileBtn: "bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100",
+      profileBtn: `${scrolled ? "bg-white/60" : "bg-white/20"} text-slate-800 border-slate-200 hover:bg-white/80`,
     },
     'doctor-dashboard': {
+<<<<<<< Updated upstream
       wrapper: `${wrapperWithVisibility} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
+=======
+      wrapper: `${wrapperWithVisibility} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "bg-transparent border-transparent"}`,
+>>>>>>> Stashed changes
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+<<<<<<< Updated upstream
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+=======
+      profileBtn: `${scrolled ? "bg-white" : "bg-white/20"} text-slate-800 border-slate-200 hover:bg-slate-50`,
+>>>>>>> Stashed changes
+    },
+    'doctor-view': {
+      wrapper: `${wrapperWithVisibility} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "bg-transparent border-transparent"}`,
+      text: "text-slate-800",
+      logoBg: "bg-transparent",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: `${scrolled ? "bg-white" : "bg-white/20"} text-slate-800 border-slate-200 hover:bg-slate-50`,
+    },
+    'content-hub': {
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "bg-transparent border-transparent"}`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: `${scrolled ? "bg-white/60" : "bg-white/20"} text-slate-800 border-slate-200 hover:bg-white/80`,
+    },
+    privacy: {
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
       text: "text-slate-800",
       btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
       mobileToggle: "text-slate-800 hover:bg-slate-100",
@@ -93,10 +129,36 @@ const Navbar = ({
       tubelightText: "text-white",
       profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
     },
-    'doctor-view': {
+    terms: {
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+    },
+    admin: {
+      wrapper: `${baseWrapper} bg-white/80 backdrop-blur-xl border-slate-200 shadow-sm`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+    },
+    'doctor-registration': {
+      wrapper: `${baseWrapper} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
+      text: "text-slate-800",
+      btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
+      mobileToggle: "text-slate-800 hover:bg-slate-100",
+      tubelightBg: "#14B8A6",
+      tubelightText: "text-white",
+      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
+    },
+    'patient-profile': {
       wrapper: `${wrapperWithVisibility} ${scrolled ? "bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg" : "backdrop-blur-md border-transparent"}`,
       text: "text-slate-800",
-      logoBg: "bg-transparent",
       btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
       mobileToggle: "text-slate-800 hover:bg-slate-100",
       tubelightBg: "#14B8A6",
@@ -173,6 +235,14 @@ const Navbar = ({
   const userImage = currentUser?.image_url || currentUser?.image || currentUser?.imageURL || currentUser?.image_URL || null;
   const isDoctor = userRole === 'doctor' || currentUser?.user_type === 'doctor' || currentUser?.role === 'doctor';
 
+  const activeItemNameMapping = {
+    'home': 'Home',
+    'about': 'About Us',
+    'doctors': 'Doctors',
+    'doctor-view': 'Doctors', // Doctor view counts as Doctors
+    'content-hub': 'Content Hub'
+  };
+
   return (
     <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hideNavbar ? '-translate-y-[150%] opacity-0 scale-95' : 'translate-y-0 opacity-100 scale-100'}`} >
       <div className="flex items-center justify-between">
@@ -195,6 +265,7 @@ const Navbar = ({
             accentColor="#0ee9cf3b"
             bgColor={currentStyle.tubelightBg}
             textClass={currentStyle.tubelightText || currentStyle.text}
+            activeItemName={activeItemNameMapping[currentPage]}
           />
         </div>
 

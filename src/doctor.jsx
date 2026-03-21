@@ -4,7 +4,13 @@ import {
   ArrowLeft, Search, MapPin, Star, ShieldCheck,
   Clock, Stethoscope, Facebook, Instagram,
   Linkedin, Mail, Phone, Filter, ChevronDown,
+<<<<<<< Updated upstream
   X, FileText, CheckCircle, MoveRight
+=======
+  X, FileText, CheckCircle, MoveRight,
+  YoutubeIcon,
+  LucideYoutube
+>>>>>>> Stashed changes
 } from 'lucide-react';
 import LogoWithWords from './assets/Logo_with_words.png';
 
@@ -457,7 +463,11 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration }) =>
                 ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
               </p>
               <div className="flex gap-3 mt-2">
+<<<<<<< Updated upstream
                 <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Facebook size={18} /></a>
+=======
+                <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><LucideYoutube size={18} /></a>
+>>>>>>> Stashed changes
                 <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
                 <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
               </div>
@@ -470,7 +480,10 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration }) =>
                   { name: 'Find a Doctor', url: '/doctors' },
                   { name: 'How it Works', url: '/how-it-works' },
                   { name: 'Our Team', url: '/team' },
+<<<<<<< Updated upstream
                   { name: 'Reviews', url: '/reviews' }
+=======
+>>>>>>> Stashed changes
                 ].map((item) => (
                   <li key={item.name}><a href={item.url} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                     <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
@@ -485,7 +498,10 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration }) =>
               <ul className="space-y-4 text-sm">
                 {[
                   { name: 'About Us', url: '/about' },
+<<<<<<< Updated upstream
                   { name: 'Careers', url: '/careers' },
+=======
+>>>>>>> Stashed changes
                   { name: 'Privacy Policy', url: '/privacy' },
                   { name: 'Terms of Service', url: '/terms' }
                 ].map((item) => (

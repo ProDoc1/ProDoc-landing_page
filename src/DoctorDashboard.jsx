@@ -1381,6 +1381,7 @@ const DoctorDashboard = ({
                     </button>
                   ))}
                 </div>
+<<<<<<< Updated upstream
 
                 <form onSubmit={handleProfileSave} className="space-y-8 h-full flex flex-col">
                   <div className="flex-1 space-y-8">
@@ -1626,6 +1627,400 @@ const DoctorDashboard = ({
                   </div>
                 </form>
               </div>
+=======
+
+                <form onSubmit={handleProfileSave} className="space-y-8 h-full flex flex-col">
+                  <div className="flex-1 space-y-8">
+                    {activeEditSection === 'Personal' && (
+                      <div className="animate-slideUp space-y-6">
+                        <SectionTitle icon={<User size={20} className="text-teal-600" />} title="Personal Identity" />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField
+                            label="Full Name"
+                            name="fullName"
+                            value={localUser.fullName}
+                            onChange={(v) => setLocalUser({ ...localUser, fullName: v })}
+                            disabled={isSaving}
+                            placeholder="Dr. John Doe"
+                          />
+                          <InputField
+                            label="Specialty"
+                            name="specialty"
+                            value={localUser.specialty}
+                            onChange={(v) => setLocalUser({ ...localUser, specialty: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. Cardiologist"
+                          />
+                          <InputField
+                            label="SLMC Registration Number"
+                            name="slmcNumber"
+                            value={localUser.slmcNumber}
+                            onChange={(v) => setLocalUser({ ...localUser, slmcNumber: v })}
+                            disabled={isSaving}
+                            placeholder="REG-12345"
+                          />
+                          <InputField
+                            label="Practice Sector"
+                            name="sector"
+                            value={localUser.sector}
+                            onChange={(v) => setLocalUser({ ...localUser, sector: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. Government, Private"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {activeEditSection === 'Credentials' && (
+                      <div className="animate-slideUp space-y-6">
+                        <SectionTitle icon={<Award size={20} className="text-amber-600" />} title="Professional Credentials" />
+
+                        <div className="space-y-6">
+                          <div className="w-full">
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Working Hospitals</label>
+                            <div className="space-y-3">
+                              {(() => {
+                                let hospitalsList = [];
+                                if (Array.isArray(localUser.associatedHospitals)) {
+                                  hospitalsList = localUser.associatedHospitals;
+                                } else if (typeof localUser.associatedHospitals === 'string') {
+                                  try {
+                                    const parsed = JSON.parse(localUser.associatedHospitals);
+                                    if (Array.isArray(parsed)) hospitalsList = parsed;
+                                    else hospitalsList = localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean).map(name => ({ name, type: 'Consulting Physician' }));
+                                  } catch {
+                                    hospitalsList = localUser.associatedHospitals.split(',').map(h => h.trim()).filter(Boolean).map(name => ({ name, type: 'Consulting Physician' }));
+                                  }
+                                }
+
+                                return (
+                                  <>
+                                    {hospitalsList.map((hospital, index) => (
+                                      <div key={index} className="flex flex-col md:flex-row gap-2">
+                                        <div className="flex-1 relative">
+                                          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                          <input
+                                            type="text"
+                                            value={typeof hospital === 'object' ? (hospital.name || hospital.hospital || '') : hospital}
+                                            onChange={(e) => {
+                                              const newHospitals = [...hospitalsList];
+                                              newHospitals[index] = { ...(typeof newHospitals[index] === 'object' ? newHospitals[index] : { name: newHospitals[index], type: 'Consulting Physician' }), name: e.target.value };
+                                              setLocalUser({ ...localUser, associatedHospitals: newHospitals });
+                                            }}
+                                            placeholder="Hospital Name (e.g. Asiri Hospital)"
+                                            className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all font-medium text-slate-700"
+                                            disabled={isSaving}
+                                          />
+                                        </div>
+                                        <div className="flex-[0.8] relative flex gap-2">
+                                          <div className="flex-1 relative">
+                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                            <input
+                                              type="text"
+                                              value={typeof hospital === 'object' ? (hospital.type || '') : 'Consulting Physician'}
+                                              onChange={(e) => {
+                                                const newHospitals = [...hospitalsList];
+                                                newHospitals[index] = { ...(typeof newHospitals[index] === 'object' ? newHospitals[index] : { name: newHospitals[index] }), type: e.target.value };
+                                                setLocalUser({ ...localUser, associatedHospitals: newHospitals });
+                                              }}
+                                              placeholder="Type (e.g. Private)"
+                                              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all font-medium text-slate-700 text-sm"
+                                              disabled={isSaving}
+                                            />
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const newHospitals = hospitalsList.filter((_, i) => i !== index);
+                                              setLocalUser({ ...localUser, associatedHospitals: newHospitals });
+                                            }}
+                                            disabled={isSaving}
+                                            className="px-4 py-3 bg-red-50 text-red-400 hover:bg-red-500 hover:text-white rounded-2xl transition-colors border border-red-100 active:scale-95"
+                                          >
+                                            <X size={20} />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    <button
+                                      type="button"
+                                      onClick={() => setLocalUser({ ...localUser, associatedHospitals: [...hospitalsList, { name: '', type: '' }] })}
+                                      disabled={isSaving}
+                                      className="w-full py-4 mt-2 border-2 border-dashed border-teal-200 text-teal-600 hover:border-teal-400 hover:bg-teal-50 rounded-2xl transition-all font-bold text-sm flex items-center justify-center gap-2"
+                                    >
+                                      <PlusSquare size={18} /> Add Practice Location
+                                    </button>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                          <InputField
+                            label="Educational Qualifications"
+                            name="qualifications"
+                            value={localUser.qualifications}
+                            onChange={(v) => setLocalUser({ ...localUser, qualifications: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. MBBS, MD (Surgery)"
+                          />
+                          <div className="w-full">
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Years of Experience</label>
+                            <div className="relative">
+                              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                              <input
+                                type="number"
+                                value={localUser.experience}
+                                onChange={(e) => setLocalUser({ ...localUser, experience: e.target.value })}
+                                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all font-medium text-slate-700"
+                                disabled={isSaving}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeEditSection === 'Presence' && (
+                      <div className="animate-slideUp space-y-6">
+                        <SectionTitle icon={<Globe size={20} className="text-blue-600" />} title="Public Presence" />
+
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div className="relative group cursor-pointer" onClick={() => !isSaving && fileInputRef.current.click()}>
+                              <div className="w-24 h-24 rounded-3xl border-2 border-white shadow-xl overflow-hidden bg-white">
+                                <img src={localUser.image} alt="Profile Preview" className="w-full h-full object-cover" />
+                              </div>
+                              <div className="absolute inset-0 bg-teal-600/60 rounded-3xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px]">
+                                <Camera className="text-white" size={24} />
+                              </div>
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-800">Profile Photo</h4>
+                              <p className="text-sm text-slate-500 mb-2">Recommended: 400x400px</p>
+                              <button
+                                type="button"
+                                onClick={() => fileInputRef.current.click()}
+                                className="text-xs font-bold text-teal-600 hover:text-teal-700 underline"
+                              >
+                                Replace Image
+                              </button>
+                            </div>
+                            <input type="file" ref={fileInputRef} onChange={handleImageChange} className="hidden" accept="image/*" />
+                          </div>
+
+                          <InputField
+                            label="Languages Spoken"
+                            name="languages"
+                            value={localUser.languages}
+                            onChange={(v) => setLocalUser({ ...localUser, languages: v })}
+                            disabled={isSaving}
+                            placeholder="e.g. English, Sinhala"
+                          />
+
+                          <div className="w-full">
+                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Professional Bio</label>
+                            <textarea
+                              value={localUser.bio}
+                              onChange={(e) => setLocalUser({ ...localUser, bio: e.target.value })}
+                              className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-teal-100 focus:bg-white focus:border-teal-500 outline-none transition-all min-h-[140px] text-slate-700 leading-relaxed font-medium"
+                              placeholder="Describe your medical journey and expertise..."
+                              disabled={isSaving}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer & Feedback */}
+                  <div className="shrink-0 pt-6">
+                    {saveStatus.message && (
+                      <div className={`p-4 rounded-2xl text-sm font-bold flex items-center gap-3 mb-6 animate-fadeIn ${saveStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'
+                        }`}>
+                        {saveStatus.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                        {saveStatus.message}
+                      </div>
+                    )}
+
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingProfile(false)}
+                        className="flex-1 px-8 py-4 border border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all font-bold"
+                        disabled={isSaving}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="flex-[2] px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl shadow-xl shadow-teal-900/10 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:grayscale"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="animate-spin" size={20} />
+                            Applying Changes...
+                          </>
+                        ) : (
+                          <>
+                            <Save size={20} />
+                            Save Profile
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Patient View Profile Modal */}
+      {selectedPatientProfile && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fadeIn">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+            {/* Header */}
+            <div className="p-6 md:p-8 bg-gradient-to-r from-teal-700 to-teal-600 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0 mt-1 shadow-inner">
+                  <User size={28} />
+                </div>
+                <div className="text-white">
+                  <h3 className="text-2xl font-bold">{selectedPatientProfile.patientName}'s Profile</h3>
+                  <p className="text-teal-100/80 text-sm">Patient Details & Medical History</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPatientProfile(null)}
+                className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all shrink-0"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-slate-50">
+
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-6">
+                <div className="w-24 h-24 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shadow-inner border border-teal-100 shrink-0 mx-auto md:mx-0">
+                  <User size={40} />
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                      Age: {selectedPatientProfile.age}
+                    </span>
+                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold shadow-sm border border-slate-200">
+                      Gender: {selectedPatientProfile.gender}
+                    </span>
+                    <span className="px-3 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shadow-sm border border-rose-100">
+                      Blood: {selectedPatientProfile.bloodGroup || 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <Activity size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contact</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.contact || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <FileText size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Email</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.email || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 md:col-span-2">
+                      <div className="p-1.5 bg-teal-50 text-teal-600 rounded-md">
+                        <MapPin size={14} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Address</p>
+                        <p className="text-sm font-semibold text-slate-700">{selectedPatientProfile.address || 'Not Provided'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pb-4">
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-3">
+                  <Activity size={16} className="text-teal-600" /> Patient Medical Shared Records
+                </h4>
+                
+                {loadingPatientRecords ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="animate-spin text-teal-500" size={32} />
+                  </div>
+                ) : patientRecords.length === 0 ? (
+                  <div className="bg-white p-8 rounded-3xl border border-dashed border-slate-200 text-center">
+                    <FileText className="mx-auto text-slate-300 mb-3" size={40} />
+                    <p className="text-slate-500 font-medium text-sm">No medical records uploaded by this patient yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    {patientRecords.map((record) => (
+                      <div key={record.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:border-teal-200 transition-all group">
+                        <div 
+                          className="p-4 flex items-center justify-between cursor-pointer"
+                          onClick={() => setExpandedRecord(expandedRecord === record.id ? null : record.id)}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              record.type === 'lab' ? 'bg-rose-50 text-rose-500' :
+                              record.type === 'prescription' ? 'bg-emerald-50 text-emerald-500' :
+                              record.type === 'scan' ? 'bg-blue-50 text-blue-500' :
+                              'bg-purple-50 text-purple-500'
+                            }`}>
+                              <FileText size={20} />
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="font-bold text-slate-800 text-sm truncate">{record.title}</h5>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                                <span>{record.type}</span>
+                                <span>•</span>
+                                <span>{record.reportDate}</span>
+                                <span>•</span>
+                                <span className="text-teal-500 flex items-center gap-1">
+                                  <ShieldCheck size={10} /> {record.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className={`p-1.5 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500 transition-all ${expandedRecord === record.id ? 'rotate-180 bg-teal-50 text-teal-500' : ''}`}>
+                            <ChevronDown size={16} />
+                          </div>
+                        </div>
+                        
+                        {expandedRecord === record.id && (
+                          <div className="px-4 pb-4 pt-2 border-t border-slate-50 animate-in slide-in-from-top-2 duration-200">
+                            <div className="flex flex-wrap gap-2">
+                              <button 
+                                onClick={() => handleViewDocument(record.url, selectedPatientProfile?.email, record.title)}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 transition-colors shadow-sm"
+                              >
+                                <Eye size={14} /> View Document
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+>>>>>>> Stashed changes
             </div>
           </div>
         </div>

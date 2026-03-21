@@ -908,9 +908,18 @@ const PatientDashboard = ({
         {currentUser && (
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
+<<<<<<< Updated upstream
               <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
                 <User size={48} />
                 <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
+=======
+              <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative overflow-hidden border-4 border-white shadow-lg">
+                {currentUser?.imageUrl ? (
+                  <img src={currentUser.imageUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={48} />
+                )}
+>>>>>>> Stashed changes
               </div>
               <h2 className="text-2xl font-bold text-slate-800 flex items-center justify-center gap-1.5">
                 {currentUser?.fullName || currentUser?.name || 'Patient Name'}
@@ -1092,6 +1101,7 @@ const PatientDashboard = ({
                 </div>
               </div>
 
+<<<<<<< Updated upstream
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
@@ -1146,6 +1156,9 @@ const PatientDashboard = ({
                   </div>
                 </div>
               </div>
+=======
+
+>>>>>>> Stashed changes
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button

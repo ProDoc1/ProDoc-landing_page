@@ -2,9 +2,15 @@ import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { cn } from "../../lib/utils"
 
-export function NavBar({ items, className, accentColor, bgColor, textClass }) {
-  const [activeTab, setActiveTab] = useState(items[0].name)
+export function NavBar({ items, className, accentColor, bgColor, textClass, activeItemName }) {
+  const [activeTab, setActiveTab] = useState(activeItemName || items[0].name)
   const [hoveredTab, setHoveredTab] = useState(null)
+
+  useEffect(() => {
+    if (activeItemName) {
+      setActiveTab(activeItemName);
+    }
+  }, [activeItemName]);
 
   return (
     <div className={cn("flex items-center justify-center", className)}>
