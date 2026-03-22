@@ -1706,10 +1706,55 @@ const NavItem = ({ icon, label, active, badge, onClick }) => (
   </button>
 );
 
-const RiskBadge = ({ level }) => {
-  const colors = { LOW: 'bg-emerald-100 text-emerald-700 border-emerald-200', MODERATE: 'bg-amber-100 text-amber-700 border-amber-200', HIGH: 'bg-orange-100 text-orange-700 border-orange-200', CRITICAL: 'bg-red-100 text-red-700 border-red-200', UNKNOWN: 'bg-slate-100 text-slate-600 border-slate-200' };
-  const cls = colors[level?.toUpperCase()] || colors.UNKNOWN;
-  return <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold border ${cls}`}><AlertCircle size={14} />{level || 'UNKNOWN'} RISK</span>;
+const TrafficLight = ({ level }) => {
+  const l = level?.toUpperCase() || 'UNKNOWN';
+  const isHigh = l === 'HIGH' || l === 'CRITICAL';
+  const isMod = l === 'MODERATE';
+  const isLow = l === 'LOW';
+  const info = {
+    HIGH:     { label: 'HIGH RISK',       desc: 'Immediate attention recommended',  textColor: 'text-red-700' },
+    CRITICAL: { label: 'CRITICAL RISK',   desc: 'Urgent intervention required',     textColor: 'text-red-800' },
+    MODERATE: { label: 'MODERATE RISK',   desc: 'Monitor closely and follow up',    textColor: 'text-amber-700' },
+    LOW:      { label: 'LOW RISK',        desc: 'No immediate concerns detected',   textColor: 'text-emerald-700' },
+    UNKNOWN:  { label: 'RISK UNDETERMINED', desc: 'Unable to assess risk level',    textColor: 'text-slate-500' },
+  }[l] || { label: 'RISK UNDETERMINED', desc: 'Unable to assess risk level', textColor: 'text-slate-500' };
+  return (
+    <div className="flex items-center gap-5 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+      <div className="flex flex-col items-center gap-2 bg-slate-800 rounded-2xl px-3 py-4 shadow-inner shrink-0">
+        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isHigh ? 'bg-red-500 shadow-lg shadow-red-400/70' : 'bg-red-950/30'}`} />
+        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isMod ? 'bg-amber-400 shadow-lg shadow-amber-300/70' : 'bg-amber-950/30'}`} />
+        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isLow ? 'bg-emerald-400 shadow-lg shadow-emerald-300/70' : 'bg-emerald-950/30'}`} />
+      </div>
+      <div>
+        <p className={`font-extrabold text-2xl tracking-wide ${info.textColor}`}>{info.label}</p>
+        <p className="text-sm text-slate-500 mt-1">{info.desc}</p>
+      </div>
+    </div>
+  );
+};
+
+const ConfidenceBar = ({ value }) => {
+  const pct = Math.round((value || 0) * 100);
+  const color = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-slate-400';
+  return (
+    <div className="mt-3">
+      <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+        <span className="font-medium">AI Confidence</span>
+        <span className="font-bold text-slate-700">{pct}%</span>
+      </div>
+      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+};
+
+const extractRiskLevel = (text) => {
+  if (!text) return 'UNKNOWN';
+  if (/high\s+risk|risk[:\s*]+high/i.test(text)) return 'HIGH';
+  if (/moderate\s+risk|risk[:\s*]+moderate/i.test(text)) return 'MODERATE';
+  if (/low\s+risk|risk[:\s*]+low/i.test(text)) return 'LOW';
+  return 'UNKNOWN';
 };
 
 const ResultSection = ({ title, items }) => {
@@ -1762,52 +1807,79 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
       </form>
     </div>
 
-    {result && (
-      <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-4 animate-fadeIn">
-        <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
-          <div className="p-2 bg-teal-50 rounded-xl"><Brain size={18} className="text-teal-600" /></div>
-          <h3 className="text-xl font-bold text-slate-800">Analysis Results</h3>
-          <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
-            {result._source === 'backend' ? 'ProDoc AI' : 'Gemini'}
-          </span>
-        </div>
-
-        {/* Gemini markdown result */}
-        {result.analysis && (
-          <div className="prose prose-slate prose-sm max-w-none text-slate-700 leading-relaxed [&_strong]:font-semibold [&_strong]:text-slate-800 [&_ul]:space-y-1 [&_li]:text-slate-600">
-            <ReactMarkdown>{result.analysis}</ReactMarkdown>
+    {result && (() => {
+      const riskLevel = result._source === 'backend'
+        ? result.ai_result?.risk_level
+        : extractRiskLevel(result.analysis);
+      return (
+        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-5 animate-fadeIn">
+          {/* Header */}
+          <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+            <div className="p-2 bg-teal-50 rounded-xl"><Brain size={18} className="text-teal-600" /></div>
+            <h3 className="text-xl font-bold text-slate-800">Analysis Results</h3>
+            <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+              {result._source === 'backend' ? 'ProDoc AI' : 'Gemini'}
+            </span>
           </div>
-        )}
 
-        {/* ProDoc AI backend structured result */}
-        {result._source === 'backend' && (
-          <>
-            {result.ai_result?.finding && (
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Primary Finding</p>
-                <p className="text-slate-800 font-semibold">{result.ai_result.finding}</p>
-                {result.ai_result.confidence !== undefined && <p className="text-xs text-slate-400 mt-1">Confidence: {(result.ai_result.confidence * 100).toFixed(1)}%</p>}
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-4">
-              {result.metadata?.modality && <div className="p-3 bg-slate-50 rounded-xl border border-slate-100"><p className="text-xs text-slate-400 font-bold uppercase">Image Type</p><p className="text-slate-700 font-semibold text-sm mt-0.5">{result.metadata.modality}</p></div>}
-              {result.metadata?.routed_model && <div className="p-3 bg-slate-50 rounded-xl border border-slate-100"><p className="text-xs text-slate-400 font-bold uppercase">Model Used</p><p className="text-slate-700 font-semibold text-sm mt-0.5">{result.metadata.routed_model}</p></div>}
+          {/* Traffic Light — always shown */}
+          <TrafficLight level={riskLevel} />
+
+          {/* Primary Finding + Confidence (backend) */}
+          {result._source === 'backend' && result.ai_result?.finding && (
+            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Primary Finding</p>
+              <p className="text-slate-800 font-semibold text-base">{result.ai_result.finding}</p>
+              {result.ai_result.confidence !== undefined && (
+                <ConfidenceBar value={result.ai_result.confidence} />
+              )}
             </div>
-            <ResultSection title="Key Observations" items={result.ai_result?.key_findings || result.ai_result?.observations} />
-            <ResultSection title="Diagnostic Suggestions" items={result.diagnostic_suggestions} />
-            <ResultSection title="Recommended Tests" items={result.recommended_tests} />
-            {result.final_report && (
-              <div className="border border-slate-100 rounded-2xl overflow-hidden">
-                <div className="px-5 py-4 bg-slate-50"><span className="font-bold text-slate-700">Full Report</span></div>
-                <pre className="px-5 py-4 text-xs text-slate-600 whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto">{result.final_report}</pre>
-              </div>
-            )}
-          </>
-        )}
+          )}
 
-        <p className="text-xs text-slate-400 text-center pt-2 border-t border-slate-50">For clinical decision support only. Always apply professional judgement.</p>
-      </div>
-    )}
+          {/* Metadata chips (backend) */}
+          {result._source === 'backend' && (result.metadata?.modality || result.metadata?.routed_model) && (
+            <div className="grid grid-cols-2 gap-3">
+              {result.metadata?.modality && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Image Type</p>
+                  <p className="text-slate-700 font-semibold text-sm mt-1">{result.metadata.modality}</p>
+                </div>
+              )}
+              {result.metadata?.routed_model && (
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Model Used</p>
+                  <p className="text-slate-700 font-semibold text-sm mt-1">{result.metadata.routed_model}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Gemini markdown */}
+          {result.analysis && (
+            <div className="prose prose-slate prose-sm max-w-none text-slate-700 leading-relaxed [&_strong]:font-semibold [&_strong]:text-slate-800 [&_ul]:space-y-1 [&_li]:text-slate-600">
+              <ReactMarkdown>{result.analysis}</ReactMarkdown>
+            </div>
+          )}
+
+          {/* Structured sections (backend) */}
+          {result._source === 'backend' && (
+            <>
+              <ResultSection title="Key Observations" items={result.ai_result?.key_findings || result.ai_result?.observations} />
+              <ResultSection title="Diagnostic Suggestions" items={result.diagnostic_suggestions} />
+              <ResultSection title="Recommended Tests" items={result.recommended_tests} />
+              {result.final_report && (
+                <div className="border border-slate-100 rounded-2xl overflow-hidden">
+                  <div className="px-5 py-4 bg-slate-50"><span className="font-bold text-slate-700">Full Report</span></div>
+                  <pre className="px-5 py-4 text-xs text-slate-600 whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto">{result.final_report}</pre>
+                </div>
+              )}
+            </>
+          )}
+
+          <p className="text-xs text-slate-400 text-center pt-2 border-t border-slate-50">For clinical decision support only. Always apply professional judgement.</p>
+        </div>
+      );
+    })()}
   </div>
 );
 
