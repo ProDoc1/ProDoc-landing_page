@@ -8,13 +8,9 @@ import emailjs from '@emailjs/browser';
 import {
   ShieldCheck, Target, Users, Building2, HeartPulse, CheckCircle, Search, Cpu,
   Facebook, Instagram, Linkedin, Mail, Phone, ArrowRight, AlertCircle, Star,
-<<<<<<< Updated upstream
-  ChevronRight, UserCheck, FileLock, MoveRight
-=======
   ChevronRight, UserCheck, FileLock, MoveRight,
   Youtube,
   YoutubeIcon
->>>>>>> Stashed changes
 } from 'lucide-react';
 import { GradientBackground } from './components/ui/gradient-background';
 import DisplayCards from './components/ui/display-cards';
@@ -223,7 +219,7 @@ const Timeline = ({ events }) => {
   );
 };
 
-const AboutPage = ({ onNavigateDoctorRegistration }) => {
+const AboutPage = ({ onNavigateDoctorRegistration, onNavigateDoctors, onNavigateHowitWorks }) => {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', subject: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
@@ -474,7 +470,7 @@ const AboutPage = ({ onNavigateDoctorRegistration }) => {
                 </p>
 
                 <div className="mt-auto flex">
-                  <button onClick={() => window.open('https://newsroom.heart.org/news/new-guidance-offered-for-responsible-ai-use-in-health-care', '_blank')}
+                  <button onClick={() => window.open('https://www.unesco.org/en/articles/ai-powered-health-bridging-gap-between-technology-and-wellbeing', '_blank')}
                     className="inline-flex items-center gap-2 bg-white text-slate-900 px-6 py-4 rounded-xl font-bold hover:bg-teal-50 transition-colors group/btn">
                     Read Documentation
                   </button>
@@ -612,16 +608,11 @@ const AboutPage = ({ onNavigateDoctorRegistration }) => {
               <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
               <ul className="space-y-4 text-sm">
                 {[
-                  { name: 'Find a Doctor', url: '/doctors' },
-                  { name: 'How it Works', url: '/how-it-works' },
-<<<<<<< Updated upstream
-                  { name: 'Our Team', url: '/team' },
-                  { name: 'Reviews', url: '/reviews' }
-=======
-                  { name: 'Our Team', url: '/about' },
->>>>>>> Stashed changes
+                  { name: 'Find a Doctor', url: '/doctors', onClick: onNavigateDoctors },
+                  { name: 'How it Works', url: '/how-it-works', onClick: onNavigateHowitWorks },
+                  { name: 'Our Team', url: '#team' },
                 ].map((item) => (
-                  <li key={item.name}><a href={item.url} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                  <li key={item.name}><a href={item.url} onClick={(e) => { if (item.onClick) { e.preventDefault(); item.onClick(); } }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                     <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                     {item.name}
                   </a></li>
@@ -634,10 +625,6 @@ const AboutPage = ({ onNavigateDoctorRegistration }) => {
               <ul className="space-y-4 text-sm">
                 {[
                   { name: 'About Us', url: '/about' },
-<<<<<<< Updated upstream
-                  { name: 'Careers', url: '/careers' },
-=======
->>>>>>> Stashed changes
                   { name: 'Privacy Policy', url: '/privacy' },
                   { name: 'Terms of Service', url: '/terms' }
                 ].map((item) => (

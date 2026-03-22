@@ -1,9 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-<<<<<<< Updated upstream
-import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin, AlertTriangle, X } from 'lucide-react';
-=======
 import { Search, ShieldCheck, MessageSquare, Stethoscope, ArrowRight, Star, UserCheck, CheckCircle, Bell, BrainCircuit, ScanLine, Mail, Phone, Facebook, Instagram, Linkedin, AlertTriangle, X, LucideYoutube } from 'lucide-react';
->>>>>>> Stashed changes
 import emailjs from '@emailjs/browser';
 import WarpBackground from './components/ui/warp-background';
 import LogoWithWords from './assets/Logo_with_words.png';
@@ -25,7 +21,7 @@ import ChatbotApp from './Chatbot/App';
 import DoctorRegistration from './DoctorRegistration';
 import PatientProfilePage from './PatientProfilePage';
 
-const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigatePrivacy, onNavigateTerms, onNavigateChatbot, onNavigateDoctorRegistration }) => {
+const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, onNavigateAboutTeam, onNavigatePrivacy, onNavigateTerms, onNavigateChatbot, onNavigateDoctorRegistration }) => {
 
    useEffect(() => {
       document.documentElement.style.scrollBehavior = 'smooth';
@@ -250,14 +246,9 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                      {[
                         { name: 'Find a Doctor', url: '/doctors', action: onFindSpecialist },
                         { name: 'How it Works', url: '/how-it-works', action: onNavigateHowitWorks },
-                        { name: 'Our Team', url: '/team', action: null },
-<<<<<<< Updated upstream
-                        { name: 'Reviews', url: '/reviews', action: null }
-=======
-                        
->>>>>>> Stashed changes
+                        { name: 'Our Team', url: '/about#team', action: onNavigateAboutTeam },
                      ].map((item) => (
-                        <li key={item.name}><a href={item.url} onClick={(e) => { if (item.action) { e.preventDefault(); item.action(); } }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                        <li key={item.name}><a href={item.url} onClick={(e) => { e.preventDefault(); if (item.action) { item.action(); } }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            {item.name}
                         </a></li>
@@ -274,17 +265,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                            About Us
                         </a>
                      </li>
-                     
                      <li>
-<<<<<<< Updated upstream
-                        <a href="/careers" className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
-                           <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
-                           Careers
-                        </a>
-                     </li>
-                     <li>
-=======
->>>>>>> Stashed changes
                         <a href="/privacy" onClick={(e) => { e.preventDefault(); onNavigatePrivacy(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
                            <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                            Privacy Policy
@@ -482,7 +463,8 @@ export default function App() {
    };
 
    useEffect(() => {
-      if (currentUser && currentUser.email_verified === false) {
+      const role = localStorage.getItem('userRole');
+      if (currentUser && role === 'patient' && currentUser.email_verified === false) {
          const checkAndPrompt = () => {
             const lastPrompt = localStorage.getItem('last_verify_prompt_time');
             const now = new Date().getTime();
@@ -646,6 +628,15 @@ export default function App() {
       }, 100);
    };
 
+   const navigateToAboutTeam = () => {
+      setCurrentPage('about');
+      localStorage.setItem('currentPage', 'about');
+      setTimeout(() => {
+         const element = document.getElementById('team');
+         if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+   };
+
    return (
       <main className="relative min-h-screen">
          {/* Navbar visibility logic */}
@@ -674,10 +665,12 @@ export default function App() {
          )}
 
          {currentPage === 'home' && (
+            <div key="home" className="page-enter">
             <LandingPage
                onNavigateHowitWorks={() => navigateToSection('how-it-works')}
                onFindSpecialist={() => navigateTo('doctors')}
                onNavigateAbout={() => navigateTo('about')}
+               onNavigateAboutTeam={navigateToAboutTeam}
                onNavigatePrivacy={() => navigateTo('privacy')}
                onNavigateTerms={() => navigateTo('terms')}
                onNavigateChatbot={() => {
@@ -686,21 +679,30 @@ export default function App() {
                }}
                onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
             />
+            </div>
          )}
 
          {currentPage === 'privacy' && (
+            <div key="privacy" className="page-enter">
             <PrivacyPolicy onBack={() => navigateTo('home')} />
+            </div>
          )}
 
          {currentPage === 'terms' && (
+            <div key="terms" className="page-enter">
             <TermsOfService onBack={() => navigateTo('home')} />
+            </div>
          )}
 
          {currentPage === 'about' && (
+            <div key="about" className="page-enter">
             <AboutPage 
                onBack={() => navigateTo('home')} 
                onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
+               onNavigateDoctors={() => navigateTo('doctors')}
+               onNavigateHowitWorks={() => navigateToSection('how-it-works')}
             />
+            </div>
          )}
 
          {currentPage === 'login' && (
@@ -721,14 +723,20 @@ export default function App() {
          )}
 
          {currentPage === 'doctors' && (
+            <div key="doctors" className="page-enter">
             <DoctorsPage
                onBack={() => navigateTo('home')}
                onViewProfile={(id) => navigateTo('doctor-view', id)}
                onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
+               onNavigateAboutTeam={navigateToAboutTeam}
+               onNavigateDoctors={() => navigateTo('doctors')}
+               onNavigateHowitWorks={() => navigateToSection('how-it-works')}
             />
+            </div>
          )}
 
          {currentPage === 'doctor-view' && (
+            <div key="doctor-view" className="page-enter">
             <DoctorViewProfile
                doctorId={selectedDoctorId}
                onBack={() => navigateTo('doctors')}
@@ -737,9 +745,11 @@ export default function App() {
                onNavigateLogin={() => navigateTo('login')}
                onNavigateSignupPage={() => navigateTo('signup')}
             />
+            </div>
          )}
 
          {currentPage === 'dashboard' && (
+            <div key="dashboard" className="page-enter">
             <PatientDashboard
                user={currentUser}
                onLogout={handleLogout}
@@ -752,11 +762,14 @@ export default function App() {
                onNavigateContentHub={() => navigateTo('content-hub')}
                onViewProfile={(id) => navigateTo('doctor-view', id)}
             />
+            </div>
          )}
 
          {currentPage === 'doctor-dashboard' && (
+            <div key="doctor-dashboard" className="page-enter">
             <DoctorDashboard
                user={currentUser}
+               hideNavbar={hideNavbar}
                onLogout={handleLogout}
                onNavigateHome={() => navigateTo('home')}
                onNavigateAbout={() => navigateTo('about')}
@@ -766,6 +779,7 @@ export default function App() {
                onNavigateContentHub={() => navigateTo('content-hub')}
                onViewPatientProfile={(requestData) => navigateTo('patient-profile', requestData)}
             />
+            </div>
          )}
 
          {currentPage === 'patient-profile' && (
@@ -776,22 +790,17 @@ export default function App() {
          )}
 
          {currentPage === 'content-hub' && (
+            <div key="content-hub" className="page-enter">
             <ContentHub
                user={currentUser}
                userRole={localStorage.getItem('userRole')}
                hideNavbar={hideNavbar}
                onNavigateHome={() => navigateTo('home')}
                onNavigateDoctors={() => navigateTo('doctors')}
+               onNavigateAboutTeam={navigateToAboutTeam}
                onViewProfile={(id) => navigateTo('doctor-view', id)}
-<<<<<<< Updated upstream
-=======
-               onNavigateHowitWorks={() => navigateToSection('how-it-works')}
-               onNavigateAbout={() => navigateTo('about')}
-               onNavigatePrivacy={() => navigateTo('privacy')}
-               onNavigateTerms={() => navigateTo('terms')}
-               onNavigateDoctorRegistration={() => window.open('/doctor-registration', '_blank')}
->>>>>>> Stashed changes
             />
+            </div>
          )}
 
          {currentPage === 'admin' && (

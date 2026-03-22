@@ -13,21 +13,12 @@ import {
     AlertCircle,
     RefreshCw,
     Newspaper,
-<<<<<<< Updated upstream
-    X
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MicroExpander } from './components/ui/micro-expander';
-
-const ContentHub = ({ onNavigateHome, onNavigateLogin, onNavigateDoctors, onViewProfile, user, userRole, hideNavbar }) => {
-=======
     X,
     Mail,
     Phone,
-    Facebook,
     Instagram,
     Linkedin,
-    LucideYoutube
+    YoutubeIcon as LucideYoutube
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MicroExpander } from './components/ui/micro-expander';
@@ -40,6 +31,7 @@ const ContentHub = ({
     onViewProfile, 
     onNavigateHowitWorks,
     onNavigateAbout,
+    onNavigateAboutTeam,
     onNavigatePrivacy,
     onNavigateTerms,
     onNavigateDoctorRegistration,
@@ -47,7 +39,7 @@ const ContentHub = ({
     userRole, 
     hideNavbar 
 }) => {
->>>>>>> Stashed changes
+
     const [posts, setPosts] = useState([]);
     const [suggestedDoctors, setSuggestedDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -367,6 +359,58 @@ const ContentHub = ({
 
                 {/* CENTER FEED */}
                 <main className="lg:col-span-9 space-y-6">
+                    {/* Mobile Tabs Navigation */}
+                    <div className={`lg:hidden flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth -mx-4 px-4 sticky transition-all duration-300 z-30 bg-slate-50/80 backdrop-blur-md ${hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100 top-20'}`}>
+                        {['Doctor Articles', 'Popular', 'Saved'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`whitespace-nowrap flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === tab 
+                                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/20' 
+                                    : 'bg-white text-slate-500 border border-slate-100 shadow-sm'}`}
+                            >
+                                {tab === 'Doctor Articles' && <Newspaper size={18} />}
+                                {tab === 'Popular' && <TrendingUp size={18} />}
+                                {tab === 'Saved' && <Bookmark size={18} />}
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Mobile Suggested Doctors */}
+                    <div className="lg:hidden bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+                        <div className="flex justify-between items-center mb-4 px-2">
+                            <h3 className="font-bold text-slate-900">Suggested Doctors</h3>
+                            <button onClick={() => setShowAllSuggestions(!showAllSuggestions)} className="text-xs font-bold text-teal-600">
+                                {showAllSuggestions ? 'Show Less' : 'View All'}
+                            </button>
+                        </div>
+                        <div className="flex overflow-x-auto gap-4 pb-2 no-scrollbar">
+                            {(showAllSuggestions ? suggestedDoctors : suggestedDoctors.slice(0, 5)).map(doctor => (
+                                <div key={doctor.doctor_id} className="flex flex-col items-center p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 min-w-[140px] text-center gap-2">
+                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                        {doctor.image_url ? (
+                                            <img src={doctor.image_url.replace(/^\.\//, '/')} alt={doctor.full_name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs">
+                                                {doctor.full_name ? doctor.full_name[0] : 'D'}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="w-full">
+                                        <p className="text-[11px] font-bold text-slate-900 truncate px-1">{doctor.full_name}</p>
+                                        <p className="text-[9px] text-slate-500 truncate mb-2">{doctor.specialty}</p>
+                                        <button 
+                                            onClick={() => onViewProfile && onViewProfile(doctor.doctor_id)}
+                                            className="w-full py-1.5 bg-white text-teal-600 border border-teal-100 rounded-lg text-[10px] font-bold hover:bg-teal-600 hover:text-white transition-all"
+                                        >
+                                            View
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
                     {/* Create Post Input (Doctors Only) */}
                     {userRole === 'doctor' && (
@@ -531,10 +575,6 @@ const ContentHub = ({
                                                 </div>
                                             </div>
                                         )}
-<<<<<<< Updated upstream
-=======
-                                        
->>>>>>> Stashed changes
 
                                         {/* Post Content */}
                                         <div className="px-6 pb-5">
@@ -574,22 +614,19 @@ const ContentHub = ({
                         </AnimatePresence>
                     </div>
                 </main>
-<<<<<<< Updated upstream
 
             </div>
-=======
-            </div>
-            
-            {/* --- FOOTER --- */}
-            <footer className="mt-16 bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100 max-w-7xl mx-auto">
+
+            {/* Added consistent Footer */}
+            <footer className="mt-20 bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 text-left">
                     <div className="md:col-span-4 space-y-6">
                         <div className="flex items-center gap-3">
                             <img src={LogoWithWords} alt="ProDoc" className="h-10 md:h-12 w-auto" />
                         </div>
-                        <p className="text-sm leading-relaxed text-slate-500 max-w-sm">
+                        <p className="text-sm leading-relaxed text-slate-500 max-w-sm text-left">
                             ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
                         </p>
                         <div className="flex gap-3 mt-2">
@@ -603,14 +640,14 @@ const ContentHub = ({
                         <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Platform</h4>
                         <ul className="space-y-4 text-sm">
                             {[
-                                { name: 'Find a Doctor', url: '/doctors', action: onNavigateDoctors },
-                                { name: 'How it Works', url: '/how-it-works', action: onNavigateHowitWorks },
-                                { name: 'Our Team', url: '/about', action: onNavigateAbout },
+                                { name: 'Find a Doctor', onClick: onNavigateDoctors },
+                                { name: 'How it Works', onClick: onNavigateHowitWorks },
+                                { name: 'Our Team', onClick: onNavigateAboutTeam },
                             ].map((item) => (
-                                <li key={item.name}><a href={item.url} onClick={(e) => { if (item.action) { e.preventDefault(); item.action(); } }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
+                                <li key={item.name}><button onClick={item.onClick} className="hover:text-teal-600 transition-colors flex items-center gap-2 group text-left">
                                     <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
                                     {item.name}
-                                </a></li>
+                                </button></li>
                             ))}
                         </ul>
                     </div>
@@ -618,30 +655,24 @@ const ContentHub = ({
                     <div className="md:col-span-2">
                         <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Company</h4>
                         <ul className="space-y-4 text-sm">
-                            <li>
-                                <a href="/about" onClick={(e) => { e.preventDefault(); onNavigateAbout(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
-                                    <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
-                                    About Us
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/privacy" onClick={(e) => { e.preventDefault(); onNavigatePrivacy(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
-                                    <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
-                                    Privacy Policy
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/terms" onClick={(e) => { e.preventDefault(); onNavigateTerms(); }} className="hover:text-teal-600 transition-colors flex items-center gap-2 group">
-                                    <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
-                                    Terms of Service
-                                </a>
-                            </li>
+                            {[
+                                { name: 'About Us', onClick: onNavigateAbout },
+                                { name: 'Privacy Policy', onClick: onNavigatePrivacy },
+                                { name: 'Terms of Service', onClick: onNavigateTerms }
+                            ].map((item) => (
+                                <li key={item.name}>
+                                    <button onClick={item.onClick} className="hover:text-teal-600 transition-colors flex items-center gap-2 group text-left">
+                                        <span className="w-0 h-0.5 bg-teal-600 group-hover:w-4 transition-all"></span>
+                                        {item.name}
+                                    </button>
+                                </li>
+                            ))}
                         </ul>
                     </div>
 
                     <div className="md:col-span-4">
                         <h4 className="font-bold text-slate-900 mb-6 text-sm uppercase tracking-wider">Contact</h4>
-                        <ul className="space-y-4 text-sm mb-8">
+                        <ul className="space-y-4 text-sm mb-8 text-left">
                             <li className="flex items-center gap-3 text-slate-600">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-teal-50 rounded-lg text-teal-600"><Mail size={18} /></div>
@@ -656,7 +687,7 @@ const ContentHub = ({
 
                         <div className="bg-gradient-to-r from-slate-50 to-slate-100 p-5 rounded-2xl border border-slate-200">
                             <p className="text-xs font-bold text-slate-800 mb-3 uppercase tracking-wide">Are you a doctor?</p>
-                            <button 
+                            <button
                                 onClick={onNavigateDoctorRegistration}
                                 className="w-full bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/20 transition-all transform active:scale-95"
                             >
@@ -677,7 +708,6 @@ const ContentHub = ({
                     <p>©️ {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
                 </div>
             </footer>
->>>>>>> Stashed changes
         </div>
     );
 };

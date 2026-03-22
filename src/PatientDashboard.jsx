@@ -692,9 +692,7 @@ const PatientDashboard = ({
     fetchDoctors();
   }, []);
 
-  const [medicalHistory] = useState([
-    { id: 3, date: "2023-05-20", type: "Prescription", doctor: "Dr. Sarah Perera", notes: "Medication refill.", status: "Dispensed" },
-  ]);
+
 
   useEffect(() => {
     if (user && (user.id || user.uid || user.email)) {
@@ -908,18 +906,12 @@ const PatientDashboard = ({
         {currentUser && (
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 text-center">
-<<<<<<< Updated upstream
-              <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative">
-                <User size={48} />
-                <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
-=======
               <div className="w-24 h-24 bg-teal-100 rounded-full mx-auto mb-4 flex items-center justify-center text-teal-600 relative overflow-hidden border-4 border-white shadow-lg">
                 {currentUser?.imageUrl ? (
                   <img src={currentUser.imageUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <User size={48} />
                 )}
->>>>>>> Stashed changes
               </div>
               <h2 className="text-2xl font-bold text-slate-800 flex items-center justify-center gap-1.5">
                 {currentUser?.fullName || currentUser?.name || 'Patient Name'}
@@ -1098,69 +1090,10 @@ const PatientDashboard = ({
                       onClick={() => openEditProfile('contact')}
                     />
                   </div>
-                </div>
               </div>
+            </div>
 
-<<<<<<< Updated upstream
-              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <Clock className="text-teal-600" size={24} />
-                    Recent Medical History
-                  </h3>
-                  <button className="text-teal-600 font-bold text-sm hover:underline flex items-center gap-1">
-                    <Plus size={14} /> Add Record
-                  </button>
-                </div>
-
-                <div className="relative">
-                  <div className="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-200"></div>
-                  <div className="space-y-8">
-                    {medicalHistory.map((record) => (
-                      <div key={record.id} className="relative flex gap-6 group">
-                        <div className={`w-8 h-8 rounded-full border-4 border-white z-10 flex items-center justify-center shrink-0 shadow-sm ${record.type === 'Emergency' ? 'bg-red-500' :
-                          record.type === 'Lab Report' ? 'bg-blue-500' :
-                            record.type === 'Prescription' ? 'bg-amber-500' : 'bg-teal-500'
-                          }`}>
-                          {record.type === 'Emergency' && <AlertCircle size={14} className="text-white" />}
-                          {record.type === 'Lab Report' && <FileText size={14} className="text-white" />}
-                          {record.type === 'Prescription' && <FileText size={14} className="text-white" />}
-                          {record.type === 'Consultation' && <Stethoscope size={14} className="text-white" />}
-                        </div>
-
-                        <div className="flex-1 bg-slate-50 rounded-2xl p-5 border border-slate-100 hover:shadow-md transition-all">
-                          <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
-                            <h4 className="font-bold text-slate-800">{record.type}</h4>
-                            <span className="text-xs text-slate-400 font-medium bg-white px-2 py-1 rounded-md border border-slate-200">
-                              {record.date}
-                            </span>
-                          </div>
-                          <p className="text-sm text-teal-700 font-medium mb-2">{record.doctor}</p>
-                          <p className="text-slate-600 text-sm leading-relaxed">{record.notes}</p>
-
-                          <div className="mt-3 flex items-center justify-between">
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${record.status === 'Resolved' || record.status === 'Completed' || record.status === 'Dispensed'
-                              ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                              }`}>
-                              {record.status}
-                            </span>
-                            {record.type === 'Lab Report' && (
-                              <button className="text-teal-600 text-sm font-bold hover:underline flex items-center gap-1">
-                                <Download size={14} /> Download
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-=======
-
->>>>>>> Stashed changes
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setActiveTab('reviews')}
                   className={`w-full rounded-2xl transition-all ${activeTab === 'reviews' ? 'ring-2 ring-teal-200' : ''}`}

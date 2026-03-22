@@ -8,13 +8,6 @@ export default async function handler(req, res) {
 
   const { patientId, email } = req.query;
 
-<<<<<<< Updated upstream
-  if (req.method === 'GET') {
-    try {
-      let result;
-      if (patientId && patientId !== 'undefined') {
-        result = await sql`SELECT * FROM patients WHERE id = ${patientId}`;
-=======
   // ENSURE TABLE & COLUMNS EXIST (Auto-Migration)
   try {
     await sql`CREATE TABLE IF NOT EXISTS patients (
@@ -36,13 +29,13 @@ export default async function handler(req, res) {
   } catch (e) {
     console.warn("Migration notice:", e.message);
   }
+
   if (req.method === 'GET') {
     try {
       let result;
       // Robust lookup: prefer ID if specific, but always allow fallback to Email
       if (patientId && patientId !== 'undefined') {
         result = await sql`SELECT * FROM patients WHERE id = ${patientId} OR email = ${email}`;
->>>>>>> Stashed changes
       } else if (email) {
         result = await sql`SELECT * FROM patients WHERE email = ${email}`;
       } else {
@@ -50,8 +43,6 @@ export default async function handler(req, res) {
       }
 
       if (!result || result.rows.length === 0) {
-<<<<<<< Updated upstream
-=======
         // If not found in patients table, check if they exist in users table to potentially auto-create
         const userCheck = await sql`SELECT full_name, email FROM users WHERE email = ${email}`;
         if (userCheck.rows.length > 0) {
@@ -60,10 +51,9 @@ export default async function handler(req, res) {
                 fullName: u.full_name,
                 email: u.email,
                 phone: '', dateOfBirth: '', gender: '', address: '', emergencyContact: '', bloodType: '',
-                allergies: [], chronicConditions: []
+                allergies: [], chronicConditions: [], imageUrl: ''
             });
         }
->>>>>>> Stashed changes
         return res.status(404).json({ error: 'Patient not found' });
       }
       
@@ -79,12 +69,8 @@ export default async function handler(req, res) {
         emergencyContact: patient.emergency_contact || '',
         bloodType: patient.blood_type || '',
         allergies: patient.allergies || [],
-<<<<<<< Updated upstream
-        chronicConditions: patient.chronic_conditions || []
-=======
         chronicConditions: patient.chronic_conditions || [],
         imageUrl: patient.image_url || ''
->>>>>>> Stashed changes
       });
     } catch (error) {
       return res.status(500).json({ error: error.message });
@@ -93,11 +79,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'PUT') {
     try {
-<<<<<<< Updated upstream
-      const { fullName, email: bodyEmail, phone, dateOfBirth, gender, address, emergencyContact, bloodType, allergies, chronicConditions } = req.body;
-=======
       const { fullName, email: bodyEmail, phone, dateOfBirth, gender, address, emergencyContact, bloodType, allergies, chronicConditions, imageUrl } = req.body;
->>>>>>> Stashed changes
       const targetEmail = bodyEmail || email;
 
       if (!targetEmail) return res.status(400).json({ error: 'Email is required' });
@@ -106,55 +88,30 @@ export default async function handler(req, res) {
       const safeAllergies = Array.isArray(allergies) ? allergies : [];
       const safeConditions = Array.isArray(chronicConditions) ? chronicConditions : [];
 
-      const existingUser = await sql`SELECT id FROM patients WHERE email = ${targetEmail}`;
+      // Use UPSERT (INSERT ... ON CONFLICT)
+      const result = await sql`
+        INSERT INTO patients (
+          full_name, email, phone, date_of_birth, gender, address, 
+          emergency_contact, blood_type, allergies, chronic_conditions, image_url
+        )
+        VALUES (
+          ${fullName || ''}, ${targetEmail}, ${phone || ''}, ${safeDob}, ${gender || ''}, ${address || ''}, 
+          ${emergencyContact || ''}, ${bloodType || ''}, ${safeAllergies}::text[], ${safeConditions}::text[], ${imageUrl || null}
+        )
+        ON CONFLICT (email) DO UPDATE SET
+          full_name = EXCLUDED.full_name,
+          phone = EXCLUDED.phone,
+          date_of_birth = EXCLUDED.date_of_birth,
+          gender = EXCLUDED.gender,
+          address = EXCLUDED.address,
+          emergency_contact = EXCLUDED.emergency_contact,
+          blood_type = EXCLUDED.blood_type,
+          allergies = EXCLUDED.allergies,
+          chronic_conditions = EXCLUDED.chronic_conditions,
+          image_url = EXCLUDED.image_url,
+          updated_at = CURRENT_TIMESTAMP
+        RETURNING *`;
 
-      let result;
-      if (existingUser.rows.length > 0) {
-        result = await sql`
-          UPDATE patients 
-<<<<<<< Updated upstream
-          SET full_name = ${fullName || ''}, phone = ${phone || ''}, date_of_birth = ${safeDob},
-              gender = ${gender || ''}, address = ${address || ''}, emergency_contact = ${emergencyContact || ''},
-              blood_type = ${bloodType || ''}, allergies = ${safeAllergies}::text[], 
-              chronic_conditions = ${safeConditions}::text[], updated_at = CURRENT_TIMESTAMP
-          WHERE email = ${targetEmail} RETURNING *`;
-      } else {
-        result = await sql`
-          INSERT INTO patients (full_name, email, phone, date_of_birth, gender, address, emergency_contact, blood_type, allergies, chronic_conditions)
-          VALUES (${fullName || ''}, ${targetEmail}, ${phone || ''}, ${safeDob}, ${gender || ''}, ${address || ''}, ${emergencyContact || ''}, ${bloodType || ''}, ${safeAllergies}::text[], ${safeConditions}::text[])
-=======
-          SET full_name = ${fullName || ''}, 
-              phone = ${phone || ''}, 
-              date_of_birth = ${safeDob},
-              gender = ${gender || ''}, 
-              address = ${address || ''}, 
-              emergency_contact = ${emergencyContact || ''},
-              blood_type = ${bloodType || ''}, 
-              allergies = ${safeAllergies}::text[], 
-              chronic_conditions = ${safeConditions}::text[], 
-              image_url = ${imageUrl || null},
-              updated_at = CURRENT_TIMESTAMP
-          WHERE email = ${targetEmail} RETURNING *`;
-      } else {
-        // First time saving profile details
-        result = await sql`
-          INSERT INTO patients (full_name, email, phone, date_of_birth, gender, address, emergency_contact, blood_type, allergies, chronic_conditions, image_url)
-          VALUES (${fullName || ''}, ${targetEmail}, ${phone || ''}, ${safeDob}, ${gender || ''}, ${address || ''}, ${emergencyContact || ''}, ${bloodType || ''}, ${safeAllergies}::text[], ${safeConditions}::text[], ${imageUrl || null})
-          ON CONFLICT (email) DO UPDATE SET
-              full_name = EXCLUDED.full_name,
-              phone = EXCLUDED.phone,
-              date_of_birth = EXCLUDED.date_of_birth,
-              gender = EXCLUDED.gender,
-              address = EXCLUDED.address,
-              emergency_contact = EXCLUDED.emergency_contact,
-              blood_type = EXCLUDED.blood_type,
-              allergies = EXCLUDED.allergies,
-              chronic_conditions = EXCLUDED.chronic_conditions,
-              image_url = EXCLUDED.image_url,
-              updated_at = CURRENT_TIMESTAMP
->>>>>>> Stashed changes
-          RETURNING *`;
-      }
       return res.status(200).json({ success: true, patient: result.rows[0] });
     } catch (error) {
       return res.status(500).json({ error: error.message });

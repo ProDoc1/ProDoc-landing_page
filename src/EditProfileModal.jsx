@@ -6,12 +6,8 @@ import {
 const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'personal' }) => {
   const [formData, setFormData] = useState({
     fullName: '', email: '', phone: '', dateOfBirth: '', gender: '',
-<<<<<<< Updated upstream
-    address: '', emergencyContact: '', bloodType: '', allergies: [], chronicConditions: []
-=======
     address: '', emergencyContact: '', bloodType: '', allergies: [], chronicConditions: [],
     imageUrl: ''
->>>>>>> Stashed changes
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -30,12 +26,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
         fullName: user.fullName || '', email: user.email || '', phone: user.phone || '',
         dateOfBirth: user.dateOfBirth || '', gender: user.gender || '', address: user.address || '',
         emergencyContact: user.emergencyContact || '', bloodType: user.bloodType || '',
-<<<<<<< Updated upstream
-        allergies: user.allergies || [], chronicConditions: user.chronicConditions || []
-=======
         allergies: user.allergies || [], chronicConditions: user.chronicConditions || [],
         imageUrl: user.imageUrl || ''
->>>>>>> Stashed changes
       });
     }
   }, [user, isOpen]);
@@ -44,8 +36,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-<<<<<<< Updated upstream
-=======
   };
   
   const fileInputRef = React.useRef(null);
@@ -64,7 +54,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
       };
       reader.readAsDataURL(file);
     }
->>>>>>> Stashed changes
   };
 
   const handleRemovePhoto = () => {
@@ -202,15 +191,11 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
                           formData.fullName ? formData.fullName.charAt(0).toUpperCase() : <User size={40} />
                         )}
                       </div>
-<<<<<<< Updated upstream
-                      <button type="button" className="absolute bottom-0 right-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg">
-=======
                       <button 
                         type="button" 
                         onClick={() => fileInputRef.current?.click()}
                         className="absolute bottom-0 right-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 transition-colors shadow-lg border-2 border-white"
                       >
->>>>>>> Stashed changes
                         <Camera size={16} />
                       </button>
                       <input 
@@ -226,10 +211,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
                       <p className="text-sm text-slate-500 mb-3">Upload a clear photo of yourself</p>
                       {errors.photo && <p className="text-red-500 text-xs mb-2 font-bold">{errors.photo}</p>}
                       <div className="flex gap-2">
-<<<<<<< Updated upstream
-                        <button type="button" className="px-4 py-2 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors">Upload New</button>
-                        <button type="button" className="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors">Remove</button>
-=======
                         <button 
                           type="button" 
                           onClick={() => fileInputRef.current?.click()}
@@ -246,7 +227,6 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
                             Remove
                           </button>
                         )}
->>>>>>> Stashed changes
                       </div>
                     </div>
                   </div>
