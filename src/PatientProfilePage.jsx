@@ -8,7 +8,6 @@ const PatientProfilePage = ({ requestData, onBack }) => {
   const [expandedRecord, setExpandedRecord] = useState(null);
 
   useEffect(() => {
-    // Scroll to top when loaded
     window.scrollTo(0, 0);
 
     if (requestData && requestData.patientId) {
@@ -80,7 +79,6 @@ const PatientProfilePage = ({ requestData, onBack }) => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-12 pt-36 md:pt-44 lg:pt-48 font-sans">
       <div className="max-w-4xl mx-auto px-4 w-full">
-        {/* Back Button */}
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-slate-500 hover:text-teal-600 font-semibold mb-6 transition-colors"
@@ -90,7 +88,6 @@ const PatientProfilePage = ({ requestData, onBack }) => {
         </button>
 
         <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col animate-scaleIn">
-          {/* Header */}
           <div className="p-6 md:p-10 bg-gradient-to-r from-teal-700 to-teal-600 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-white shrink-0 shadow-inner">
@@ -103,7 +100,6 @@ const PatientProfilePage = ({ requestData, onBack }) => {
             </div>
           </div>
 
-          {/* Content */}
           <div className="flex-1 p-6 md:p-10 space-y-10 bg-slate-50">
 
             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-8">

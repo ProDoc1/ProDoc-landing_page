@@ -33,7 +33,6 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
    return (
       <div className="min-h-screen bg-[#F0F8F8] font-sans text-slate-900 pb-8 px-4 pt-4 cursor-default selection:bg-teal-100 selection:text-teal-900">
 
-         {/* --- SECTION 1: HERO SECTION --- */}
          <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-12 mb-6 overflow-hidden shadow-sm bg-teal-900/5">
             <WarpBackground />
             <div className="absolute inset-0 bg-gradient-to-r from-teal-950/70 via-teal-900/30 to-teal-900/5 z-0 pointer-events-none mix-blend-multiply"></div>
@@ -117,7 +116,6 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
             </div>
          </div>
 
-         {/* --- SECTION 3: SERVICES --- */}
          <div id="services" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             <div className="bg-white rounded-[2.5rem] p-10 col-span-1 md:col-span-2 group hover:shadow-xl hover:shadow-teal-500/5 transition-all duration-300 hover:-translate-y-1 border border-transparent hover:border-teal-100">
                <div className="w-14 h-14 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-teal-500 group-hover:text-white transition-colors duration-300 group-hover:scale-110">
@@ -182,7 +180,6 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
             </div>
          </div>
 
-         {/* --- SECTION 4: HOW IT WORKS --- */}
          <div id="how-it-works" className="bg-white rounded-[2.5rem] p-10 md:p-16 mb-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900">Simplifying your healthcare journey.</h2>
@@ -220,7 +217,6 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
             </div>
          </div>
 
-         {/* --- SECTION 5: FOOTER --- */}
          <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
 
@@ -322,7 +318,6 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
    );
 };
 
-// --- MAIN APP COMPONENT ---
 export default function App() {
    const validPages = ['home', 'about', 'doctors', 'login', 'signup', 'dashboard', 'doctor-dashboard', 'doctor-view', 'patient-profile', 'privacy', 'terms', 'content-hub', 'admin', 'chatbot', 'doctor-registration'];
 
@@ -345,7 +340,6 @@ export default function App() {
       return savedAdmin ? JSON.parse(savedAdmin) : null;
    });
 
-   // --- NAVBAR VISIBILITY LOGIC ---
    const [scrolled, setScrolled] = useState(false);
    const [hideNavbar, setHideNavbar] = useState(false);
    const lastScrollYRef = React.useRef(0);
@@ -355,7 +349,6 @@ export default function App() {
          const currentScrollY = window.scrollY;
          setScrolled(currentScrollY > 20);
 
-         // Apply auto-hide navbar logic to all pages
          if (currentScrollY > lastScrollYRef.current && currentScrollY > 150) {
             setHideNavbar(true);
          } else {
@@ -368,8 +361,6 @@ export default function App() {
       return () => window.removeEventListener('scroll', handleScroll);
    }, [currentPage]);
 
-   // --- EFFECT FOR PERSISTENT LOGIN ---
-   // This runs once when the component mounts to check for a saved session.
    useEffect(() => {
       const savedUser = localStorage.getItem('prodoc_user');
       const savedPage = localStorage.getItem('currentPage');
@@ -389,7 +380,6 @@ export default function App() {
 
 
 
-   // --- EFFECT TO UPDATE PAGE TITLE AND URL ---
    useEffect(() => {
       const titles = {
          'home': 'ProDoc | Home',
@@ -421,7 +411,6 @@ export default function App() {
       }
    }, [currentPage, currentUser]);
 
-   // --- POPSTATE & INITIAL NAVIGATION SYNC ---
    useEffect(() => {
       const handlePopState = () => {
          const currentSegments = window.location.pathname.split('/').filter(Boolean);
@@ -442,7 +431,6 @@ export default function App() {
       if (data && page === 'patient-profile') {
          setSelectedPatientRequest(data);
       }
-      // Save current page to local storage
       localStorage.setItem('currentPage', page);
    };
 
@@ -450,7 +438,6 @@ export default function App() {
       setCurrentUser(userData);
 
       const userString = JSON.stringify(userData);
-      // Save user to local storage for persistence
       localStorage.setItem('prodoc_user', userString);
       localStorage.setItem('userRole', role);
 
@@ -571,7 +558,6 @@ export default function App() {
          }
       }
 
-      // Clear all session data
       localStorage.removeItem('prodoc_user');
       localStorage.removeItem('userRole');
       localStorage.removeItem('doctorId');
@@ -586,7 +572,6 @@ export default function App() {
       navigateTo('home');
    };
 
-   // --- EFFECT FOR INACTIVITY SESSION TIMEOUT ---
    useEffect(() => {
       if (!currentUser && !adminUser) return;
 
@@ -639,7 +624,6 @@ export default function App() {
 
    return (
       <main className="relative min-h-screen">
-         {/* Navbar visibility logic */}
          {currentPage !== 'login' && currentPage !== 'signup' && currentPage !== 'doctor-registration' && (currentPage !== 'admin' || adminUser) && (
             <Navbar
                currentPage={currentPage}

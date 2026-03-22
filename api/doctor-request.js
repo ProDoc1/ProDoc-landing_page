@@ -6,7 +6,6 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Initialize table and update schema safely
     try {
         await sql`
             CREATE TABLE IF NOT EXISTS doctor_requests (
@@ -29,7 +28,6 @@ export default async function handler(req, res) {
             )
         `;
         
-        // Ensure all requisite columns exist and non-essential ones are nullable
         const schemaSync = async () => {
             const cols = [
                 ['full_name', 'TEXT'],
@@ -68,7 +66,6 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Missing core required fields' });
         }
 
-        // Validate SLMC Number (must be digits, we'll prefix it here)
         if (!/^\d{4,5}$/.test(slmcNumber)) {
             return res.status(400).json({ error: 'SLMC Number must be 4-5 digits' });
         }
@@ -82,15 +79,10 @@ export default async function handler(req, res) {
 
             const hashedPassword = await bcrypt.hash(password, 10);
             
-            // Format Full Name with Dr. prefix
             const formattedFullName = `Dr. ${firstName.trim()} ${lastName.trim()}`;
-            
-            // Format Specialty: Title Case
             const formattedSpecialty = specialty.split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                 .join(' ');
-
-            // Format SLMC Number
             const formattedSLMC = `SLMC-MD-${slmcNumber}`;
 
             const experience = parseInt(yearsOfExperience) || 0;

@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 
-// Fallback for local development
 if (!process.env.BLOB_READ_WRITE_TOKEN) {
   try {
     const envPath = path.resolve(process.cwd(), '.env.local');
@@ -37,7 +36,6 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', type || contentType || 'application/octet-stream');
     res.setHeader('Content-Disposition', 'inline');
     
-    // Convert to buffer and send
     const blob = await response.arrayBuffer();
     return res.send(Buffer.from(blob));
   } catch (error) {

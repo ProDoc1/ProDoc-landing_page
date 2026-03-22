@@ -28,7 +28,6 @@ export default async function handler(req, res) {
                 `;
                 return res.status(200).json(rows);
             } else if (doctorId) {
-                // Get approved reviews for a specific doctor (include per-category scores)
                 const { rows } = await sql`
                     SELECT 
                         id,
@@ -46,7 +45,6 @@ export default async function handler(req, res) {
                 `;
                 return res.status(200).json(rows);
             } else {
-                // get all reviews for admin
                 const { rows } = await sql`
                     SELECT 
                         r.*,
@@ -66,7 +64,6 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-        // submit-rating
         const { doctorId, userId, userName, ratings, comment, proof } = req.body;
 
         if (!doctorId || !userId || !ratings) {
@@ -165,7 +162,6 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-        // moderate-review
         const { reviewId, action } = req.body;
 
         if (!reviewId || !['approve', 'reject'].includes(action)) {

@@ -60,7 +60,6 @@ const AdminDashboard = ({ onBack }) => {
     const moderateReview = async (id, action) => {
         const newStatus = action === 'approve' ? 'approved' : 'rejected';
         try {
-            // Update local state immediately
             setReviews(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
             const res = await fetch('/api/reviews', {
                 method: 'PUT',
@@ -115,7 +114,7 @@ const AdminDashboard = ({ onBack }) => {
             });
 
             if (!res.ok) throw new Error('Action failed');
-            if (action === 'approve') fetchAllData(); // Refresh directory as well
+            if (action === 'approve') fetchAllData();
         } catch (err) {
             console.error(err);
             setPopup({
@@ -162,7 +161,6 @@ const AdminDashboard = ({ onBack }) => {
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans px-4 sm:px-6 md:px-12 lg:px-24 pt-32 md:pt-40 max-w-7xl mx-auto pb-24">
-            {/* Navigation Header */}
             <div className="mb-12">
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
                     <div className="space-y-4">
@@ -187,7 +185,6 @@ const AdminDashboard = ({ onBack }) => {
                         </p>
                     </div>
 
-                    {/* Feature Toggles */}
                     <div className="flex p-1.5 bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 shrink-0">
                         {[
                             { id: 'moderation', label: 'Moderation Hub', icon: AlertTriangle },
@@ -215,7 +212,6 @@ const AdminDashboard = ({ onBack }) => {
                 </div>
             </div>
 
-            {/* Global Search & Tools */}
             <div className="flex flex-col md:flex-row items-center gap-4 mb-10">
                 {activeHub === 'moderation' && (
                     <div className="flex p-1.5 bg-white rounded-[2rem] border border-slate-100 shadow-sm w-full md:w-fit shrink-0">
@@ -241,7 +237,6 @@ const AdminDashboard = ({ onBack }) => {
             </div>
 
             {activeHub === 'moderation' ? (
-                /* Moderation View */
                 <div className="space-y-6">
                     {filteredReviews.length === 0 ? (
                         <div className="bg-white rounded-[3rem] p-20 text-center border-2 border-dashed border-slate-100">
@@ -260,7 +255,6 @@ const AdminDashboard = ({ onBack }) => {
                                     exit={{ opacity: 0, scale: 0.8 }}
                                     className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/30 border border-slate-50 relative overflow-hidden group"
                                 >
-                                    {/* Status Badge */}
                                     <div className={`absolute top-0 right-0 px-6 py-2 rounded-bl-[1.5rem] text-[9px] font-black uppercase tracking-[0.2em] z-10 ${review.status === 'rejected' ? 'bg-red-50 text-red-600' :
                                         review.status === 'approved' ? 'bg-teal-50 text-teal-600' : 'bg-amber-50 text-amber-600'
                                         }`}>
@@ -338,7 +332,6 @@ const AdminDashboard = ({ onBack }) => {
                     )}
                 </div>
             ) : activeHub === 'requests' ? (
-                /* Doctor Registration Requests Hub */
                 <div className="space-y-6">
                     {(doctorRequests || []).filter(r => r.status === 'pending').length === 0 ? (
                         <div className="bg-white rounded-[3rem] p-20 text-center border-2 border-dashed border-slate-100">
@@ -448,9 +441,7 @@ const AdminDashboard = ({ onBack }) => {
                     )}
                 </div>
             ) : (
-                /* Directory View */
                 <div className="space-y-8">
-                    {/* Directory Controls */}
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
                             <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 shadow-sm border border-teal-100">
@@ -591,7 +582,6 @@ const AdminDashboard = ({ onBack }) => {
                 </div>
             )}
 
-            {/* Premium Custom Modal */}
             <AnimatePresence>
                 {popup.show && (
                     <motion.div

@@ -9,7 +9,6 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-    // --- GET (List articles for a specific doctor) ---
     if (req.method === 'GET') {
         try {
             const { doctor_id } = req.query;
@@ -27,11 +26,9 @@ export default async function handler(req, res) {
         }
     }
 
-    // --- POST (Create, Like, Share) ---
     if (req.method === 'POST') {
         const { action } = req.body;
 
-        // 1. Interaction Actions (Like/Share)
         if (action === 'like' || action === 'unlike' || action === 'share') {
             try {
                 const { post_id } = req.body;
@@ -53,7 +50,6 @@ export default async function handler(req, res) {
             }
         }
 
-        // 2. Create Post Action (Default if action is 'create' or undefined for compatibility)
         if (!action || action === 'create') {
             try {
                 const { doctor_id, full_name, specialty, image_url, post_content, post_image } = req.body;
@@ -90,7 +86,6 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid POST action.' });
     }
 
-    // --- DELETE (Remove article) ---
     if (req.method === 'DELETE') {
         try {
             const { post_id, doctor_id } = req.body;

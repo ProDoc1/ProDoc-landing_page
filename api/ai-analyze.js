@@ -33,7 +33,6 @@ export default async function handler(req, res) {
     const rawUrl = process.env.AI_BACKEND_URL;
     const internalKey = process.env.INTERNAL_API_KEY;
 
-    // Fallback to Gemini if backend not configured
     if (!rawUrl || !internalKey) {
         return handleWithGemini(req, res, imageFile, files);
     }
@@ -41,7 +40,6 @@ export default async function handler(req, res) {
     const normalizedUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
     const backendUrl = normalizedUrl.replace(/\/+$/, '');
 
-    // Route to report-only endpoint if no image
     if (!imageFile) {
         const analyzeUrl = `${backendUrl}/analyze-report`;
         console.log('[ai-analyze] Report-only, calling:', analyzeUrl);
@@ -112,7 +110,6 @@ async function handleWithGemini(req, res, imageFile, files) {
     const reportFile = files.report_file?.[0];
 
     try {
-        // Report-only mode (no image)
         if (!imageFile) {
             let reportText = '';
             try { reportText = fs.readFileSync(reportFile.filepath, 'utf8'); } catch {}
@@ -149,7 +146,6 @@ ${reportText.substring(0, 5000)}`;
             return res.status(200).json({ analysis: response.text, status: 'success', _source: 'gemini' });
         }
 
-        // Image (+ optional report) mode
         const imageBuffer = fs.readFileSync(imageFile.filepath);
         const base64Image = imageBuffer.toString('base64');
         const mimeType = imageFile.mimetype || 'image/jpeg';

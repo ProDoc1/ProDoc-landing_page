@@ -76,7 +76,6 @@ const App: React.FC<AppProps> = ({ onViewProfile }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Scroll to the bottom of the chat container when messages change
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
@@ -158,14 +157,12 @@ const doctorsList = DOCTORS.map(d => ({
       }
       const stream = await chat.sendMessageStream({ message: messageContent });
 
-      // Create a placeholder for the bot's message
       setMessages((prev) => [...prev, { id: botMessageId, role: 'bot', text: '...' }]);
 
       for await (const chunk of stream) {
         const c = chunk as GenerateContentResponse;
         fullResponseText += c.text;
         
-        // Update the bot's message in real-time
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === botMessageId ? { ...msg, text: fullResponseText } : msg
@@ -256,16 +253,15 @@ const doctorsList = DOCTORS.map(d => ({
       const errorMessage = 'Sorry, I hit a rate limit or encountered an error. Please wait 60 seconds and try again.';
       
       setMessages((prev) => {
-        // Check if the placeholder was already added to the screen
         const messageExists = prev.some(msg => msg.id === botMessageId);
-        
+
         if (messageExists) {
-          // If it exists (e.g., error happened mid-stream), update it
-          return prev.map((msg) => 
+          // Mid-stream error: append error text to the partial response
+          return prev.map((msg) =>
             msg.id === botMessageId ? { ...msg, text: msg.text + '\n\n' + errorMessage } : msg
           );
         } else {
-          // If it doesn't exist (e.g., immediate 429 error), add it as a new message
+          // Immediate error (e.g. 429 before first token): insert a new error message
           return [...prev, { id: botMessageId, role: 'bot', text: errorMessage, doctor: undefined }];
         }
       });

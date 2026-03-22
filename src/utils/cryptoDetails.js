@@ -1,6 +1,5 @@
 import * as openpgp from 'openpgp';
 
-// 1. Function to Encrypt
 export const encryptFile = async (file, publicKeyArmored) => {
     const publicKey = await openpgp.readKey({ armoredKey: publicKeyArmored });
     const message = await openpgp.createMessage({ binary: new Uint8Array(await file.arrayBuffer()) });
@@ -8,7 +7,7 @@ export const encryptFile = async (file, publicKeyArmored) => {
     const encrypted = await openpgp.encrypt({
         message,
         encryptionKeys: publicKey,
-        format: 'binary' // Very important for PDFs/Images
+        format: 'binary' // 'armored' (the default) produces text encoding unsuitable for binary files
     });
     
     return new Blob([encrypted], { type: 'application/pgp-encrypted' });
@@ -26,18 +25,16 @@ export const getMimeTypeFromUrl = (url) => {
         case 'webp': return 'image/webp';
         case 'pdf': return 'application/pdf';
         case 'txt': return 'text/plain';
-        default: return 'application/pdf'; // Default fallback
+        default: return 'application/pdf';
     }
 };
 
-// 2. Function to Decrypt
 export const decryptFile = async (encryptedBlob, privateKeyArmored, passphrase, mimeType = 'application/pdf') => {
     let privateKey = await openpgp.readPrivateKey({ armoredKey: privateKeyArmored });
 
     if (!privateKey.isDecrypted()) {
         try {
-            // Wait, if it's already an old password-protected key and no passphrase was passed,
-            // we will gently ask for it just once so it doesn't crash.
+            // Legacy keys may be passphrase-protected. Prompt once rather than crash to preserve backward compatibility.
             let promptPass = passphrase;
             if (!promptPass) {
                 const canPrompt = import.meta?.env?.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

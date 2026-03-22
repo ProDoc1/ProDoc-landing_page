@@ -7,12 +7,10 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Disable caching to ensure fresh data
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
 
-        // Fetch posts from content_hub_posts table
         const { rows } = await sql`
       SELECT * FROM content_hub_posts 
       ORDER BY created_at DESC

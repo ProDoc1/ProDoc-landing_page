@@ -23,7 +23,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
             const data = await res.json();
 
             if (data.success) {
-                // Store token in localStorage
                 localStorage.setItem('adminToken', data.token);
                 localStorage.setItem('adminUser', JSON.stringify(data.user));
                 onLoginSuccess(data.user);
@@ -39,7 +38,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
 
     return (
         <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6 relative overflow-hidden font-sans">
-            {/* Background Decorative Elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
                 <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-teal-500/5 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-teal-600/5 rounded-full blur-[100px]" />
@@ -50,7 +48,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-[440px]"
             >
-                {/* Brand Identity */}
                 <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-teal-500 text-white shadow-2xl shadow-teal-500/20 mb-6 border-4 border-white">
                         <ShieldCheck size={40} />
@@ -63,7 +60,6 @@ const AdminLogin = ({ onLoginSuccess }) => {
                     </p>
                 </div>
 
-                {/* Login Terminal Card */}
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-100 relative">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">

@@ -2,7 +2,6 @@ import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
   try {
-    // Create ratings table
     await sql`
       CREATE TABLE IF NOT EXISTS doctor_ratings (
         id SERIAL PRIMARY KEY,
@@ -18,12 +17,10 @@ export default async function handler(req, res) {
       );
     `;
 
-    // Ensure comment column exists (migration)
     await sql`
       ALTER TABLE doctor_ratings ADD COLUMN IF NOT EXISTS comment TEXT;
     `;
 
-    // Add new columns for enhanced review system
     await sql`
       ALTER TABLE doctor_ratings 
       ADD COLUMN IF NOT EXISTS proof_url TEXT,

@@ -51,33 +51,27 @@ const DoctorDashboard = ({
   onViewPatientProfile,
   hideNavbar
 }) => {
-  // Navigation State
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // AI Assistant state
   const [aiFile, setAiFile] = useState(null);
   const [aiReport, setAiReport] = useState(null);
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
 
-  // Profile & Settings State
   const [isSecondOpinionEnabled, setIsSecondOpinionEnabled] = useState(true);
   const [availability, setAvailability] = useState("Mon, Wed, Fri");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [activeEditSection, setActiveEditSection] = useState('Personal');
 
-  // Save Data State (New)
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
 
-  // Separate state for Available Dates save feedback
   const [dateSaveStatus, setDateSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'success' | 'error'
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
-  // local filter for doctor view: show all, ratings only, or reviews only
   const [reviewFilter, setReviewFilter] = useState('all');
 
   const [secondOpinionRequests, setSecondOpinionRequests] = useState([]);
@@ -88,7 +82,6 @@ const DoctorDashboard = ({
   const [loadingPatientRecords, setLoadingPatientRecords] = useState(false);
   const [expandedRecord, setExpandedRecord] = useState(null);
 
-  // Article State
   const [articleForm, setArticleForm] = useState({ content: '', image: null });
   const [articleStatus, setArticleStatus] = useState({ type: '', message: '' });
   const [isPublishing, setIsPublishing] = useState(false);
@@ -96,13 +89,12 @@ const DoctorDashboard = ({
   const [loadingPosts, setLoadingPosts] = useState(false);
   const articleImageRef = useRef(null);
 
-  // Password Change State
   const [passwordForm, setPasswordForm] = useState({ new: '', confirm: '' });
   const [pwdStatus, setPwdStatus] = useState({ type: '', message: '' });
   const fileInputRef = useRef(null);
 
   const [localUser, setLocalUser] = useState({
-    id: user?.id || localStorage.getItem('doctorId'), // Ensure ID is captured
+    id: user?.id || localStorage.getItem('doctorId'),
     fullName: user?.name || 'Doctor',
     email: user?.email,
     specialty: user?.specialty,
@@ -140,7 +132,6 @@ const DoctorDashboard = ({
         image: user.image_url || prev.image,
         email_verified: user.email_verified !== undefined ? user.email_verified : prev.email_verified
       }));
-      // Also update second opinion state if present in user prop (though likely not)
       if (user.second_opinion_available !== undefined) {
         setIsSecondOpinionEnabled(user.second_opinion_available);
       }
@@ -148,7 +139,6 @@ const DoctorDashboard = ({
         setAvailability(user.second_opinion_dates);
       }
 
-      // Fetch Profile Views
       const dId = user.id || localStorage.getItem('doctorId');
       if (dId) {
         fetch(`/api/profile-views?doctorId=${dId}`)
@@ -166,7 +156,6 @@ const DoctorDashboard = ({
     if (role !== 'doctor') {
       onLogout();
     } else if (doctorId) {
-      // Always fetch latest profile to get second opinion settings
       fetch(`/api/doctors?id=${doctorId}`)
         .then(res => res.json())
         .then(data => {
@@ -190,7 +179,6 @@ const DoctorDashboard = ({
               rating_count: data.rating_count || 0,
               email_verified: data.email_verified !== undefined ? data.email_verified : prev.email_verified
             }));
-            // Initialize Second Opinion state from fetched data
             if (data.second_opinion_available !== undefined) {
               setIsSecondOpinionEnabled(data.second_opinion_available);
             }
@@ -198,7 +186,6 @@ const DoctorDashboard = ({
               setAvailability(data.second_opinion_dates);
             }
 
-            // Fetch Profile Views
             fetch(`/api/profile-views?doctorId=${doctorId}`)
               .then(res => res.json())
               .then(data => setViewCount(data.count || 0))
@@ -295,10 +282,8 @@ const DoctorDashboard = ({
         const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`);
         const encryptedBlob = await response.blob();
 
-        // Find correct MIME Type so images open as images, PDFs as PDFs
         const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
 
-        // Removed the password prompt for a smoother demo experience
         const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
         const localUrl = URL.createObjectURL(decryptedBlob);
         window.open(localUrl);
@@ -311,14 +296,12 @@ const DoctorDashboard = ({
     }
   };
 
-  // --- UPDATED: Handle Profile Save to Backend ---
   const handleProfileSave = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     setSaveStatus({ type: '', message: '' });
 
     try {
-      // 1. Prepare data payload
       const payload = {
         id: localUser.id,
         name: localUser.fullName,
@@ -340,12 +323,10 @@ const DoctorDashboard = ({
         bio: localUser.bio
       };
 
-      // 2. Send request to backend
       const response = await fetch('/api/doctors', {
-        method: 'PUT', // or 'POST' depending on your API
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}` // Add if using JWT
         },
         body: JSON.stringify(payload),
       });
@@ -356,14 +337,12 @@ const DoctorDashboard = ({
       try {
         data = text ? JSON.parse(text) : null;
       } catch (parseErr) {
-        // Not JSON — keep raw text available for error messages
         console.warn('Could not parse JSON response from update-doctor-profile:', parseErr);
       }
 
       if (response.ok) {
         setSaveStatus({ type: 'success', message: data?.message || 'Profile updated successfully!' });
 
-        // Close modal after delay
         setTimeout(() => {
           setIsEditingProfile(false);
           setSaveStatus({ type: '', message: '' });
@@ -562,7 +541,6 @@ const DoctorDashboard = ({
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <div className="flex-1 max-w-7xl mx-auto w-full p-6 pt-36 md:p-8 md:pt-44 lg:pt-48 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Mobile Dashboard Navigation */}
         <div className={`lg:hidden flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth -mx-4 px-4 sticky transition-all duration-300 z-30 bg-[#F8FAFC]/80 backdrop-blur-md ${hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100 top-20'}`}>
           {[
             { id: 'Dashboard', label: 'Dashboard', icon: <Activity size={18} /> },
@@ -1099,7 +1077,6 @@ const DoctorDashboard = ({
           ) : activeTab === 'Credential Vault' ? (
             <div className="animate-slideUp max-w-3xl mx-auto w-full">
               <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-slate-100">
-                {/* Header */}
                 <div className="flex items-center gap-4 mb-8">
                   <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl">
                     <ShieldCheck size={28} />
@@ -1110,7 +1087,6 @@ const DoctorDashboard = ({
                   </div>
                 </div>
 
-                {/* Security Settings Card */}
                 <div className="bg-slate-50 rounded-[1.5rem] border border-slate-100 p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <Lock size={18} className="text-teal-600" />
@@ -1269,7 +1245,6 @@ const DoctorDashboard = ({
         </main>
       </div>
 
-      {/* Mobile Menu Overlay */}
       <div className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 transition-opacity lg:hidden ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}>
         <div className={`absolute top-0 right-0 h-full w-80 bg-white p-8 transition-transform duration-500 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`} onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between mb-10">
@@ -1294,7 +1269,6 @@ const DoctorDashboard = ({
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
       {isEditingProfile && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
           <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row animate-scaleIn">
@@ -1511,7 +1485,6 @@ const DoctorDashboard = ({
         </div>
       )}
 
-      {/* Patient View Profile Modal */}
       {selectedPatientProfile && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
           <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-scaleIn">
@@ -1685,7 +1658,6 @@ const DoctorDashboard = ({
   );
 };
 
-// --- Supplemental UI Components ---
 
 const NavItem = ({ icon, label, active, badge, onClick }) => (
   <button
@@ -1813,7 +1785,6 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
         : extractRiskLevel(result.analysis);
       return (
         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-5 animate-fadeIn">
-          {/* Header */}
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
             <div className="p-2 bg-teal-50 rounded-xl"><Brain size={18} className="text-teal-600" /></div>
             <h3 className="text-xl font-bold text-slate-800">Analysis Results</h3>
@@ -1822,10 +1793,8 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
             </span>
           </div>
 
-          {/* Traffic Light — always shown */}
           <TrafficLight level={riskLevel} />
 
-          {/* Primary Finding + Confidence (backend) */}
           {result._source === 'backend' && result.ai_result?.finding && (
             <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Primary Finding</p>
@@ -1836,7 +1805,6 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
             </div>
           )}
 
-          {/* Metadata chips (backend) */}
           {result._source === 'backend' && (result.metadata?.modality || result.metadata?.routed_model) && (
             <div className="grid grid-cols-2 gap-3">
               {result.metadata?.modality && (
@@ -1854,14 +1822,12 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
             </div>
           )}
 
-          {/* Gemini markdown */}
           {result.analysis && (
             <div className="prose prose-slate prose-sm max-w-none text-slate-700 leading-relaxed [&_strong]:font-semibold [&_strong]:text-slate-800 [&_ul]:space-y-1 [&_li]:text-slate-600">
               <ReactMarkdown>{result.analysis}</ReactMarkdown>
             </div>
           )}
 
-          {/* Structured sections (backend) */}
           {result._source === 'backend' && (
             <>
               <ResultSection title="Key Observations" items={result.ai_result?.key_findings || result.ai_result?.observations} />

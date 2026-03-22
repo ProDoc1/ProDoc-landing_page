@@ -3,7 +3,6 @@ import { sql } from '@vercel/postgres';
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Ensure table exists
   try {
     await sql`
       CREATE TABLE IF NOT EXISTS second_opinion_requests (
@@ -73,7 +72,6 @@ export default async function handler(req, res) {
       `;
 
       const formattedRequests = result.rows.map(row => {
-        // Calculate age
         let age = 'N/A';
         if (row.date_of_birth) {
           const dob = new Date(row.date_of_birth);

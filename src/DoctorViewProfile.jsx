@@ -27,7 +27,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const [reviews, setReviews] = useState([]);
 
-    // derived collections
     const totalRatingsCount = reviews.length;
 
     const handleSaveClick = async () => {
@@ -105,7 +104,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
         if (doctorId && !hasViewed.current) {
             hasViewed.current = true;
             fetchDoctorData();
-            // Record profile view
             fetch(`/api/profile-views?doctorId=${doctorId}`, { method: 'POST' })
                 .catch(err => {
                     console.error('Error recording view:', err);
@@ -152,7 +150,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
         <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20 selection:bg-teal-100 selection:text-teal-900">
             <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-6">
 
-                {/* Navigation */}
                 <div className="flex items-center justify-between mb-8">
                     <button
                         onClick={onBack}
@@ -164,11 +161,9 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-                    {/* --- LEFT SIDEBAR --- */}
                     <div className="lg:col-span-4 relative">
                         <div className="sticky top-6 space-y-6">
 
-                            {/* 1. Profile Image Card */}
                             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col items-center text-center">
                                 <div className="w-48 h-48 rounded-2xl overflow-hidden border-4 border-slate-50 shadow-sm bg-slate-100 mb-4">
                                     {doctor.image_url ? (
@@ -209,7 +204,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                 </div>
                             </div>
 
-                            {/* 2. Verification Card */}
                             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex items-center gap-4">
                                 <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center shrink-0">
                                     <CheckCircle2 className="text-green-600" size={24} />
@@ -220,7 +214,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                 </div>
                             </div>
 
-                            {/* 3. Second Opinion */}
                             <div className="bg-teal-600 bg-gradient-to-br from-teal-500 to-teal-700 rounded-2xl shadow-lg text-white p-6 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full blur-3xl opacity-20 -mr-10 -mt-10 pointer-events-none"></div>
 
@@ -255,7 +248,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                 </div>
                             </div>
 
-                            {/* 4. Review Form */}
                             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                                 <h3 className="text-base font-bold text-slate-900 mb-4">Write a Review</h3>
                                 <DoctorRating
@@ -270,12 +262,9 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                         </div>
                     </div>
 
-                    {/* --- RIGHT CONTENT COLUMN --- */}
                     <div className="lg:col-span-8 space-y-8">
 
-                        {/* Header Details */}
                         <div className="space-y-6">
-                            {/* Quick Stats Bar */}
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
                                     <Award className="text-teal-500 mb-2" size={20} />
@@ -295,7 +284,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             </div>
                         </div>
 
-                        {/* Bio Section */}
                         <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
                             <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                                 <FileText size={22} className="text-teal-500" />
@@ -306,7 +294,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             </p>
                         </section>
 
-                        {/* Hospital Affiliations */}
                         <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
                             <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <Building2 size={22} className="text-teal-500" />
@@ -331,7 +318,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             </div>
                         </section>
 
-                        {/* Reviews Section */}
                         <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -346,7 +332,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                             {totalRatingsCount > 0 ? (
                                 <>
                                     <div className="flex flex-col md:flex-row gap-8 mb-10">
-                                        {/* Overall Rating Summary */}
                                         <div className="md:w-1/3 flex flex-col items-center justify-center p-8 bg-gradient-to-b from-slate-50 to-white rounded-2xl border border-slate-200 shadow-sm text-center">
                                             <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Overall Rating</h4>
                                             <div className="text-6xl font-black text-slate-900 mb-4">{Number(doctor.average_rating || 0).toFixed(1)}</div>
@@ -362,7 +347,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                             <p className="text-xs text-slate-400 font-medium">Based on {totalRatingsCount} patient ratings</p>
                                         </div>
 
-                                        {/* Rating Breakdown Bars */}
                                         <div className="md:w-2/3 flex flex-col justify-center space-y-4 py-2">
                                             {[5, 4, 3, 2, 1].map((star) => {
                                                 const count = reviews.filter(r => Math.round(Number(r.overall)) === star).length;
@@ -386,7 +370,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                         </div>
                                     </div>
 
-                                    {/* Detailed Metrics */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                                         {['communication', 'punctuality', 'treatment_plan'].map((metric) => {
                                             const vals = reviews.map(r => Number(r[metric])).filter(n => !isNaN(n) && n > 0);
@@ -408,7 +391,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                         })}
                                     </div>
 
-                                    {/* Detailed Review List */}
                                     <div>
                                         <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-6 border-b border-slate-100 pb-4">Recent Patient Feedback</h4>
                                         <div className="space-y-6">
@@ -476,7 +458,6 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                 </div>
             </div>
 
-            {/* Login Prompt Modal */}
             {showLoginPrompt && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95 duration-200">
