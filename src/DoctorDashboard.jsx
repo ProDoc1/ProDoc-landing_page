@@ -28,11 +28,14 @@ import {
   Save,
   AlertCircle,
   Download,
+  Brain,
+  Upload,
   Eye,
   AlertTriangle,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import DoctorImg from './assets/doctor.png';
 import { decryptFile, getMimeTypeFromUrl } from './utils/cryptoDetails';
 
@@ -51,6 +54,13 @@ const DoctorDashboard = ({
   // Navigation State
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // AI Assistant state
+  const [aiFile, setAiFile] = useState(null);
+  const [aiReport, setAiReport] = useState(null);
+  const [aiResult, setAiResult] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   // Profile & Settings State
   const [isSecondOpinionEnabled, setIsSecondOpinionEnabled] = useState(true);
@@ -456,6 +466,28 @@ const DoctorDashboard = ({
     }
   };
 
+  const handleAiAnalysis = async (e) => {
+    e.preventDefault();
+    if (!aiFile) return;
+    setAiLoading(true);
+    setAiError('');
+    setAiResult(null);
+    const fd = new FormData();
+    fd.append('medical_image', aiFile);
+    fd.append('doctorId', localStorage.getItem('doctorId'));
+    if (aiReport) fd.append('report_file', aiReport);
+    try {
+      const res = await fetch('/api/ai-analyze', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Analysis failed');
+      setAiResult(data);
+    } catch (err) {
+      setAiError(err.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const publishArticle = async (e) => {
     e.preventDefault();
     if (!articleForm.content || !articleForm.image) {
@@ -600,6 +632,12 @@ const DoctorDashboard = ({
               label="Articles"
               active={activeTab === 'Articles'}
               onClick={() => setActiveTab('Articles')}
+            />
+            <NavItem
+              icon={<Brain size={18} />}
+              label="AI Assistant"
+              active={activeTab === 'AI Assistant'}
+              onClick={() => setActiveTab('AI Assistant')}
             />
 
             <div className="pt-4 mt-4 border-t border-slate-100">
@@ -1216,6 +1254,17 @@ const DoctorDashboard = ({
                   </form>
                 </div>
               </div>
+            ) : activeTab === 'AI Assistant' ? (
+              <AiAssistantPanel
+                onSubmit={handleAiAnalysis}
+                loading={aiLoading}
+                result={aiResult}
+                error={aiError}
+                aiFile={aiFile}
+                aiReport={aiReport}
+                onFileChange={setAiFile}
+                onReportChange={setAiReport}
+              />
             ) : null}
         </main>
       </div>
@@ -1237,6 +1286,7 @@ const DoctorDashboard = ({
             <NavItem icon={<ShieldCheck size={20} />} label="Credential Vault" active={activeTab === 'Credential Vault'} onClick={() => { setActiveTab('Credential Vault'); setIsMobileMenuOpen(false); }} />
             <NavItem icon={<PlusSquare size={20} />} label="Create Article" active={activeTab === 'Create'} onClick={() => { setActiveTab('Create'); setIsMobileMenuOpen(false); }} />
             <NavItem icon={<Newspaper size={20} />} label="Articles" active={activeTab === 'Articles'} onClick={() => { setActiveTab('Articles'); setIsMobileMenuOpen(false); }} />
+            <NavItem icon={<Brain size={20} />} label="AI Assistant" active={activeTab === 'AI Assistant'} onClick={() => { setActiveTab('AI Assistant'); setIsMobileMenuOpen(false); }} />
             <div className="pt-8 mt-8 border-t border-slate-100">
               <NavItem icon={<LogOut size={20} className="text-rose-500" />} label="Logout" onClick={onLogout} />
             </div>
@@ -1654,6 +1704,111 @@ const NavItem = ({ icon, label, active, badge, onClick }) => (
       </span>
     )}
   </button>
+);
+
+const RiskBadge = ({ level }) => {
+  const colors = { LOW: 'bg-emerald-100 text-emerald-700 border-emerald-200', MODERATE: 'bg-amber-100 text-amber-700 border-amber-200', HIGH: 'bg-orange-100 text-orange-700 border-orange-200', CRITICAL: 'bg-red-100 text-red-700 border-red-200', UNKNOWN: 'bg-slate-100 text-slate-600 border-slate-200' };
+  const cls = colors[level?.toUpperCase()] || colors.UNKNOWN;
+  return <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold border ${cls}`}><AlertCircle size={14} />{level || 'UNKNOWN'} RISK</span>;
+};
+
+const ResultSection = ({ title, items }) => {
+  const [open, setOpen] = useState(true);
+  if (!items || items.length === 0) return null;
+  return (
+    <div className="border border-slate-100 rounded-2xl overflow-hidden">
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between px-5 py-4 bg-slate-50 hover:bg-slate-100 transition-colors text-left">
+        <span className="font-bold text-slate-700">{title}</span>
+        {open ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+      </button>
+      {open && <ul className="px-5 py-3 space-y-1.5">{items.map((item, i) => <li key={i} className="flex gap-2 text-sm text-slate-600"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0" />{typeof item === 'object' ? JSON.stringify(item) : item}</li>)}</ul>}
+    </div>
+  );
+};
+
+const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, onFileChange, onReportChange }) => (
+  <div className="max-w-3xl mx-auto animate-fadeIn space-y-6 p-4 md:p-0">
+    <div className="flex items-center gap-4">
+      <div className="p-4 bg-teal-100 rounded-2xl text-teal-600"><Brain size={32} /></div>
+      <div>
+        <h2 className="text-2xl font-bold text-slate-800">AI Medical Assistant</h2>
+        <p className="text-slate-500 text-sm">Upload a medical image or report for AI-powered analysis</p>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Medical Image <span className="text-red-400">*</span></label>
+          <label className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${aiFile ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'}`}>
+            <Upload size={28} className={aiFile ? 'text-teal-500' : 'text-slate-300'} />
+            <p className="mt-2 text-sm font-medium text-slate-500">{aiFile ? aiFile.name : 'Click to upload'}</p>
+            <p className="text-xs text-slate-400">DICOM, JPG, PNG, TIFF supported</p>
+            <input type="file" className="hidden" accept=".dcm,.dicom,.jpg,.jpeg,.png,.tiff,.tif,.bmp" onChange={e => onFileChange(e.target.files[0])} />
+          </label>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Medical Report <span className="text-slate-400 font-normal">(optional)</span></label>
+          <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${aiReport ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'}`}>
+            <FileText size={22} className={aiReport ? 'text-teal-500' : 'text-slate-300'} />
+            <p className="mt-1 text-sm text-slate-500">{aiReport ? aiReport.name : 'Upload PDF or image report'}</p>
+            <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.txt" onChange={e => onReportChange(e.target.files[0])} />
+          </label>
+        </div>
+        {error && <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700"><AlertCircle size={18} /> {error}</div>}
+        <button type="submit" disabled={loading || !aiFile} className="w-full py-4 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-100 flex items-center justify-center gap-2">
+          {loading ? <><svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Analyzing...</> : <><Brain size={18} /> Run AI Analysis</>}
+        </button>
+      </form>
+    </div>
+
+    {result && (
+      <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-4 animate-fadeIn">
+        <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
+          <div className="p-2 bg-teal-50 rounded-xl"><Brain size={18} className="text-teal-600" /></div>
+          <h3 className="text-xl font-bold text-slate-800">Analysis Results</h3>
+          <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+            {result._source === 'backend' ? 'ProDoc AI' : 'Gemini'}
+          </span>
+        </div>
+
+        {/* Gemini markdown result */}
+        {result.analysis && (
+          <div className="prose prose-slate prose-sm max-w-none text-slate-700 leading-relaxed [&_strong]:font-semibold [&_strong]:text-slate-800 [&_ul]:space-y-1 [&_li]:text-slate-600">
+            <ReactMarkdown>{result.analysis}</ReactMarkdown>
+          </div>
+        )}
+
+        {/* ProDoc AI backend structured result */}
+        {result._source === 'backend' && (
+          <>
+            {result.ai_result?.finding && (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Primary Finding</p>
+                <p className="text-slate-800 font-semibold">{result.ai_result.finding}</p>
+                {result.ai_result.confidence !== undefined && <p className="text-xs text-slate-400 mt-1">Confidence: {(result.ai_result.confidence * 100).toFixed(1)}%</p>}
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-4">
+              {result.metadata?.modality && <div className="p-3 bg-slate-50 rounded-xl border border-slate-100"><p className="text-xs text-slate-400 font-bold uppercase">Image Type</p><p className="text-slate-700 font-semibold text-sm mt-0.5">{result.metadata.modality}</p></div>}
+              {result.metadata?.routed_model && <div className="p-3 bg-slate-50 rounded-xl border border-slate-100"><p className="text-xs text-slate-400 font-bold uppercase">Model Used</p><p className="text-slate-700 font-semibold text-sm mt-0.5">{result.metadata.routed_model}</p></div>}
+            </div>
+            <ResultSection title="Key Observations" items={result.ai_result?.key_findings || result.ai_result?.observations} />
+            <ResultSection title="Diagnostic Suggestions" items={result.diagnostic_suggestions} />
+            <ResultSection title="Recommended Tests" items={result.recommended_tests} />
+            {result.final_report && (
+              <div className="border border-slate-100 rounded-2xl overflow-hidden">
+                <div className="px-5 py-4 bg-slate-50"><span className="font-bold text-slate-700">Full Report</span></div>
+                <pre className="px-5 py-4 text-xs text-slate-600 whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto">{result.final_report}</pre>
+              </div>
+            )}
+          </>
+        )}
+
+        <p className="text-xs text-slate-400 text-center pt-2 border-t border-slate-50">For clinical decision support only. Always apply professional judgement.</p>
+      </div>
+    )}
+  </div>
 );
 
 export default DoctorDashboard;
