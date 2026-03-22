@@ -468,7 +468,7 @@ const DoctorDashboard = ({
 
   const handleAiAnalysis = async (e) => {
     e.preventDefault();
-    if (!aiFile) return;
+    if (!aiFile && !aiReport) return;
     setAiLoading(true);
     setAiError('');
     setAiResult(null);
@@ -1739,7 +1739,7 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
     <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
       <form onSubmit={onSubmit} className="space-y-6">
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Medical Image <span className="text-red-400">*</span></label>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Medical Image <span className="text-slate-400 font-normal">(optional if report uploaded)</span></label>
           <label className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${aiFile ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'}`}>
             <Upload size={28} className={aiFile ? 'text-teal-500' : 'text-slate-300'} />
             <p className="mt-2 text-sm font-medium text-slate-500">{aiFile ? aiFile.name : 'Click to upload'}</p>
@@ -1756,7 +1756,7 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
           </label>
         </div>
         {error && <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700"><AlertCircle size={18} /> {error}</div>}
-        <button type="submit" disabled={loading || !aiFile} className="w-full py-4 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-100 flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading || (!aiFile && !aiReport)} className="w-full py-4 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-100 flex items-center justify-center gap-2">
           {loading ? <><svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Analyzing...</> : <><Brain size={18} /> Run AI Analysis</>}
         </button>
       </form>

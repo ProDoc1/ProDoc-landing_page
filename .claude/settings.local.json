@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"venv\\\\Scripts\\\\python.exe\" --version)",
+      "Bash(\"venv\\\\Scripts\\\\python.exe\" -c \"import fastapi, uvicorn, torch; print\\(''FastAPI OK, Torch OK''\\)\")"
+    ]
+  }
+}
