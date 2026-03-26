@@ -16,7 +16,6 @@ import {
 import emailjs from '@emailjs/browser';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 
-// --- IMPORTS ---
 import LogoColor from './assets/Logo_with_words.png';
 import Plasma from './components/Plasma';
 
@@ -34,7 +33,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // --- GOOGLE LOGIN HOOK ---
   const loginWithGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       setLoading(true);
@@ -71,7 +69,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     },
   });
 
-  // --- LOGIN LOGIC ---
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -114,7 +111,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
     }
   };
 
-  // --- FORGOT PASSWORD LOGIC ---
   const handleSendCode = async (e) => {
     e.preventDefault();
     if (!formData.email) {
@@ -198,7 +194,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
   return (
     <div className="min-h-screen w-full relative flex flex-col font-sans text-slate-700 overflow-hidden">
 
-      {/* --- CUSTOM ANIMATIONS --- */}
       <style jsx>{`
         @keyframes slideFadeIn {
           0% { opacity: 0; transform: translateY(15px) scale(0.98); }
@@ -209,20 +204,17 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
         }
       `}</style>
 
-      {/* 1. PLASMA BACKGROUND */}
       <div className="fixed inset-0 z-0 h-screen w-screen">
         <Plasma color={userType === 'patient' ? "#14b8a6" : "#0d9488"} speed={0.4} scale={2.0} opacity={0.6} />
         <div className="absolute inset-0 bg-slate-50/30 backdrop-blur-[1px]"></div>
       </div>
 
-      {/* 2. DYNAMIC BACKGROUND ORB (Visual Transition Cue) */}
       <div className={`fixed w-[500px] h-[500px] rounded-full blur-[100px] z-0 transition-all duration-700 ease-in-out opacity-60
         ${userType === 'patient'
           ? 'bg-teal-400 left-[-100px] bottom-[-100px]'
           : 'bg-teal-600 right-[-100px] top-[-100px]'}
       `}></div>
 
-      {/* 3. CONTENT LAYER */}
       <div className="relative z-10 flex flex-col min-h-screen">
 
         <nav className="w-full p-4 md:p-6 grid grid-cols-3 items-center">
@@ -250,7 +242,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="relative bg-white rounded-[2rem] md:rounded-[3.5rem] shadow-[0_0_40px_rgba(0,0,0,0.1)] w-full max-w-[850px] min-h-0 md:min-h-[520px] overflow-hidden flex flex-col md:block shadow-teal-500/10 border border-slate-200">
 
-            {/* MOBILE TABS (only shown in login view) */}
             {view === 'login' && (
               <div className="grid grid-cols-2 md:hidden border-b border-slate-100">
                 <button
@@ -270,7 +261,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
 
             <div className="relative md:absolute md:inset-0 flex flex-col md:flex-row w-full h-auto md:h-full">
 
-              {/* FORGOT PASSWORD VIEW */}
               {view === 'forgot' && (
                 <div className="w-full h-full p-8 md:p-16 flex flex-col justify-center items-center animate-slide-fade">
                   <div className="w-full max-w-[400px]">
@@ -306,7 +296,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                 </div>
               )}
 
-              {/* RESET PASSWORD VIEW */}
               {view === 'reset' && (
                 <div className="w-full h-full p-8 md:p-16 flex flex-col justify-center items-center animate-slide-fade">
                   <div className="w-full max-w-[400px]">
@@ -361,10 +350,8 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                 </div>
               )}
 
-              {/* LOGIN VIEW (Standard split pane) */}
               {view === 'login' && (
                 <>
-                  {/* LEFT PANEL: PATIENT SIGN IN */}
                   <div className={`w-full md:w-1/2 h-auto md:h-full p-6 md:p-10 flex flex-col justify-center items-center relative z-10 transition-opacity duration-500 ${userType === 'patient' ? 'flex' : 'hidden md:flex'}`}
                     style={{ opacity: userType === 'patient' ? 1 : 0, pointerEvents: userType === 'patient' ? 'auto' : 'none' }}>
 
@@ -438,7 +425,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                     </div>
                   </div>
 
-                  {/* RIGHT PANEL: DOCTOR SIGN IN */}
                   <div className={`w-full md:w-1/2 h-auto md:h-full p-6 md:p-10 flex flex-col justify-center items-center relative z-10 transition-opacity duration-500 ${userType === 'doctor' ? 'flex' : 'hidden md:flex'}`}
                     style={{ opacity: userType === 'doctor' ? 1 : 0, pointerEvents: userType === 'doctor' ? 'auto' : 'none' }}>
 
@@ -499,7 +485,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
                     </div>
                   </div>
 
-                  {/* OVERLAY SLIDER LAYER  */}
                   <div className={`hidden md:block absolute top-0 left-0 w-1/2 h-full overflow-hidden transition-transform duration-700 ease-[cubic-bezier(0.7,0,0.3,1)] z-20 ${userType === 'patient' ? 'translate-x-full rounded-l-[4.5rem]' : 'translate-x-0 rounded-r-[4.5rem]'}`}>
                     <div className={`absolute inset-0 bg-gradient-to-br from-teal-500 to-teal-600`} >
                       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
@@ -531,7 +516,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
         </footer>
       </div >
 
-      {/* MODALS (Help, Error, Success) */}
       <Modal show={showHelpModal} onClose={() => setShowHelpModal(false)} type="help" title="Need Help?">
         <p className="text-slate-500 text-sm mb-6 leading-relaxed">If you are having trouble logging in, please contact our support team.</p>
         <div className="w-full space-y-3 mb-6">
@@ -558,7 +542,6 @@ const LoginPage = ({ onBack, onNavigateSignup, onLoginSuccess }) => {
   );
 };
 
-// Helper Components
 const Modal = ({ show, onClose, title, children, type }) => {
   if (!show) return null;
   const icons = {
@@ -607,7 +590,6 @@ const ContactItem = ({ icon, label, value }) => (
 );
 
 export default function LoginPageWrapper(props) {
-  // Use your real Google Client ID here from the .env file
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "10415383182-q66i5k4nbl68erfiv9eopab75sctd6l4.apps.googleusercontent.com";
   return (
     <GoogleOAuthProvider clientId={clientId}>

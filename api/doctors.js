@@ -1,7 +1,6 @@
 import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
-    // Handle CORS for local development
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,7 +11,6 @@ export default async function handler(req, res) {
         const { id } = req.query;
 
         if (id) {
-            // Get single doctor profile
             try {
                 const { rows } = await sql`
           SELECT 
@@ -56,7 +54,6 @@ export default async function handler(req, res) {
                 return res.status(500).json({ error: "Internal server error" });
             }
         } else {
-            // Get all doctors
             try {
                 res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
                 res.setHeader('Pragma', 'no-cache');

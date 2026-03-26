@@ -47,7 +47,6 @@ const ContentHub = ({
     const [activeTab, setActiveTab] = useState('Doctor Articles');
     const [showAllSuggestions, setShowAllSuggestions] = useState(false);
 
-    // Article Creation State
     const [articleFormContent, setArticleFormContent] = useState('');
     const [articleFormImage, setArticleFormImage] = useState('');
     const [isPublishing, setIsPublishing] = useState(false);
@@ -357,9 +356,7 @@ const ContentHub = ({
                     </div>
                 </aside>
 
-                {/* CENTER FEED */}
                 <main className="lg:col-span-9 space-y-6">
-                    {/* Mobile Tabs Navigation */}
                     <div className={`lg:hidden flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar scroll-smooth -mx-4 px-4 sticky transition-all duration-300 z-30 bg-slate-50/80 backdrop-blur-md ${hideNavbar ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100 top-20'}`}>
                         {['Doctor Articles', 'Popular', 'Saved'].map(tab => (
                             <button
@@ -377,7 +374,6 @@ const ContentHub = ({
                         ))}
                     </div>
 
-                    {/* Mobile Suggested Doctors */}
                     <div className="lg:hidden bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                         <div className="flex justify-between items-center mb-4 px-2">
                             <h3 className="font-bold text-slate-900">Suggested Doctors</h3>
@@ -412,7 +408,6 @@ const ContentHub = ({
                         </div>
                     </div>
 
-                    {/* Create Post Input (Doctors Only) */}
                     {userRole === 'doctor' && (
                         <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col gap-4 mt-8 md:mt-0">
                             <div className="flex gap-4">
@@ -479,7 +474,6 @@ const ContentHub = ({
                         </div>
                     )}
 
-                    {/* Posts Feed */}
                     <div className="space-y-6">
                         <AnimatePresence mode="popLayout">
                             {loading ? (
@@ -547,7 +541,6 @@ const ContentHub = ({
                                         animate={{ opacity: 1, y: 0 }}
                                         className="bg-white rounded-[2rem] overflow-hidden shadow-sm border border-slate-100 transition-all hover:shadow-md"
                                     >
-                                        {/* Post Header */}
                                         <div className="p-5 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 {post.authorImage ? (
@@ -567,7 +560,6 @@ const ContentHub = ({
                                             </button>
                                         </div>
 
-                                        {/* Post Image */}
                                         {post.image && (
                                             <div className="px-4 pb-3">
                                                 <div className="w-full aspect-[16/9] bg-slate-50 overflow-hidden rounded-[1.25rem] border border-slate-100">
@@ -576,12 +568,10 @@ const ContentHub = ({
                                             </div>
                                         )}
 
-                                        {/* Post Content */}
                                         <div className="px-6 pb-5">
                                             <p className="text-slate-700 leading-relaxed whitespace-pre-line text-sm">{post.content}</p>
                                         </div>
 
-                                        {/* Post Actions */}
                                         <div className="p-3 px-6 flex items-center justify-between border-t border-slate-50 bg-slate-50/30">
                                             <div className="flex items-center gap-3">
                                                 <MicroExpander
@@ -617,7 +607,6 @@ const ContentHub = ({
 
             </div>
 
-            {/* Added consistent Footer */}
             <footer className="mt-20 bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
 

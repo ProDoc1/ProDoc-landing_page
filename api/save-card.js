@@ -14,7 +14,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Ensure table exists with new schema
     await sql`
             CREATE TABLE IF NOT EXISTS card_details (
                 id VARCHAR(255) NOT NULL,
@@ -26,7 +25,6 @@ export default async function handler(req, res) {
             );
         `;
 
-    // Insert card details
     await sql`
             INSERT INTO card_details (id, card_number, expiry_date, card_name, card_type)
             VALUES (${idValue}, ${cardNumber}, ${expiryDate}, ${cardName}, ${cardType})

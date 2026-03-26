@@ -83,23 +83,20 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
     
     setIsLoading(true);
     try {
-      // 1. Convert comma-separated strings back into clean Arrays
-      const finalizedAllergies = typeof formData.allergies === 'string' 
+      const finalizedAllergies = typeof formData.allergies === 'string'
         ? formData.allergies.split(',').map(s => s.trim()).filter(Boolean)
         : formData.allergies;
 
-      const finalizedConditions = typeof formData.chronicConditions === 'string' 
+      const finalizedConditions = typeof formData.chronicConditions === 'string'
         ? formData.chronicConditions.split(',').map(s => s.trim()).filter(Boolean)
         : formData.chronicConditions;
 
-      // 2. Prepare the final payload
       const finalPayload = {
         ...formData,
         allergies: finalizedAllergies,
         chronicConditions: finalizedConditions
       };
 
-      // 3. Send to Dashboard's handleSaveProfile
       await onSave(finalPayload);
       
       // We don't call onClose() here because the Dashboard 

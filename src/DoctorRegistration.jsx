@@ -87,7 +87,6 @@ const DoctorRegistration = ({ onBack, onNavigateLogin, onNavigateTerms }) => {
         setLoading(true);
         setError('');
 
-        // Strict SLMC validation (4-5 digits)
         if (formData.slmcNumber.length < 4 || formData.slmcNumber.length > 5) {
             setError('SLMC Number must be between 4 and 5 digits.');
             setLoading(false);
@@ -162,7 +161,6 @@ const DoctorRegistration = ({ onBack, onNavigateLogin, onNavigateTerms }) => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#F0F8F8] via-[#E6F3F3] to-white py-8 px-4 relative overflow-hidden">
-            {/* Background Decorative Elements */}
             <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10l80 80M90 10L10 90' stroke='%2314B8A6' stroke-width='1' fill='none'/%3E%3C/svg%3E")` }}></div>
             
             <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-teal-500/10 rounded-full blur-[120px]"></div>
@@ -184,7 +182,6 @@ const DoctorRegistration = ({ onBack, onNavigateLogin, onNavigateTerms }) => {
                 </div>
 
                 <div className="grid lg:grid-cols-12 gap-16 items-start">
-                    {/* Left Column: Branding & Info */}
                     <div className="lg:col-span-5 space-y-12">
                         <div className="space-y-8">
                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-100/50 rounded-full">
@@ -202,7 +199,6 @@ const DoctorRegistration = ({ onBack, onNavigateLogin, onNavigateTerms }) => {
                         </div>
 
                         <div className="space-y-6 max-w-lg">
-                            {/* Feature Card 1 */}
                             <div className="bg-white/60 backdrop-blur-md p-8 rounded-[2.5rem] border border-white shadow-xl shadow-teal-900/5 flex gap-6 group hover:bg-white transition-all duration-500">
                                 <div className="w-14 h-14 bg-teal-50 rounded-2xl flex-shrink-0 flex items-center justify-center border border-teal-100 group-hover:scale-110 transition-transform">
                                     <ShieldCheck size={24} className="text-teal-500" />
@@ -215,7 +211,6 @@ const DoctorRegistration = ({ onBack, onNavigateLogin, onNavigateTerms }) => {
                                 </div>
                             </div>
 
-                            {/* Feature Card 2 */}
                             <div className="bg-white/60 backdrop-blur-md p-8 rounded-[2.5rem] border border-white shadow-xl shadow-teal-900/5 flex gap-6 group hover:bg-white transition-all duration-500">
                                 <div className="w-14 h-14 bg-teal-50 rounded-2xl flex-shrink-0 flex items-center justify-center border border-teal-100 group-hover:scale-110 transition-transform">
                                     <FileText size={24} className="text-teal-500" />
@@ -239,7 +234,6 @@ const DoctorRegistration = ({ onBack, onNavigateLogin, onNavigateTerms }) => {
                         </div>
                     </div>
 
-                    {/* Right Column: Registration Form */}
                     <div className="lg:col-span-7">
                         <div className="bg-white rounded-[4rem] p-10 md:p-14 shadow-2xl shadow-teal-900/10 border border-white relative overflow-hidden">
                             <div className="relative z-10">

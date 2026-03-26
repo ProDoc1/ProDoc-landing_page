@@ -26,20 +26,44 @@ export default async function handler(req, res) {
     }
 
     const imageFile = files.medical_image?.[0];
-    if (!imageFile) return res.status(400).json({ error: 'No medical_image file provided' });
+    const reportFile = files.report_file?.[0];
+
+    if (!imageFile && !reportFile) return res.status(400).json({ error: 'Please upload a medical image or a report file' });
 
     const rawUrl = process.env.AI_BACKEND_URL;
     const internalKey = process.env.INTERNAL_API_KEY;
 
-    // Fallback to Gemini if backend not configured
     if (!rawUrl || !internalKey) {
         return handleWithGemini(req, res, imageFile, files);
     }
 
     const normalizedUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
     const backendUrl = normalizedUrl.replace(/\/+$/, '');
-    const analyzeUrl = `${backendUrl}/analyze`;
 
+    if (!imageFile) {
+        const analyzeUrl = `${backendUrl}/analyze-report`;
+        console.log('[ai-analyze] Report-only, calling:', analyzeUrl);
+        try {
+            const reportBuffer = fs.readFileSync(reportFile.filepath);
+            const reportBlob = new Blob([reportBuffer], { type: reportFile.mimetype || 'application/octet-stream' });
+            const fd = new FormData();
+            fd.append('report_file', reportBlob, reportFile.originalFilename || 'report');
+            const aiRes = await fetch(analyzeUrl, {
+                method: 'POST',
+                headers: { 'x-internal-key': internalKey },
+                body: fd,
+                signal: AbortSignal.timeout(120000),
+            });
+            const result = await aiRes.json();
+            if (!aiRes.ok) return res.status(aiRes.status).json(result);
+            return res.status(200).json({ ...result, _source: 'backend' });
+        } catch (err) {
+            console.error('[ai-analyze] Backend unreachable:', err.message, '— falling back to Gemini');
+            return handleWithGemini(req, res, null, files);
+        }
+    }
+
+    const analyzeUrl = `${backendUrl}/analyze`;
     console.log('[ai-analyze] Calling backend:', analyzeUrl);
 
     try {
@@ -49,7 +73,6 @@ export default async function handler(req, res) {
         const fd = new FormData();
         fd.append('medical_image', imageBlob, imageFile.originalFilename || 'image');
 
-        const reportFile = files.report_file?.[0];
         if (reportFile) {
             const reportBuffer = fs.readFileSync(reportFile.filepath);
             const reportBlob = new Blob([reportBuffer], { type: reportFile.mimetype || 'application/octet-stream' });
@@ -71,7 +94,6 @@ export default async function handler(req, res) {
             return res.status(aiRes.status).json(result);
         }
 
-        // Wrap backend result so the UI can render it
         return res.status(200).json({ ...result, _source: 'backend' });
     } catch (err) {
         console.error('[ai-analyze] Backend unreachable:', err.message, '— falling back to Gemini');
@@ -84,12 +106,49 @@ async function handleWithGemini(req, res, imageFile, files) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'No AI backend configured' });
 
+    const ai = new GoogleGenAI({ apiKey });
+    const reportFile = files.report_file?.[0];
+
     try {
+        if (!imageFile) {
+            let reportText = '';
+            try { reportText = fs.readFileSync(reportFile.filepath, 'utf8'); } catch {}
+            const prompt = `You are a medical AI assistant helping a licensed doctor analyze a medical report.
+
+Provide a structured analysis with these sections:
+
+**Report Summary**
+What type of report this is and the key information it contains.
+
+**Key Findings**
+Notable results, abnormalities, or significant values.
+
+**Risk Assessment**
+Classify as Low / Moderate / High risk with explanation.
+
+**Differential Diagnoses**
+Possible conditions to consider based on the report findings.
+
+**Recommended Next Steps**
+Suggested follow-up tests or clinical actions.
+
+---
+For licensed medical professionals only. Does not replace clinical judgment.
+
+**Report content:**
+${reportText.substring(0, 5000)}`;
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: [{ parts: [{ text: prompt }] }]
+            });
+            console.log('[ai-analyze] Gemini report-only fallback used');
+            return res.status(200).json({ analysis: response.text, status: 'success', _source: 'gemini' });
+        }
+
         const imageBuffer = fs.readFileSync(imageFile.filepath);
         const base64Image = imageBuffer.toString('base64');
         const mimeType = imageFile.mimetype || 'image/jpeg';
-
-        const ai = new GoogleGenAI({ apiKey });
 
         let prompt = `You are a medical AI assistant helping a licensed doctor analyze a medical image.
 
@@ -113,7 +172,6 @@ Suggested follow-up tests or clinical actions.
 ---
 For licensed medical professionals only. Does not replace clinical judgment.`;
 
-        const reportFile = files.report_file?.[0];
         if (reportFile) {
             try {
                 const reportText = fs.readFileSync(reportFile.filepath, 'utf8');

@@ -13,11 +13,10 @@ export default async function handler(req, res) {
         WHERE patient_id = ${patientId} 
         ORDER BY created_at DESC
       `;
-      // Format dates for frontend
       const records = rows.map(r => ({
         ...r,
         reportDate: r.report_date ? new Date(r.report_date).toISOString().split('T')[0] : null,
-        doctorName: 'Self Uploaded', // Assuming these are self-uploaded for now
+        doctorName: 'Self Uploaded', // TODO: populate from shared_records when doctor-uploaded records are implemented
         hospital: 'Personal Records'
       }));
       return res.status(200).json(records);

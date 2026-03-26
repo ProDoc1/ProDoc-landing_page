@@ -193,13 +193,11 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
     let value = e.target.value.replace(/\D/g, ''); // Digits only
     if (value.length > 16) value = value.slice(0, 16);
 
-    // Check card type
     if (value.startsWith('4')) setCardType('VISA');
     else if (value.startsWith('5')) setCardType('MASTERCARD');
     else if (value.startsWith('3')) setCardType('AMEX');
     else setCardType('Unknown');
 
-    // Add space every 4 digits
     const formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
     setCardNumber(formattedValue);
   };
@@ -252,7 +250,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
     e.preventDefault();
     setIsProcessing(true);
 
-    // Attempt to resolve stored userId from localStorage if prop is missing
     const finalUserId = userId || localStorage.getItem('patientId') || 'test-debug-id';
 
     if (saveCardDetails && finalUserId) {
@@ -512,11 +509,8 @@ const PatientDashboard = ({
       let filename = file.name;
       
       if (!publicKey) {
-        // Fallback or warning if user didn't register after the encryption sync.
-        // We will notify the user but also generate a temporary key for the session to ensure encryption executes!
+        // Account lacks a permanent PGP key (e.g. Google OAuth signup). Generate a temporary session key so encryption can proceed.
         alert("Account missing permanent keys. Generating a temporary session key so encryption will proceed...");
-        
-        // Generate a temporary OpenPGP key pair to fulfill the encryption requirement
         const { privateKey: tempPriv, publicKey: tempPub } = await import('openpgp').then(openpgp => openpgp.generateKey({
           type: 'ecc',
           curve: 'curve25519',
@@ -530,8 +524,6 @@ const PatientDashboard = ({
       
       const encryptedBlob = await encryptFile(file, publicKey);
       
-      // Override mime type to application/octet-stream if you prefer it completely binary/unrecognizable.
-      // Send the array buffer of the encrypted data to your API route.
       bodyData = await encryptedBlob.arrayBuffer();
       filename = `${file.name}.gpg`;
 
@@ -559,7 +551,6 @@ const PatientDashboard = ({
       
       const newBlob = await response.json();
 
-      // Save metadata to database
       if (currentUser.id) {
         const dbResponse = await fetch('/api/medical-records', {
           method: 'POST',
@@ -585,7 +576,6 @@ const PatientDashboard = ({
           setReports(prev => [newReport, ...prev]);
         }
       } else {
-        // Fallback for demo if id is missing
         const newReport = {
           id: Date.now(),
           title: file.name,
@@ -625,7 +615,6 @@ const PatientDashboard = ({
         }
       }
 
-      // Delete from database
       const dbDeleteResponse = await fetch(`/api/medical-records?id=${reportToDelete.id}`, {
         method: 'DELETE'
       });
@@ -651,11 +640,9 @@ const PatientDashboard = ({
           return;
         }
         
-        // Removed the password prompt to make viewing seamless
         const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`);
         const encryptedBlob = await response.blob();
         
-        // Find correct MIME Type so images open as images, PDFs as PDFs
         const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
         
         const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
@@ -753,7 +740,6 @@ const PatientDashboard = ({
         .catch(err => console.error("Error fetching saved doctors:", err))
         .finally(() => setLoadingSavedDoctors(false));
 
-      // Fetch Medical Records
       fetch(`/api/medical-records?patientId=${userId}`)
         .then(res => res.json())
         .then(data => {
@@ -770,8 +756,7 @@ const PatientDashboard = ({
       const queryParams = new URLSearchParams();
       if (patientId) queryParams.append('patientId', patientId);
       if (email) queryParams.append('email', email);
-      // Adding a timestamp ensures the browser doesn't serve a cached (old) version
-      queryParams.append('t', Date.now());
+      queryParams.append('t', Date.now()); // prevents browser from serving a cached version
 
       const response = await fetch(`/api/patient/profile?${queryParams.toString()}`);
 
@@ -808,14 +793,12 @@ const PatientDashboard = ({
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to save profile');
         } else {
-          // If 404 appears here, verify that the file exists at /api/patient/profile/route.js
           throw new Error(`Server returned a ${response.status} error. Check your API route path!`);
         }
       }
 
       const result = await response.json();
 
-      // Force local UI update so changes appear immediately
       setCurrentUser(prev => ({
         ...prev,
         ...formData,
@@ -1551,7 +1534,7 @@ const PatientDashboard = ({
                       const doctorName = doc.full_name || 'Doctor Name';
                       const initial = doctorName.split(' ')[1]?.charAt(0) || doctorName.charAt(0);
                       const specialty = doc.specialty || 'Specialist';
-                      // Using realistic mock values for rating/price as they might not come from db
+                      // TODO: rating and price are mock values; fetch from doctor_ratings aggregate when available
                       const rating = doc.rating || (Math.random() * (5.0 - 4.5) + 4.5).toFixed(1);
                       const price = 'Rs. 2500';
                       const exp = doc.years_of_experience ? `${doc.years_of_experience}+ yrs` : '10+ yrs';

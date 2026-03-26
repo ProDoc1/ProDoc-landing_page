@@ -31,7 +31,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Track errors for specific fields
   const [errors, setErrors] = useState({
     email: '',
     password: ''
@@ -44,7 +43,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear errors when user starts typing
     setErrors({ ...errors, [e.target.name]: '' });
   };
 
@@ -87,14 +85,12 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
   const handleCreateAccount = async (e) => {
     e.preventDefault();
 
-    // Client-side validation first
     const newErrors = {};
     if (!formData.fullName || !formData.email || !formData.password) {
       setErrorAlert({ show: true, message: "Please fill in all fields." });
       return;
     }
 
-    // Title Case Name
     const formattedName = formData.fullName.trim().split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
@@ -112,7 +108,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
       return;
     }
 
-    // API CALL
     setLoading(true);
     try {
       const { privateKey, publicKey } = await openpgp.generateKey({
@@ -136,7 +131,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
       try {
         result = await response.json();
       } catch (e) {
-        // Response had no JSON body
         console.warn('Non-JSON response from /api/sign-up:', e);
       }
 
@@ -157,13 +151,11 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
   return (
     <div className="min-h-screen w-full relative flex flex-col font-sans text-slate-700 overflow-hidden">
 
-      {/* 1. PLASMA BACKGROUND */}
       <div className="fixed inset-0 z-0 h-screen w-screen">
         <Plasma color="#14b8a6" speed={0.4} scale={2.0} opacity={0.6} />
         <div className="absolute inset-0 bg-slate-50/30 backdrop-blur-[1px]"></div>
       </div>
 
-      {/* 2. DYNAMIC BACKGROUND ORB */}
       <div className="fixed w-[500px] h-[500px] rounded-full blur-[100px] z-0 bg-teal-400 left-[-100px] bottom-[-100px] opacity-60"></div>
 
 
@@ -187,24 +179,20 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
         </nav>
 
         <div className="flex-1 flex items-center justify-center p-4">
-          {/* MAIN CONTAINER MATCHING LOGIN PAGE */}
           <div className="relative bg-white rounded-[2rem] md:rounded-[3.5rem] shadow-[0_0_40px_rgba(0,0,0,0.1)] w-full max-w-[850px] min-h-0 md:min-h-[520px] overflow-hidden flex flex-col md:flex-row shadow-teal-500/10 border border-slate-200">
 
-            {/* LEFT PANEL: SIGNUP FORM */}
             <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center items-center relative z-10">
               <div className="w-full max-w-[320px]">
                 <h2 className="text-3xl font-bold text-teal-500 mb-2 text-center">Create Account</h2>
                 <p className="text-slate-500 text-xs text-center mb-6">Join ProDoc for better healthcare</p>
 
                 <div className="space-y-4">
-                  {/* Full Name */}
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400"><User size={18} /></div>
                     <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleInputChange}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-10 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-500 focus:bg-white transition-all" />
                   </div>
 
-                  {/* Email */}
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400"><Mail size={18} /></div>
                     <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleInputChange}
@@ -212,7 +200,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
                     {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-2">{errors.email}</p>}
                   </div>
 
-                  {/* Password */}
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400"><Lock size={18} /></div>
                     <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" value={formData.password} onChange={handleInputChange}
@@ -222,7 +209,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
                     </button>
                   </div>
 
-                  {/* Confirm Password */}
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400"><Lock size={18} /></div>
                     <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleInputChange}
@@ -256,7 +242,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
               </div>
             </div>
 
-            {/* RIGHT PANEL: STATIC DECORATIVE SECTION (Matches Login Overlay Aesthetics) */}
             <div className="hidden md:block absolute top-0 right-0 w-1/2 h-full overflow-hidden rounded-l-[4.5rem] z-20">
               <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-teal-600">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
@@ -278,7 +263,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
                 </div>
               </div>
             </div>
-            {/* Mobile-only visual separator or simplified footer if needed, but the current structure handles it via flex-col */}
           </div>
         </div>
 
@@ -286,7 +270,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
           © {new Date().getFullYear()} ProDoc All rights reserved.
         </footer>
       </div>
-      {/* SUCCESS MODAL */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => { }}></div>
@@ -310,7 +293,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
         </div>
       )}
 
-      {/* ERROR MODAL */}
       {errorAlert.show && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setErrorAlert({ ...errorAlert, show: false })}></div>
@@ -334,7 +316,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
         </div>
       )}
 
-      {/* HELP MODAL */}
       {showHelpModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setShowHelpModal(false)}></div>
@@ -376,7 +357,6 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
         </div>
       )}
 
-      {/* --- CUSTOM ANIMATIONS FOR MODAL --- */}
       <style jsx>{`
         @keyframes fadeIn {
           from { opacity: 0; }

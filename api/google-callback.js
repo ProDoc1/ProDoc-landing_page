@@ -12,7 +12,6 @@ export default async function handler(req, res) {
     if (!token) return res.status(400).json({ error: 'Token is required' });
 
     try {
-        // 1. Verify Google Access Token (OAuth2)
         const googleResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -26,14 +25,12 @@ export default async function handler(req, res) {
 
         if (!email) return res.status(400).json({ error: 'Email not found in Google account' });
 
-        // 2. Handle User/Doctor Logic
         if (role === 'patient') {
             const result = await sql`SELECT * FROM users WHERE email = ${email}`;
             let user = result.rows[0];
 
             if (!user) {
-                // Sign Up (Create User)
-                // Create a secure random password for the user since they are using Google Auth
+                // Generates a throwaway password for OAuth-only accounts that have no native login
                 const randomPassword = Math.random().toString(36).slice(-8) + googleId;
                 const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
@@ -45,7 +42,6 @@ export default async function handler(req, res) {
                 user = insertResult.rows[0];
             }
 
-            // Generate App JWT
             const appToken = jwt.sign(
                 { id: user.id, email: user.email, role: 'patient', fullName: user.full_name },
                 JWT_SECRET,
@@ -60,7 +56,6 @@ export default async function handler(req, res) {
             });
 
         } else if (role === 'doctor') {
-            // Query doctors table
             const result = await sql`SELECT * FROM doctors WHERE contact_email = ${email}`;
             const doctor = result.rows[0];
 
@@ -68,7 +63,6 @@ export default async function handler(req, res) {
                 return res.status(404).json({ error: "No doctor account found with this email. Please register via standard process." });
             }
 
-            // Generate Token
             const appToken = jwt.sign(
                 { id: doctor.doctor_id, email: doctor.contact_email, role: 'doctor', fullName: doctor.full_name },
                 JWT_SECRET,

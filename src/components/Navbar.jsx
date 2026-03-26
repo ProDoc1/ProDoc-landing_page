@@ -223,7 +223,6 @@ const Navbar = ({
   ];
 
   const userRole = localStorage.getItem('userRole');
-  // Accept multiple possible image field names from different parts of the app/backend
   const userImage = currentUser?.image_url || currentUser?.image || currentUser?.imageURL || currentUser?.image_URL || null;
   const isDoctor = userRole === 'doctor' || currentUser?.user_type === 'doctor' || currentUser?.role === 'doctor';
 
@@ -231,7 +230,7 @@ const Navbar = ({
     'home': 'Home',
     'about': 'About Us',
     'doctors': 'Doctors',
-    'doctor-view': 'Doctors', // Doctor view counts as Doctors
+    'doctor-view': 'Doctors',
     'content-hub': 'Content Hub'
   };
 
@@ -239,7 +238,6 @@ const Navbar = ({
     <nav className={`${currentStyle.wrapper} px-4 md:px-6 py-3 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${hideNavbar ? '-translate-y-[150%] opacity-0 scale-95' : 'translate-y-0 opacity-100 scale-100'}`} >
       <div className="flex items-center justify-between">
 
-        {/* Logo Section */}
         <div className="flex items-center gap-3 cursor-pointer group" onClick={onNavigateHome}>
           <div className={`p-0 group-hover:scale-105 transition-transform rounded-lg ${currentPage === 'doctors' || currentPage === 'doctor-view' ? currentStyle.logoBg : ''}`}>
             <img
@@ -250,7 +248,6 @@ const Navbar = ({
           </div>
         </div>
 
-        {/* Desktop Navigation */}
         <div className="hidden md:flex flex-1 justify-center">
           <NavBar
             items={navItems}
@@ -261,7 +258,6 @@ const Navbar = ({
           />
         </div>
 
-        {/* Desktop Buttons / Profile */}
         <div className="hidden md:flex items-center gap-3">
           {currentUser ? (
             <div className="relative">
@@ -340,7 +336,6 @@ const Navbar = ({
           )}
         </div>
 
-        {/* Mobile Toggle */}
         <div className="flex items-center gap-3 md:hidden">
           {currentUser && (
             <button
@@ -362,7 +357,6 @@ const Navbar = ({
           </button>
         </div>
 
-        {/* Mobile Menu Dropdown */}
         {isMenuOpen && (
           <div className="absolute top-full left-0 right-0 pt-4 md:hidden animate-in slide-in-from-top-2">
             <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-4 flex flex-col gap-2 max-h-[80vh] overflow-y-auto">

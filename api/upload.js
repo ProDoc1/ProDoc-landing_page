@@ -2,7 +2,6 @@ import { put } from '@vercel/blob';
 import fs from 'fs';
 import path from 'path';
 
-// Fallback for local development if vercel dev fails to load .env.local
 if (!process.env.BLOB_READ_WRITE_TOKEN) {
   try {
     const envPath = path.resolve(process.cwd(), '.env.local');
@@ -45,13 +44,9 @@ export default async function handler(request, response) {
       return response.status(400).json({ error: 'Missing filename parameter' });
     }
 
-    // With bodyParser enabled, if the content-type is octet-stream, 
-    // request.body will be a Buffer.
     let fileBuffer = request.body;
 
-    // If for some reason it's not a buffer (e.g. empty or weird encoding), try reading the stream
     if (!fileBuffer || (Buffer.isBuffer(fileBuffer) && fileBuffer.length === 0)) {
-       // Fallback to manual stream reading just in case
        const chunks = [];
        for await (const chunk of request) {
          chunks.push(chunk);

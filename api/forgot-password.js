@@ -24,11 +24,9 @@ export default async function handler(req, res) {
             return res.status(404).json({ error: 'Account not found with this email' });
         }
 
-        // Generate a 6-digit code
         const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Save the code with expiration (15 minutes). We'll use a new table or just add columns. 
-        // For now, assume a table 'password_resets' (email, code, expires_at)
+        // Uses password_resets table (email PK) with 15-minute expiry. Upserts on repeated requests.
         await sql`
             CREATE TABLE IF NOT EXISTS password_resets (
                 email VARCHAR(255) PRIMARY KEY,

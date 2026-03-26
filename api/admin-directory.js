@@ -25,12 +25,10 @@ export default async function handler(req, res) {
 
         try {
             if (type === 'doctor') {
-                // Delete doctor-specific records
                 await sql`DELETE FROM doctor_ratings WHERE doctor_id = ${userId}`;
                 await sql`DELETE FROM profile_views WHERE doctor_id = ${userId}`;
                 await sql`DELETE FROM doctors WHERE doctor_id = ${userId}`;
             } else {
-                // Delete user (patient) records
                 await sql`DELETE FROM doctor_ratings WHERE user_id = ${userId}`;
                 await sql`DELETE FROM users WHERE id = ${userId}`; 
             }

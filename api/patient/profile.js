@@ -1,14 +1,12 @@
 import { sql } from '@vercel/postgres';
 
 export default async function handler(req, res) {
-  // Manual CORS/Method handling
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   const { patientId, email } = req.query;
 
-  // ENSURE TABLE & COLUMNS EXIST (Auto-Migration)
   try {
     await sql`CREATE TABLE IF NOT EXISTS patients (
       id SERIAL PRIMARY KEY,
@@ -33,7 +31,6 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       let result;
-      // Robust lookup: prefer ID if specific, but always allow fallback to Email
       if (patientId && patientId !== 'undefined') {
         result = await sql`SELECT * FROM patients WHERE id = ${patientId} OR email = ${email}`;
       } else if (email) {
@@ -43,7 +40,6 @@ export default async function handler(req, res) {
       }
 
       if (!result || result.rows.length === 0) {
-        // If not found in patients table, check if they exist in users table to potentially auto-create
         const userCheck = await sql`SELECT full_name, email FROM users WHERE email = ${email}`;
         if (userCheck.rows.length > 0) {
             const u = userCheck.rows[0];
@@ -88,7 +84,6 @@ export default async function handler(req, res) {
       const safeAllergies = Array.isArray(allergies) ? allergies : [];
       const safeConditions = Array.isArray(chronicConditions) ? chronicConditions : [];
 
-      // Use UPSERT (INSERT ... ON CONFLICT)
       const result = await sql`
         INSERT INTO patients (
           full_name, email, phone, date_of_birth, gender, address, 
