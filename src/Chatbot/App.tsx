@@ -27,6 +27,7 @@ interface AppProps {
 
 interface RecommendationPayload {
   doctor_id: string | number;
+  overview?: string;
   reason?: string;
   translated_name?: string;
 }
@@ -35,6 +36,32 @@ interface ReportAnalysisPayload extends RecommendationPayload {
   status: ReportAnalysis['status'];
   overview: string;
 }
+
+const buildSymptomRecommendationMessage = ({
+  overview,
+  reason,
+  doctorLabel
+}: {
+  overview: string;
+  reason: string;
+  doctorLabel?: string;
+}): string => {
+  const parts: string[] = [];
+
+  if (overview) {
+    parts.push(`Symptom/Disease Overview:\n${overview}`);
+  }
+
+  if (doctorLabel || reason) {
+    const doctorLine = doctorLabel
+      ? `Recommended Doctor: ${doctorLabel}`
+      : 'Recommended Doctor: Please consult the specialist shown below.';
+    const reasonLine = reason ? `Recommendation Reason: ${reason}` : '';
+    parts.push([doctorLine, reasonLine].filter(Boolean).join('\n'));
+  }
+
+  return parts.join('\n\n').trim();
+};
 
 const extractPayloadWithPrefix = <T extends object = RecommendationPayload>(
   responseText: string,
@@ -190,7 +217,9 @@ const doctorsList = DOCTORS.map(d => ({
         const currentAction: DoctorAction = reviewRedirect ? 'leave_review' : 'view_profile';
         const doctorId = String(activePayload.doctor_id).trim();
         const foundDoctor = DOCTORS.find((d) => d.doctor_id === doctorId);
+        const overviewText = (activePayload.overview || '').trim();
         const reasonText = (activePayload.reason || '').trim();
+        const translatedName = (activePayload.translated_name || '').trim();
 
         if (foundDoctor) {
           doctor = {
@@ -200,12 +229,38 @@ const doctorsList = DOCTORS.map(d => ({
               (currentAction === 'leave_review'
                 ? `You can leave a review for ${foundDoctor.full_name}. Use the button below to open the review form.`
                 : foundDoctor.reason || 'Please consult this specialist for further evaluation.'),
-            translated_name: activePayload.translated_name || foundDoctor.translated_name
+            translated_name: translatedName || foundDoctor.translated_name
           } as Doctor;
           doctorAction = currentAction;
-          finalText = doctor.reason;
+          if (currentAction === 'view_profile') {
+            const doctorDisplayName =
+              translatedName || foundDoctor.translated_name || foundDoctor.full_name;
+            const doctorLabel = `${doctorDisplayName} (${foundDoctor.specialty})`;
+            finalText =
+              buildSymptomRecommendationMessage({
+                overview: overviewText,
+                reason: reasonText || doctor.reason,
+                doctorLabel
+              }) || doctor.reason;
+          } else {
+            finalText = reasonText || doctor.reason;
+          }
+        } else if (currentAction === 'view_profile') {
+          const fallbackDoctorLabel = translatedName
+            ? translatedName
+            : doctorId
+              ? `Doctor ID ${doctorId}`
+              : undefined;
+          finalText =
+            buildSymptomRecommendationMessage({
+              overview: overviewText,
+              reason: reasonText,
+              doctorLabel: fallbackDoctorLabel
+            }) || fullResponseText;
         } else if (reasonText) {
           finalText = reasonText;
+        } else if (overviewText) {
+          finalText = overviewText;
         }
       } else if (reportPayload) {
         try {
