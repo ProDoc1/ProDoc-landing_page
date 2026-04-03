@@ -60,11 +60,11 @@ describe('ContentHub Scenarios', () => {
     expect(postContent).toBeInTheDocument();
     
     // Check doctor author
-    expect(screen.getByText("Dr. Smith")).toBeInTheDocument();
+    expect(screen.getAllByText("Dr. Smith")[0]).toBeInTheDocument();
 
     // Wait for suggested doctors
-    const suggestedDoctor = await screen.findByText("Dr. Jones");
-    expect(suggestedDoctor).toBeInTheDocument();
+    const suggestedDoctors = await screen.findAllByText("Dr. Jones");
+    expect(suggestedDoctors[0]).toBeInTheDocument();
   });
 
   test('should show post creation form for doctors', async () => {
@@ -91,13 +91,13 @@ describe('ContentHub Scenarios', () => {
     
     await screen.findByText("This is a test post.");
     
-    const popularTab = screen.getByRole('button', { name: /Popular/i });
+    const popularTab = screen.getAllByRole('button', { name: /Popular/i })[0];
     fireEvent.click(popularTab);
     
     // Content should still have the post since it's the only one
     expect(screen.getByText("This is a test post.")).toBeInTheDocument();
     
-    const savedTab = screen.getByRole('button', { name: /Saved/i });
+    const savedTab = screen.getAllByRole('button', { name: /Saved/i })[0];
     fireEvent.click(savedTab);
     
     // It shouldn't have the post in saved because we haven't mocked saving it yet

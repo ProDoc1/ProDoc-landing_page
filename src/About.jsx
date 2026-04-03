@@ -551,28 +551,28 @@ const AboutPage = ({ onNavigateDoctorRegistration, onNavigateDoctors, onNavigate
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700 ml-1">First Name</label>
-                      <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
+                      <label htmlFor="firstName" className="text-sm font-medium text-slate-700 ml-1">First Name</label>
+                      <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700 ml-1">Last Name</label>
-                      <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
+                      <label htmlFor="lastName" className="text-sm font-medium text-slate-700 ml-1">Last Name</label>
+                      <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700 ml-1">Email Address</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
+                    <label htmlFor="email" className="text-sm font-medium text-slate-700 ml-1">Email Address</label>
+                    <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700 ml-1">Subject</label>
-                    <input type="text" name="subject" value={formData.subject} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
+                    <label htmlFor="subject" className="text-sm font-medium text-slate-700 ml-1">Subject</label>
+                    <input type="text" id="subject" name="subject" value={formData.subject} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all" />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-slate-700 ml-1">Message</label>
-                    <textarea rows="4" name="message" value={formData.message} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none resize-none transition-all"></textarea>
+                    <label htmlFor="message" className="text-sm font-medium text-slate-700 ml-1">Message</label>
+                    <textarea rows="4" id="message" name="message" value={formData.message} onChange={handleChange} required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none resize-none transition-all"></textarea>
                   </div>
 
                   <button type="submit" disabled={isSubmitting} className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-teal-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 mt-6 shadow-md">
