@@ -459,7 +459,7 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration, onNa
                 ProDoc is Sri Lanka's first centralized platform for transparent healthcare.
               </p>
               <div className="flex gap-3 mt-2">
-                <a href="#" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><LucideYoutube size={18} /></a>
+                <a href="https://www.youtube.com/@ProDoc_lk" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><LucideYoutube size={18} /></a>
                 <a href="https://www.instagram.com/prodoclk/" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Instagram size={18} /></a>
                 <a href="https://www.linkedin.com/company/prodoclk/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-50 rounded-full hover:bg-teal-50 hover:text-teal-600 transition-colors"><Linkedin size={18} /></a>
               </div>
