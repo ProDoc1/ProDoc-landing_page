@@ -24,6 +24,7 @@ export default async function handler(req, res) {
     await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS allergies TEXT[]`;
     await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS chronic_conditions TEXT[]`;
     await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS image_url TEXT`;
+    await sql`ALTER TABLE patients ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`;
   } catch (e) {
     console.warn("Migration notice:", e.message);
   }
@@ -39,25 +40,33 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Patient ID or Email required' });
       }
 
-      if (!result || result.rows.length === 0) {
-        const userCheck = await sql`SELECT full_name, email FROM users WHERE email = ${email}`;
-        if (userCheck.rows.length > 0) {
-            const u = userCheck.rows[0];
-            return res.status(200).json({
-                fullName: u.full_name,
-                email: u.email,
-                phone: '', dateOfBirth: '', gender: '', address: '', emergencyContact: '', bloodType: '',
-                allergies: [], chronicConditions: [], imageUrl: ''
-            });
-        }
+      const patient = (result && result.rows.length > 0) ? result.rows[0] : null;
+      
+      // If patient row exists in patients table, combine with verified status from users table
+      const userCheck = await sql`SELECT full_name, email, email_verified FROM users WHERE email = ${email}`;
+      const userRow = userCheck.rows[0];
+
+      if (!patient && !userRow) {
         return res.status(404).json({ error: 'Patient not found' });
       }
       
-      const patient = result.rows[0];
+      const finalEmailVerified = userRow ? userRow.email_verified : (patient ? patient.email_verified : false);
+
+      if (!patient) {
+          return res.status(200).json({
+              fullName: userRow.full_name,
+              email: userRow.email,
+              email_verified: finalEmailVerified,
+              phone: '', dateOfBirth: '', gender: '', address: '', emergencyContact: '', bloodType: '',
+              allergies: [], chronicConditions: [], imageUrl: ''
+          });
+      }
+
       return res.status(200).json({
         id: patient.id,
         fullName: patient.full_name,
         email: patient.email,
+        email_verified: finalEmailVerified,
         phone: patient.phone || '',
         dateOfBirth: patient.date_of_birth ? new Date(patient.date_of_birth).toISOString().split('T')[0] : '',
         gender: patient.gender || '',
@@ -75,7 +84,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'PUT') {
     try {
-      const { fullName, email: bodyEmail, phone, dateOfBirth, gender, address, emergencyContact, bloodType, allergies, chronicConditions, imageUrl } = req.body;
+      const { fullName, email: bodyEmail, phone, dateOfBirth, gender, address, emergencyContact, bloodType, allergies, chronicConditions, imageUrl, email_verified } = req.body;
       const targetEmail = bodyEmail || email;
 
       if (!targetEmail) return res.status(400).json({ error: 'Email is required' });
@@ -87,11 +96,11 @@ export default async function handler(req, res) {
       const result = await sql`
         INSERT INTO patients (
           full_name, email, phone, date_of_birth, gender, address, 
-          emergency_contact, blood_type, allergies, chronic_conditions, image_url
+          emergency_contact, blood_type, allergies, chronic_conditions, image_url, email_verified
         )
         VALUES (
           ${fullName || ''}, ${targetEmail}, ${phone || ''}, ${safeDob}, ${gender || ''}, ${address || ''}, 
-          ${emergencyContact || ''}, ${bloodType || ''}, ${safeAllergies}::text[], ${safeConditions}::text[], ${imageUrl || null}
+          ${emergencyContact || ''}, ${bloodType || ''}, ${safeAllergies}::text[], ${safeConditions}::text[], ${imageUrl || null}, ${email_verified || false}
         )
         ON CONFLICT (email) DO UPDATE SET
           full_name = EXCLUDED.full_name,
@@ -104,6 +113,7 @@ export default async function handler(req, res) {
           allergies = EXCLUDED.allergies,
           chronic_conditions = EXCLUDED.chronic_conditions,
           image_url = EXCLUDED.image_url,
+          email_verified = EXCLUDED.email_verified,
           updated_at = CURRENT_TIMESTAMP
         RETURNING *`;
 

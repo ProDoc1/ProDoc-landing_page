@@ -33,13 +33,28 @@ export default async function handler(req, res) {
     }
 
     const contentType = response.headers.get('content-type');
+    const contentLength = response.headers.get('content-length');
+    
     res.setHeader('Content-Type', type || contentType || 'application/octet-stream');
     res.setHeader('Content-Disposition', 'inline');
+    if (contentLength) {
+      res.setHeader('Content-Length', contentLength);
+    }
     
-    const blob = await response.arrayBuffer();
-    return res.send(Buffer.from(blob));
+    const reader = response.body.getReader();
+    
+    while(true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(value);
+    }
+    
+    res.end();
   } catch (error) {
     console.error('Proxy error:', error);
-    return res.status(500).send('Failed to retrieve file from secure storage');
+    if (!res.headersSent) {
+        return res.status(500).send('Failed to retrieve file from secure storage');
+    }
+    res.end();
   }
 }

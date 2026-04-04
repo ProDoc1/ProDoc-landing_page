@@ -114,6 +114,15 @@ const DoctorDashboard = ({
   });
   const [viewCount, setViewCount] = useState(0);
 
+  const [docAccessState, setDocAccessState] = useState({
+    active: false,
+    progress: 0,
+    status: '',
+    speed: 0,
+    downloaded: 0,
+    total: 0
+  });
+
   useEffect(() => {
     if (user) {
       setLocalUser(prev => ({
@@ -295,17 +304,61 @@ const DoctorDashboard = ({
     }
 
     const openDocument = async (pKey) => {
-      try {
-        const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`);
-        const encryptedBlob = await response.blob();
-        const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
-        const decryptedBlob = await decryptFile(encryptedBlob, pKey, '', mimeType);
-        const localUrl = URL.createObjectURL(decryptedBlob);
-        window.open(localUrl, '_blank');
-      } catch (error) {
-        console.error("Decryption failed:", error);
-        alert("Decryption failed. The key provided may be incorrect for this encrypted file.");
-      }
+      setDocAccessState({ active: true, progress: 10, status: 'Establishing Secure Handshake...' });
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `/api/proxy-blob?url=${encodeURIComponent(recordUrl)}`, true);
+      xhr.responseType = 'blob';
+
+      const startTime = performance.now();
+      xhr.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const loaded = e.loaded;
+          const total = e.total;
+          const elapsed = (performance.now() - startTime) / 1000;
+          const speed = elapsed > 0 ? (loaded / elapsed) : 0; // Bytes per second
+          const percent = Math.round((loaded / total) * 80) + 5;
+          setDocAccessState({ 
+            active: true, 
+            progress: percent, 
+            status: 'Transferring Secure Clinical Data...',
+            speed,
+            downloaded: loaded,
+            total: total
+          });
+        }
+      };
+
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          try {
+            setDocAccessState({ active: true, progress: 90, status: 'Decrypting PGP Container...' });
+            const encryptedBlob = xhr.response;
+            const mimeType = getMimeTypeFromUrl(originalFileName || recordUrl);
+            const decryptedBlob = await decryptFile(encryptedBlob, pKey, '', mimeType);
+            
+            setDocAccessState({ active: true, progress: 100, status: 'Verified. Opening...' });
+            const localUrl = URL.createObjectURL(decryptedBlob);
+            window.open(localUrl, '_blank');
+            
+            setTimeout(() => setDocAccessState({ active: false, progress: 0, status: '' }), 800);
+          } catch (error) {
+            setDocAccessState({ active: false, progress: 0, status: '' });
+            console.error("Decryption failed:", error);
+            alert("Decryption failed. The key provided may be incorrect for this encrypted file.");
+          }
+        } else {
+          setDocAccessState({ active: false, progress: 0, status: '' });
+          alert("Failed to download document.");
+        }
+      };
+
+      xhr.onerror = () => {
+        setDocAccessState({ active: false, progress: 0, status: '' });
+        alert("Network error occurred.");
+      };
+
+      xhr.send();
     };
 
     if (recordUrl.endsWith('.gpg') || originalFileName?.endsWith('.gpg')) {
@@ -704,7 +757,14 @@ const DoctorDashboard = ({
                   <div className="w-24 h-24 bg-teal-100 rounded-full mb-4 flex items-center justify-center text-teal-600 relative overflow-hidden ring-4 ring-slate-50">
                     <img src={localUser.image} alt={localUser.fullName} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 mb-1">{localUser.fullName}</h3>
+                  <h3 className="text-2xl font-black text-slate-800 mb-1 flex items-center justify-center gap-2">
+                    {localUser.fullName}
+                    {localUser.email_verified && (
+                      <span className="p-1 bg-blue-50 text-blue-500 rounded-full border border-blue-100 flex items-center justify-center shrink-0" title="Verified Physician">
+                        <Verified size={18} className="fill-blue-500 text-white" />
+                      </span>
+                    )}
+                  </h3>
                   <p className="text-teal-600 text-sm font-bold uppercase tracking-wider mb-4">{localUser.specialty}</p>
 
                   <div className="flex flex-wrap justify-center gap-3 mb-6">
@@ -1614,9 +1674,17 @@ const DoctorDashboard = ({
                     </div>
 
                     {loadingPatientRecords ? (
-                      <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <Loader2 className="animate-spin text-teal-500" size={40} />
-                        <p className="text-slate-400 font-bold text-sm">Synchronizing health records...</p>
+                      <div className="flex flex-col items-center justify-center py-20 w-full">
+                        <div className="w-full max-w-sm space-y-6">
+                           <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                             <span>Synchronizing Records</span>
+                             <span className="text-teal-600 animate-pulse">Establishing Link...</span>
+                           </div>
+                           <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5 shadow-inner">
+                              <div className="h-full bg-gradient-to-r from-teal-500 to-teal-400 rounded-full w-full animate-progress-shimmer shadow-sm" />
+                           </div>
+                           <p className="text-[10px] text-slate-400 font-bold text-center uppercase tracking-tighter">Your medical vault is securely connecting</p>
+                        </div>
                       </div>
                     ) : patientRecords.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-20 text-center bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
@@ -1798,10 +1866,89 @@ const DoctorDashboard = ({
           </div>
         </div>
       )}
+      {docAccessState.active && (
+        <DocumentAccessProgress
+          progress={docAccessState.progress}
+          status={docAccessState.status}
+          speed={docAccessState.speed}
+          downloaded={docAccessState.downloaded}
+          total={docAccessState.total}
+        />
+      )}
     </div>
   );
 };
 
+const DocumentAccessProgress = ({ progress, status, speed, downloaded, total }) => {
+  const speedMB = (speed / (1024 * 1024)).toFixed(2);
+  const downloadedMB = (downloaded / (1024 * 1024)).toFixed(2);
+  const totalMB = (total / (1024 * 1024)).toFixed(2);
+  const speedText = speed > 1024 * 1024 ? `${speedMB} MB/s` : `${(speed / 1024).toFixed(1)} KB/s`;
+  const eta = total > 0 && speed > 0 ? Math.ceil((total - downloaded) / speed) : null;
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
+      <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 text-center animate-scaleIn border border-slate-100 overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
+          <div 
+            className="h-full bg-teal-500 transition-all duration-500" 
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        
+        <div className="w-24 h-24 bg-teal-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 relative rotate-3 group">
+           <div className="absolute inset-0 bg-teal-100/30 rounded-[2.5rem] animate-pulse" />
+           <Loader2 className="animate-spin text-teal-600 group-hover:text-teal-400 transition-colors" size={48} />
+           <div className="absolute inset-0 flex items-center justify-center">
+              <Lock size={20} className="text-teal-600/20" />
+           </div>
+        </div>
+        
+        <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">Technical Handshake</h3>
+        <p className="text-teal-600 text-[10px] font-black uppercase tracking-[0.2em] mb-4 animate-pulse">{status}</p>
+        
+        {total > 0 && (
+          <div className="flex justify-center gap-10 mb-8 py-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Speed</p>
+              <p className="text-sm font-black text-slate-700">{speedText}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Volume</p>
+              <p className="text-sm font-black text-slate-700">{downloadedMB}MB</p>
+            </div>
+            {eta !== null && (
+              <div className="text-center">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ETA</p>
+                <p className="text-sm font-black text-slate-700">{eta}s</p>
+              </div>
+            )}
+          </div>
+        )}
+        
+        <div className="space-y-4">
+          <div className="w-full bg-slate-100 h-5 rounded-2xl overflow-hidden p-1 border border-slate-200">
+             <div 
+               className="bg-gradient-to-r from-teal-600 to-teal-400 h-full rounded-xl transition-all duration-300 ease-out shadow-sm"
+               style={{ width: `${progress}%` }}
+             />
+          </div>
+          <div className="flex justify-between items-center px-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Synchronizing Stream</span>
+            <span className="text-[10px] font-black text-teal-600 uppercase">{progress}%</span>
+          </div>
+        </div>
+        
+        <div className="mt-10 pt-6 border-t border-slate-50">
+          <div className="flex items-center justify-center gap-2 text-slate-400">
+            <ShieldCheck size={14} />
+            <p className="text-[9px] font-bold uppercase tracking-widest leading-none">Actual Secure Bit-Stream Loading</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const NavItem = ({ icon, label, active, badge, onClick }) => (
   <button

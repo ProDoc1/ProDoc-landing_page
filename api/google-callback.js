@@ -21,7 +21,7 @@ export default async function handler(req, res) {
         }
 
         const googleUser = await googleResponse.json();
-        const { email, name, sub: googleId } = googleUser;
+        const { email, name, sub: googleId, email_verified: googleVerified } = googleUser;
 
         if (!email) return res.status(400).json({ error: 'Email not found in Google account' });
 
@@ -35,11 +35,24 @@ export default async function handler(req, res) {
                 const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
                 const insertResult = await sql`
-                INSERT INTO users (full_name, email, password)
-                VALUES (${name}, ${email}, ${hashedPassword})
-                RETURNING id, full_name, email;
+                INSERT INTO users (full_name, email, password, email_verified)
+                VALUES (${name}, ${email}, ${hashedPassword}, ${googleVerified || false})
+                RETURNING id, full_name, email, email_verified;
             `;
                 user = insertResult.rows[0];
+            } else if (googleVerified && !user.email_verified) {
+                // If existing user is not verified but Google says they are, update them
+                await sql`UPDATE users SET email_verified = true WHERE id = ${user.id}`;
+                user.email_verified = true;
+            }
+
+            // Also sync to patients table if it exists
+            if (googleVerified) {
+                try {
+                    await sql`UPDATE patients SET email_verified = true WHERE email = ${email}`;
+                } catch (e) {
+                    console.warn("Could not sync to patients table:", e.message);
+                }
             }
 
             const appToken = jwt.sign(
@@ -51,16 +64,21 @@ export default async function handler(req, res) {
             return res.status(200).json({
                 success: true,
                 token: appToken,
-                user: { id: user.id, fullName: user.full_name, email: user.email },
+                user: { id: user.id, fullName: user.full_name, email: user.email, email_verified: user.email_verified },
                 role: 'patient'
             });
 
         } else if (role === 'doctor') {
             const result = await sql`SELECT * FROM doctors WHERE contact_email = ${email}`;
-            const doctor = result.rows[0];
+            let doctor = result.rows[0];
 
             if (!doctor) {
                 return res.status(404).json({ error: "No doctor account found with this email. Please register via standard process." });
+            }
+
+            if (googleVerified && !doctor.email_verified) {
+                await sql`UPDATE doctors SET email_verified = true WHERE doctor_id = ${doctor.doctor_id}`;
+                doctor.email_verified = true;
             }
 
             const appToken = jwt.sign(

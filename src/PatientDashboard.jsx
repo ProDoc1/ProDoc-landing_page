@@ -468,6 +468,15 @@ const PatientDashboard = ({
   const [openReportMenu, setOpenReportMenu] = useState(null);
   const [notification, setNotification] = useState(null);
 
+  const [docAccessState, setDocAccessState] = useState({
+    active: false,
+    progress: 0,
+    status: '',
+    speed: 0,
+    downloaded: 0,
+    total: 0
+  });
+
   const [currentUser, setCurrentUser] = useState({
     id: user?.id || localStorage.getItem('patientId') || null,
     fullName: user?.fullName || user?.name || '',
@@ -704,28 +713,74 @@ const PatientDashboard = ({
       alert("No document URL provided for this record.");
       return;
     }
-    try {
-      if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg')) {
-        const privateKey = localStorage.getItem(`private_key_${currentUser.email || user.email}`);
-        if (!privateKey) {
-          alert("Private key not found. Cannot decrypt this report.");
-          return;
+
+    const openDocument = async (pKey) => {
+      setDocAccessState({ active: true, progress: 5, status: 'Securing Link...' });
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', `/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`, true);
+      xhr.responseType = 'blob';
+
+      const startTime = performance.now();
+      xhr.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const loaded = e.loaded;
+          const total = e.total;
+          const elapsed = (performance.now() - startTime) / 1000;
+          const speed = elapsed > 0 ? (loaded / elapsed) : 0;
+          const percent = Math.round((loaded / total) * 80) + 5;
+          setDocAccessState({ 
+            active: true, 
+            progress: percent, 
+            status: 'Transferring Secure Health Data...',
+            speed,
+            downloaded: loaded,
+            total: total
+          });
         }
-        
-        const response = await fetch(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`);
-        const encryptedBlob = await response.blob();
-        
-        const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
-        
-        const decryptedBlob = await decryptFile(encryptedBlob, privateKey, '', mimeType);
-        const localUrl = URL.createObjectURL(decryptedBlob);
-        window.open(localUrl);
-      } else {
-        window.open(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`, '_blank');
+      };
+
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          try {
+            setDocAccessState({ active: true, progress: 90, status: 'Decrypting PGP Vault...' });
+            const encryptedBlob = xhr.response;
+            const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
+            const decryptedBlob = await decryptFile(encryptedBlob, pKey, '', mimeType);
+            
+            setDocAccessState({ active: true, progress: 100, status: 'Verified. Opening...' });
+            const localUrl = URL.createObjectURL(decryptedBlob);
+            window.open(localUrl);
+            
+            setTimeout(() => setDocAccessState({ active: false, progress: 0, status: '' }), 800);
+          } catch (error) {
+            setDocAccessState({ active: false, progress: 0, status: '' });
+            console.error("Decryption failed:", error);
+            alert("Failed to decrypt report. Ensure your account is properly synced.");
+          }
+        } else {
+          setDocAccessState({ active: false, progress: 0, status: '' });
+          alert("Failed to download document.");
+        }
+      };
+
+      xhr.onerror = () => {
+        setDocAccessState({ active: false, progress: 0, status: '' });
+        alert("Network error occurred.");
+      };
+
+      xhr.send();
+    };
+
+    if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg')) {
+      const privateKey = localStorage.getItem(`private_key_${currentUser.email || user.email}`);
+      if (!privateKey) {
+        alert("Your secure decryption key was not found. Please re-login to sync your security data.");
+        return;
       }
-    } catch (error) {
-      console.error("Decryption failed:", error);
-      alert("Failed to decrypt report. Ensure your password is correct.");
+      openDocument(privateKey);
+    } else {
+      window.open(`/api/proxy-blob?url=${encodeURIComponent(reportUrl)}`, '_blank');
     }
   };
 
@@ -1080,8 +1135,15 @@ const PatientDashboard = ({
           {activeTab === 'overview' && (
             <div className="space-y-10">
               <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-lg">
-                <h2 className="text-3xl font-bold mb-2">Welcome back, {(currentUser?.fullName || currentUser?.name || 'Patient').split(' ')[0]}! </h2>
-                <p className="text-slate-300">Manage your medical records and doctor reviews in one place.</p>
+                <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                  Welcome back, {(currentUser?.fullName || currentUser?.name || 'Patient').split(' ')[0]}!
+                  {currentUser.email_verified && (
+                    <span className="p-1 bg-white/20 text-white rounded-full border border-white/30 flex items-center justify-center shrink-0" title="Verified Account">
+                      <Verified size={18} className="fill-white text-teal-600" />
+                    </span>
+                  )}
+                </h2>
+                <p className="text-teal-50">Manage your medical records and doctor reviews in one place.</p>
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -1834,6 +1896,86 @@ const PatientDashboard = ({
           onClose={() => setNotification(null)} 
         />
       )}
+
+      {docAccessState.active && (
+        <DocumentAccessProgress
+          progress={docAccessState.progress}
+          status={docAccessState.status}
+          speed={docAccessState.speed}
+          downloaded={docAccessState.downloaded}
+          total={docAccessState.total}
+        />
+      )}
+    </div>
+  );
+};
+
+const DocumentAccessProgress = ({ progress, status, speed, downloaded, total }) => {
+  const speedMB = (speed / (1024 * 1024)).toFixed(2);
+  const downloadedMB = (downloaded / (1024 * 1024)).toFixed(2);
+  const speedText = speed > 1024 * 1024 ? `${speedMB} MB/s` : `${(speed / 1024).toFixed(1)} KB/s`;
+  const eta = total > 0 && speed > 0 ? Math.ceil((total - downloaded) / speed) : null;
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
+      <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 text-center animate-scaleIn border border-slate-100 overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
+          <div 
+            className="h-full bg-teal-500 transition-all duration-500" 
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        
+        <div className="w-24 h-24 bg-teal-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 relative rotate-3 group">
+           <div className="absolute inset-0 bg-teal-100/30 rounded-[2.5rem] animate-pulse" />
+           <Loader2 className="animate-spin text-teal-600 group-hover:text-teal-400 transition-colors" size={48} />
+           <div className="absolute inset-0 flex items-center justify-center">
+              <Lock size={20} className="text-teal-600/20" />
+           </div>
+        </div>
+        
+        <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">Digital Handshake</h3>
+        <p className="text-teal-600 text-[10px] font-black uppercase tracking-[0.2em] mb-4 animate-pulse">{status}</p>
+        
+        {total > 0 && (
+          <div className="flex justify-center gap-10 mb-8 py-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Speed</p>
+              <p className="text-sm font-black text-slate-700">{speedText}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Volume</p>
+              <p className="text-sm font-black text-slate-700">{downloadedMB}MB</p>
+            </div>
+            {eta !== null && (
+              <div className="text-center">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ETA</p>
+                <p className="text-sm font-black text-slate-700">{eta}s</p>
+              </div>
+            )}
+          </div>
+        )}
+        
+        <div className="space-y-4">
+          <div className="w-full bg-slate-100 h-5 rounded-2xl overflow-hidden p-1 border border-slate-200">
+             <div 
+               className="bg-gradient-to-r from-teal-600 to-teal-400 h-full rounded-xl transition-all duration-300 ease-out shadow-sm"
+               style={{ width: `${progress}%` }}
+             />
+          </div>
+          <div className="flex justify-between items-center px-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Synchronizing Stream</span>
+            <span className="text-[10px] font-black text-teal-600 uppercase">{progress}%</span>
+          </div>
+        </div>
+        
+        <div className="mt-10 pt-6 border-t border-slate-50">
+          <div className="flex items-center justify-center gap-2 text-slate-400">
+            <ShieldCheck size={14} />
+            <p className="text-[9px] font-bold uppercase tracking-widest leading-none">Authentic Secure Bit-Stream Loading</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
