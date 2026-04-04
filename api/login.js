@@ -36,12 +36,12 @@ export default async function handler(req, res) {
             const token = jwt.sign(
                 { id: user.id, email: user.email, role: 'patient', fullName: user.full_name, publicKey: user.public_key },
                 JWT_SECRET,
-                { expiresIn: '30d' }
+                { expiresIn: '1h' }
             );
 
             return res.status(200).json({
                 success: true,
-                user: { id: user.id, name: user.full_name, email: user.email, email_verified: user.email_verified, public_key: user.public_key },
+                user: { id: user.id, name: user.full_name, email: user.email, email_verified: user.email_verified, public_key: user.public_key, private_key: user.private_key },
                 token
             });
 
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
             const token = jwt.sign(
                 { id: doctor.doctor_id, email: doctor.contact_email, role: 'doctor', fullName: doctor.full_name },
                 JWT_SECRET,
-                { expiresIn: '30d' }
+                { expiresIn: '1h' }
             );
 
             return res.status(200).json({
@@ -96,7 +96,7 @@ export default async function handler(req, res) {
             const token = jwt.sign(
                 { id: admin.id, username: admin.username, role: 'admin' },
                 JWT_SECRET,
-                { expiresIn: '24h' }
+                { expiresIn: '1h' }
             );
 
             return res.status(200).json({

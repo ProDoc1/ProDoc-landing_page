@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'prodoc-secure-secret-key-2024';
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { fullName, email, password, publicKey } = req.body;
+    const { fullName, email, password, publicKey, privateKey } = req.body;
 
     if (!fullName || !email || !password) {
         return res.status(400).json({ error: 'All fields are required' });
@@ -22,9 +22,9 @@ export default async function handler(req, res) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const insertResult = await sql`
-            INSERT INTO users (full_name, email, password, public_key)
-            VALUES (${fullName}, ${email}, ${hashedPassword}, ${publicKey || null})
-            RETURNING id, full_name, email, public_key;
+            INSERT INTO users (full_name, email, password, public_key, private_key)
+            VALUES (${fullName}, ${email}, ${hashedPassword}, ${publicKey || null}, ${privateKey || null})
+            RETURNING id, full_name, email, public_key, private_key;
         `;
 
         const user = insertResult.rows[0];

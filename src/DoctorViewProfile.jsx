@@ -19,9 +19,14 @@ import {
 } from 'lucide-react';
 import DoctorRating from './components/DoctorRating';
 
-const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigateLogin, onNavigateSignupPage }) => {
-    const [doctor, setDoctor] = useState(null);
-    const [loading, setLoading] = useState(true);
+const DoctorViewProfile = ({ doctorData, doctorId: propDoctorId, onBack, currentUser, onLogout, onNavigateLogin, onNavigateSignupPage }) => {
+    // Robustly handle both full objects and just IDs for consistency
+    const initialDoctor = (doctorData && typeof doctorData === 'object') ? doctorData : null;
+    const doctorId = initialDoctor ? initialDoctor.doctor_id : (doctorData || propDoctorId);
+    
+    const [doctor, setDoctor] = useState(initialDoctor);
+    const [profileLoading, setProfileLoading] = useState(!initialDoctor);
+    const [reviewsLoading, setReviewsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSaved, setIsSaved] = useState(false);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -72,30 +77,37 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
         }
     }, [doctorId, currentUser]);
 
-    const fetchDoctorData = async (showLoading = true) => {
-        try {
-            if (showLoading) setLoading(true);
-            const [profileResponse, reviewsResponse] = await Promise.all([
-                fetch(`/api/doctors?id=${doctorId}`),
-                fetch(`/api/reviews?doctorId=${doctorId}`)
-            ]);
+    const fetchDoctorData = async () => {
+        setProfileLoading(true);
+        setReviewsLoading(true);
+        
+        // Fetch Profile
+        fetch(`/api/doctors?id=${doctorId}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch doctor profile');
+                return res.json();
+            })
+            .then(data => {
+                setDoctor(data);
+                setProfileLoading(false);
+            })
+            .catch(err => {
+                console.error('Error fetching doctor profile:', err);
+                setError(err.message);
+                setProfileLoading(false);
+            });
 
-            if (!profileResponse.ok) {
-                throw new Error('Failed to fetch doctor profile');
-            }
-            const profileData = await profileResponse.json();
-            setDoctor(profileData);
-
-            if (reviewsResponse.ok) {
-                const reviewsData = await reviewsResponse.json();
-                setReviews(reviewsData);
-            }
-        } catch (err) {
-            console.error('Error fetching doctor data:', err);
-            setError(err.message);
-        } finally {
-            if (showLoading) setLoading(false);
-        }
+        // Fetch Reviews (Don't block profile)
+        fetch(`/api/reviews?doctorId=${doctorId}`)
+            .then(res => res.ok ? res.json() : [])
+            .then(data => {
+                setReviews(data);
+                setReviewsLoading(false);
+            })
+            .catch(err => {
+                console.error('Error fetching reviews:', err);
+                setReviewsLoading(false);
+            });
     };
 
     const hasViewed = useRef(false);
@@ -112,7 +124,7 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
         }
     }, [doctorId]);
 
-    if (loading) {
+    if (profileLoading && !doctor) {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
                 <div className="flex flex-col items-center">
@@ -120,13 +132,13 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                         <div className="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
                         <div className="absolute inset-0 border-4 border-teal-500 rounded-full border-t-transparent animate-spin"></div>
                     </div>
-                    <p className="mt-4 text-slate-500 font-medium animate-pulse">Loading profile details...</p>
+                    <p className="mt-4 text-slate-500 font-medium animate-pulse">Initializing profile...</p>
                 </div>
             </div>
         );
     }
 
-    if (error || !doctor) {
+    if (error && !doctor) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-sm w-full">
@@ -329,7 +341,17 @@ const DoctorViewProfile = ({ doctorId, onBack, currentUser, onLogout, onNavigate
                                 </span>
                             </div>
 
-                            {totalRatingsCount > 0 ? (
+                            {reviewsLoading ? (
+                                <div className="space-y-6 animate-pulse">
+                                    <div className="h-40 bg-slate-50 rounded-2xl border border-slate-100"></div>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="h-14 bg-slate-50 rounded-xl"></div>
+                                        <div className="h-14 bg-slate-50 rounded-xl"></div>
+                                        <div className="h-14 bg-slate-50 rounded-xl"></div>
+                                    </div>
+                                    <div className="h-32 bg-slate-50 rounded-2xl"></div>
+                                </div>
+                            ) : totalRatingsCount > 0 ? (
                                 <>
                                     <div className="flex flex-col md:flex-row gap-8 mb-10">
                                         <div className="md:w-1/3 flex flex-col items-center justify-center p-8 bg-gradient-to-b from-slate-50 to-white rounded-2xl border border-slate-200 shadow-sm text-center">

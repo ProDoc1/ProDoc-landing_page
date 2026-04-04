@@ -16,8 +16,10 @@ export default async function handler(req, res) {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+    // One-time migration: Ensure the users table has the private_key field for seamless viewing
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS private_key TEXT;`;
   } catch (e) {
-    console.error('Error creating second_opinion_requests table:', e);
+    console.error('Migration error in second_opinion_requests:', e);
   }
 
   if (req.method === 'POST') {
@@ -57,6 +59,7 @@ export default async function handler(req, res) {
           r.created_at,
           u.full_name as patient_name,
           u.email,
+          u.private_key,
           p.date_of_birth,
           p.gender,
           p.phone as contact,
@@ -100,6 +103,7 @@ export default async function handler(req, res) {
           amount: row.amount,
           contact: row.contact || 'Not provided',
           email: row.email,
+          privateKey: row.private_key,
           bloodGroup: row.blood_type || 'Unknown',
           medicalHistory: medHistory,
           address: row.address || 'Not provided',

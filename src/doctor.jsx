@@ -66,7 +66,7 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration, onNa
 
     const fetchDoctors = async () => {
       try {
-        const response = await fetch(`/api/doctors?t=${Date.now()}`);
+        const response = await fetch('/api/doctors');
         if (!response.ok) throw new Error("API Error");
         const data = await response.json();
 
@@ -94,61 +94,68 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration, onNa
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const availableSpecialties = (doctors || []).reduce((acc, doc) => {
-    const spec = doc?.specialty?.trim();
-    if (spec && !acc.find(existing => existing.toLowerCase() === spec.toLowerCase())) {
-      acc.push(spec);
-    }
-    return acc;
-  }, []);
-
-  const specialties = ['All', ...availableSpecialties.sort()];
-
-  const availableHospitals = (doctors || []).reduce((acc, doc) => {
-    const docHospitals = doc?.associated_hospitals || [];
-    docHospitals.forEach(h => {
-      const name = h.name?.trim();
-      if (name && !acc.find(existing => existing.toLowerCase() === name.toLowerCase())) {
-        acc.push(name);
+  const specialties = React.useMemo(() => {
+    const available = (doctors || []).reduce((acc, doc) => {
+      const spec = doc?.specialty?.trim();
+      if (spec && !acc.find(existing => existing.toLowerCase() === spec.toLowerCase())) {
+        acc.push(spec);
       }
-    });
-    return acc;
-  }, []);
+      return acc;
+    }, []);
+    return ['All', ...available.sort()];
+  }, [doctors]);
 
-  const hospitalSuggestions = filters.hospitalSearch.trim() === ''
-    ? availableHospitals
-    : availableHospitals.filter(h =>
-      h.toLowerCase().includes(filters.hospitalSearch.toLowerCase()) &&
-      filters.hospitalSearch.toLowerCase() !== h.toLowerCase()
+  const availableHospitals = React.useMemo(() => {
+    return (doctors || []).reduce((acc, doc) => {
+      const docHospitals = doc?.associated_hospitals || [];
+      docHospitals.forEach(h => {
+        const name = h.name?.trim();
+        if (name && !acc.find(existing => existing.toLowerCase() === name.toLowerCase())) {
+          acc.push(name);
+        }
+      });
+      return acc;
+    }, []);
+  }, [doctors]);
+
+  const hospitalSuggestions = React.useMemo(() => {
+    const search = filters.hospitalSearch.trim().toLowerCase();
+    if (search === '') return availableHospitals;
+    return availableHospitals.filter(h =>
+      h.toLowerCase().includes(search) &&
+      search !== h.toLowerCase()
     );
+  }, [availableHospitals, filters.hospitalSearch]);
 
-  const filteredDoctors = (doctors || []).filter(doc => {
-    const searchLower = (searchQuery || '').toLowerCase().trim();
-    const name = (doc?.full_name || '').toLowerCase();
-    const specialty = (doc?.specialty || '').toLowerCase();
+  const filteredDoctors = React.useMemo(() => {
+    return (doctors || []).filter(doc => {
+      const searchLower = (searchQuery || '').toLowerCase().trim();
+      const name = (doc?.full_name || '').toLowerCase();
+      const specialty = (doc?.specialty || '').toLowerCase();
 
-    const matchesSearch = searchLower === '' ||
-      name.includes(searchLower) ||
-      specialty.includes(searchLower);
+      const matchesSearch = searchLower === '' ||
+        name.includes(searchLower) ||
+        specialty.includes(searchLower);
 
-    const matchesSpecialty = filters.specialty === 'All' || specialty === filters.specialty.toLowerCase();
+      const matchesSpecialty = filters.specialty === 'All' || specialty === filters.specialty.toLowerCase();
 
-    const docHospitals = doc?.associated_hospitals || [];
-    const hospitalFilter = (filters.hospitalSearch || '').toLowerCase().trim();
-    const matchesHospital = hospitalFilter === '' ||
-      docHospitals.some(h => (h.name || '').toLowerCase().includes(hospitalFilter));
+      const docHospitals = doc?.associated_hospitals || [];
+      const hospitalFilter = (filters.hospitalSearch || '').toLowerCase().trim();
+      const matchesHospital = hospitalFilter === '' ||
+        docHospitals.some(h => (h.name || '').toLowerCase().includes(hospitalFilter));
 
-    const matchesAvailability = filters.availability === 'All' ||
-      doc.department_type === filters.availability ||
-      (doc.department_type === 'Both' && filters.availability !== 'Both');
+      const matchesAvailability = filters.availability === 'All' ||
+        doc.department_type === filters.availability ||
+        (doc.department_type === 'Both' && filters.availability !== 'Both');
 
-    const gender = doc?.gender || '';
-    const matchesGender = filters.gender === 'All' || gender === filters.gender;
+      const gender = doc?.gender || '';
+      const matchesGender = filters.gender === 'All' || gender === filters.gender;
 
-    const matchesSecondOpinion = !filters.secondOpinion || doc.second_opinion_available === true;
+      const matchesSecondOpinion = !filters.secondOpinion || doc.second_opinion_available === true;
 
-    return matchesSearch && matchesSpecialty && matchesHospital && matchesAvailability && matchesGender && matchesSecondOpinion;
-  });
+      return matchesSearch && matchesSpecialty && matchesHospital && matchesAvailability && matchesGender && matchesSecondOpinion;
+    });
+  }, [doctors, searchQuery, filters]);
 
   const highlightMatch = (text, query) => {
     if (!text || !query) return text || '';
@@ -166,9 +173,9 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration, onNa
       {/* Dynamic Fluid Background */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-slate-50/50">
         {/* Animated Orbs */}
-        <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-teal-200/30 mix-blend-multiply filter blur-[100px] opacity-80 animate-pulse" style={{ animationDuration: '8s' }}></div>
-        <div className="absolute top-[30%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-cyan-200/30 mix-blend-multiply filter blur-[100px] opacity-80 animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }}></div>
-        <div className="absolute bottom-[-20%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-emerald-100/40 mix-blend-multiply filter blur-[120px] opacity-70 animate-pulse" style={{ animationDuration: '10s', animationDelay: '4s' }}></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-teal-200/30 mix-blend-multiply filter blur-[60px] opacity-80 animate-pulse" style={{ animationDuration: '8s' }}></div>
+        <div className="absolute top-[30%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-cyan-200/30 mix-blend-multiply filter blur-[60px] opacity-80 animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }}></div>
+        <div className="absolute bottom-[-20%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-emerald-100/40 mix-blend-multiply filter blur-[80px] opacity-70 animate-pulse" style={{ animationDuration: '10s', animationDelay: '4s' }}></div>
 
         {/* Subtle dot pattern map for structure */}
         <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:40px_40px] opacity-30"></div>
@@ -420,7 +427,7 @@ const DoctorsPage = ({ onBack, onViewProfile, onNavigateDoctorRegistration, onNa
                         ) : <div></div>}
 
                         <button
-                          onClick={() => onViewProfile(doc.doctor_id)}
+                          onClick={() => onViewProfile(doc)}
                           className="bg-slate-50/80 backdrop-blur-xl border border-slate-200 text-slate-900 font-bold px-8 py-3 rounded-[1.25rem] transition-all duration-300 flex items-center gap-2 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:bg-white hover:border-slate-300 group/btn"
                         >
                           View Profile <MoveRight size={16} className="group-hover/btn:translate-x-1.5 transition-transform text-teal-600" />

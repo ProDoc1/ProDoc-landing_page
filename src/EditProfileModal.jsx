@@ -117,12 +117,12 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
   ];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center p-1 sm:p-4 pt-24 md:pt-36 pb-32 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       
-      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
-        <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
+          <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-6 sm:px-8 py-5 sm:py-6 text-white flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-2xl font-bold">Edit Profile</h2>
             <p className="text-teal-100 text-sm mt-1">Update your personal information</p>
@@ -158,7 +158,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
             </div>
           </div>
 
-          <div className="md:hidden px-6 pt-6 shrink-0">
+          <div className="md:hidden px-4 pt-4 shrink-0">
             <select 
               value={activeSection}
               onChange={(e) => setActiveSection(e.target.value)}
@@ -170,7 +170,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
             </select>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {activeSection === 'personal' && (
@@ -179,7 +179,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
                     <User size={20} className="text-teal-600" /> Personal Information
                   </h3>
                   
-                  <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                  <div className="flex flex-col sm:flex-row items-center gap-6 p-4 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200">
                     <div className="relative group">
                       <div className="w-24 h-24 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 text-3xl font-bold overflow-hidden border-4 border-white shadow-md">
                         {formData.imageUrl ? (
@@ -203,11 +203,11 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
                         className="hidden" 
                       />
                     </div>
-                    <div>
+                    <div className="text-center sm:text-left">
                       <h4 className="font-bold text-slate-800">Profile Photo</h4>
                       <p className="text-sm text-slate-500 mb-3">Upload a clear photo of yourself</p>
                       {errors.photo && <p className="text-red-500 text-xs mb-2 font-bold">{errors.photo}</p>}
-                      <div className="flex gap-2">
+                      <div className="flex justify-center sm:justify-start gap-2">
                         <button 
                           type="button" 
                           onClick={() => fileInputRef.current?.click()}
@@ -342,9 +342,9 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200 mt-8 sticky bottom-0 bg-white">
-                <button type="button" onClick={onClose} className="px-6 py-3 border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancel</button>
-                <button type="submit" disabled={isLoading} className="px-6 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4 pt-6 border-t border-slate-200 mt-8 sticky bottom-0 bg-white">
+                <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-3 border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancel</button>
+                <button type="submit" disabled={isLoading} className="w-full sm:w-auto px-8 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-teal-100">
                   {isLoading ? <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving...</> : <><Save size={20} /> Save Changes</>}
                 </button>
               </div>

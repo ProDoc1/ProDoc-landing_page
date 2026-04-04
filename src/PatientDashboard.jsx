@@ -76,7 +76,7 @@ const RecordTypeModal = ({ isOpen, onClose, onSelect }) => {
   ];
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[150] flex items-start justify-center p-2 sm:p-4 pt-28 md:pt-36 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
@@ -140,7 +140,7 @@ const Toast = ({ message, type = 'success', onClose }) => {
 const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, itemTitle }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[200] flex items-start justify-center p-2 sm:p-4 pt-32 md:pt-40 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="p-8 text-center">
@@ -285,7 +285,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center p-2 sm:p-4 pt-28 md:pt-36 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
@@ -469,23 +469,44 @@ const PatientDashboard = ({
   const [notification, setNotification] = useState(null);
 
   const [currentUser, setCurrentUser] = useState({
-    id: null,
-    fullName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    gender: '',
-    address: '',
-    emergencyContact: '',
-    bloodType: '',
-    allergies: [],
-    chronicConditions: [],
-    email_verified: false
+    id: user?.id || localStorage.getItem('patientId') || null,
+    fullName: user?.fullName || user?.name || '',
+    email: user?.email || localStorage.getItem('patientEmail') || '',
+    phone: user?.phone || '',
+    dateOfBirth: user?.dateOfBirth || '',
+    gender: user?.gender || '',
+    address: user?.address || '',
+    emergencyContact: user?.emergencyContact || '',
+    bloodType: user?.bloodType || '',
+    allergies: user?.allergies || [],
+    chronicConditions: user?.chronicConditions || [],
+    email_verified: user?.email_verified || false,
+    public_key: user?.public_key || null
   });
 
-  const [reviews, setReviews] = useState([]);
+  const [rawReviews, setRawReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewFilter, setReviewFilter] = useState('all');
+
+  const reviews = React.useMemo(() => {
+    return rawReviews.map(r => ({
+      id: r.id,
+      doctor: {
+        name: r.doctor_name || 'Doctor',
+        specialty: r.specialty || 'General',
+        hospital: "Verified Institution"
+      },
+      rating: r.rating,
+      communication: r.communication,
+      punctuality: r.punctuality,
+      treatment_plan: r.treatment_plan,
+      proof: r.proof_url || '',
+      text: r.text || '',
+      status: r.status || 'approved',
+      visitDate: r.visitdate || new Date().toLocaleDateString(),
+      createdAt: r.createdat || new Date().toLocaleDateString()
+    }));
+  }, [rawReviews]);
   const [reports, setReports] = useState([]);
   const [watchlist, setWatchlist] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null });
@@ -502,6 +523,11 @@ const PatientDashboard = ({
     const file = event.target.files[0];
     if (!file) return;
 
+    if (file.size > 25 * 1024 * 1024) {
+        alert("File is too large. Maximum limit is 25 MB per file.");
+        return;
+    }
+
     setUploading(true);
     try {
       let publicKey = currentUser?.public_key || user?.public_key;
@@ -509,17 +535,58 @@ const PatientDashboard = ({
       let filename = file.name;
       
       if (!publicKey) {
-        // Account lacks a permanent PGP key (e.g. Google OAuth signup). Generate a temporary session key so encryption can proceed.
-        alert("Account missing permanent keys. Generating a temporary session key so encryption will proceed...");
-        const { privateKey: tempPriv, publicKey: tempPub } = await import('openpgp').then(openpgp => openpgp.generateKey({
-          type: 'ecc',
-          curve: 'curve25519',
-          userIDs: [{ name: 'Test User', email: 'test@example.com' }]
-        }));
-        
-        publicKey = tempPub;
-        // Save the private key so the temporary file can still be viewed
-        localStorage.setItem(`private_key_${currentUser?.email || user?.email || 'test@example.com'}`, tempPriv);
+        const email = currentUser?.email || user?.email || 'test@example.com';
+        const name = currentUser?.fullName || user?.fullName || 'ProDoc User';
+
+        // Check localStorage FIRST — never overwrite an existing key
+        const existingPrivKey = localStorage.getItem(`private_key_${email}`);
+        if (existingPrivKey) {
+          // We have the private key locally but public_key wasn't returned from DB
+          // Re-sync public key — fall through to upload with a new temp pair
+          // Actually: we need the PUBLIC key matching this private key
+          // Re-generate a consistent pair only if there's truly nothing
+          // For now: sync and re-use existing (upload will need a public key)
+          // Best path: try to get the public key from existing private key
+          try {
+            const { readPrivateKey, getKeys } = await import('openpgp');
+            const privKeyObj = await readPrivateKey({ armoredKey: existingPrivKey });
+            publicKey = privKeyObj.toPublic().armor();
+            // Sync this to DB so it's never lost again
+            fetch('/api/patient/sync-keys', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, publicKey, privateKey: existingPrivKey })
+            }).catch(() => {});
+          } catch (e) {
+            console.warn('Could not extract public key from existing private key, generating new pair:', e);
+          }
+        }
+
+        if (!publicKey) {
+          // Truly no key anywhere — generate a fresh pair
+          const { privateKey: tempPriv, publicKey: tempPub } = await import('openpgp').then(openpgp => openpgp.generateKey({
+            type: 'ecc',
+            curve: 'curve25519',
+            userIDs: [{ name, email }]
+          }));
+          
+          publicKey = tempPub;
+          // Only write to localStorage if nothing was there before
+          if (!existingPrivKey) {
+            localStorage.setItem(`private_key_${email}`, tempPriv);
+          }
+          
+          // Persist to DB
+          try {
+            await fetch('/api/patient/sync-keys', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, publicKey: tempPub, privateKey: tempPriv })
+            });
+          } catch (e) {
+            console.warn("Failed to persist newly generated keys:", e);
+          }
+        }
       }
       
       const encryptedBlob = await encryptFile(file, publicKey);
@@ -551,12 +618,13 @@ const PatientDashboard = ({
       
       const newBlob = await response.json();
 
-      if (currentUser.id) {
+      if (currentUser.id || currentUser.email) {
         const dbResponse = await fetch('/api/medical-records', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             patientId: currentUser.id,
+            patientEmail: currentUser.email || user?.email,
             title: file.name,
             type: selectedUploadType,
             url: newBlob.url,
@@ -632,6 +700,10 @@ const PatientDashboard = ({
   };
 
   const handleViewReport = async (reportUrl, originalTitle) => {
+    if (!reportUrl) {
+      alert("No document URL provided for this record.");
+      return;
+    }
     try {
       if (reportUrl.endsWith('.gpg') || originalTitle?.endsWith('.gpg')) {
         const privateKey = localStorage.getItem(`private_key_${currentUser.email || user.email}`);
@@ -661,7 +733,7 @@ const PatientDashboard = ({
     const fetchDoctors = async () => {
       try {
         setLoadingDoctors(true);
-        const response = await fetch(`/api/doctors?t=${Date.now()}`);
+        const response = await fetch(`/api/doctors`);
         if (!response.ok) throw new Error("API Error");
         const data = await response.json();
 
@@ -682,6 +754,17 @@ const PatientDashboard = ({
 
 
   useEffect(() => {
+    if (isRecordTypeModalOpen || deleteConfirm.show || isPaymentModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isRecordTypeModalOpen, deleteConfirm.show, isPaymentModalOpen]);
+
+  useEffect(() => {
     if (user && (user.id || user.uid || user.email)) {
       setCurrentUser(prev => ({
         ...prev,
@@ -698,6 +781,40 @@ const PatientDashboard = ({
     }
   }, [user]);
 
+  // Sync keys to DB AND restore from DB on every login
+  useEffect(() => {
+    const email = currentUser?.email || user?.email;
+    if (!email) return;
+
+    const syncKeys = async () => {
+      const storedPriv = localStorage.getItem(`private_key_${email}`);
+      const storedPub = currentUser.public_key || user?.public_key;
+      
+      // If DB returned a private key (from login), restore it to localStorage
+      const dbPrivKey = currentUser.private_key || user?.private_key;
+      if (dbPrivKey && !storedPriv) {
+        localStorage.setItem(`private_key_${email}`, dbPrivKey);
+        console.log("Private key restored from DB to localStorage.");
+      }
+      
+      const keyToSync = storedPriv || dbPrivKey;
+      if (keyToSync) {
+        try {
+          await fetch('/api/patient/sync-keys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, publicKey: storedPub, privateKey: keyToSync })
+          });
+          console.log("Keys synced for seamless viewing.");
+        } catch (e) {
+          console.error("Key sync failed:", e);
+        }
+      }
+    };
+    
+    syncKeys();
+  }, [currentUser?.email, user?.email]);
+
   useEffect(() => {
     if (currentUser && currentUser.id) {
       setReviewsLoading(true);
@@ -706,24 +823,7 @@ const PatientDashboard = ({
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
-            const formattedReviews = data.map(r => ({
-              id: r.id,
-              doctor: {
-                name: r.doctor_name || 'Doctor',
-                specialty: r.specialty || 'General',
-                hospital: "Verified Institution"
-              },
-              rating: r.rating,
-              communication: r.communication,
-              punctuality: r.punctuality,
-              treatment_plan: r.treatment_plan,
-              proof: r.proof_url || '',
-              text: r.text || '',
-              status: r.status || 'approved',
-              visitDate: r.visitdate || new Date().toLocaleDateString(),
-              createdAt: r.createdat || new Date().toLocaleDateString()
-            }));
-            setReviews(formattedReviews);
+            setRawReviews(data);
           }
         })
         .catch(err => console.error("Error fetching patient reviews:", err))
@@ -756,7 +856,6 @@ const PatientDashboard = ({
       const queryParams = new URLSearchParams();
       if (patientId) queryParams.append('patientId', patientId);
       if (email) queryParams.append('email', email);
-      queryParams.append('t', Date.now()); // prevents browser from serving a cached version
 
       const response = await fetch(`/api/patient/profile?${queryParams.toString()}`);
 
@@ -1365,8 +1464,8 @@ const PatientDashboard = ({
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-3xl font-bold">24.5 MB</p>
-                      <p className="text-teal-100 text-sm">of 100 MB used</p>
+                      <p className="text-xl md:text-2xl font-bold">Maximum limit</p>
+                      <p className="text-teal-100 text-sm">is 25 MB per file</p>
                     </div>
                     <button
                       onClick={() => setIsRecordTypeModalOpen(true)}
@@ -1388,9 +1487,7 @@ const PatientDashboard = ({
                     />
                   </div>
                 </div>
-                <div className="mt-6 bg-white/20 rounded-full h-2">
-                  <div className="bg-white rounded-full h-2 w-1/4 transition-all"></div>
-                </div>
+
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -1455,21 +1552,11 @@ const PatientDashboard = ({
                             <p className="text-slate-600">{report.description}</p>
                           </div>
                           <div className="flex flex-wrap gap-3">
-                            <a 
-                              href={`/api/proxy-blob?url=${encodeURIComponent(report.url)}`}
-                              download 
-                              className="flex items-center gap-2 px-5 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-sm"
-                            >
-                              <Download size={18} /> Download
-                            </a>
                             <button 
                               onClick={() => handleViewReport(report.url, report.title)}
-                              className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                              className="flex items-center gap-2 px-8 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98]"
                             >
                               <FileText size={18} /> View Online
-                            </button>
-                            <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-colors">
-                              <Share size={18} /> Share
                             </button>
                             <div className="relative ml-auto text-right">
                               <button 

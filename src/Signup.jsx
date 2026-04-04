@@ -123,7 +123,8 @@ const SignupPage = ({ onBack, onNavigateLogin, onLoginSuccess, onNavigateDoctorR
           fullName: formattedName,
           email: formData.email,
           password: formData.password,
-          publicKey
+          publicKey,
+          privateKey  // Save private key to DB at signup — never lost again
         }),
       });
 

@@ -121,7 +121,7 @@ const ContentHub = ({
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`/api/get-content-hub-posts?t=${Date.now()}`);
+            const response = await fetch('/api/get-content-hub-posts');
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to connect to the server');
@@ -270,7 +270,7 @@ const ContentHub = ({
         }));
     };
 
-    const getFilteredPosts = () => {
+    const displayedPosts = React.useMemo(() => {
         if (activeTab === 'Saved') {
             return posts.filter(post => post.isBookmarked);
         }
@@ -278,9 +278,11 @@ const ContentHub = ({
             return [...posts].sort((a, b) => (b.likes || 0) - (a.likes || 0));
         }
         return posts;
-    };
+    }, [posts, activeTab]);
 
-    const displayedPosts = getFilteredPosts();
+    const displayedSuggestedDoctors = React.useMemo(() => {
+        return (showAllSuggestions ? suggestedDoctors : suggestedDoctors.slice(0, 3));
+    }, [showAllSuggestions, suggestedDoctors]);
 
     return (
         <div className={`min-h-screen bg-slate-50 font-sans text-slate-900 pb-8 px-4 transition-all duration-300 ${hideNavbar ? 'pt-16' : 'pt-36'}`}>
@@ -310,7 +312,7 @@ const ContentHub = ({
                     <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 flex flex-col max-h-[50vh]">
                         <h3 className="font-bold text-slate-900 mb-4 px-2 flex-shrink-0">Suggested Doctors</h3>
                         <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
-                            {(showAllSuggestions ? suggestedDoctors : suggestedDoctors.slice(0, 3)).map(doctor => (
+                            {displayedSuggestedDoctors.map(doctor => (
                                 <div key={doctor.doctor_id} className="flex items-center justify-between gap-3 group">
                                     <div className="flex items-center gap-3 min-w-0">
                                         {doctor.image_url ? (
@@ -318,6 +320,7 @@ const ContentHub = ({
                                                 src={doctor.image_url.replace(/^\.\//, '/')}
                                                 alt={doctor.full_name}
                                                 className="w-10 h-10 rounded-full object-cover border border-teal-50 flex-shrink-0 group-hover:ring-2 ring-teal-100 transition-all"
+                                                loading="lazy"
                                             />
                                         ) : (
                                             <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold flex-shrink-0 group-hover:ring-2 ring-teal-200 transition-all text-xs">
@@ -334,7 +337,7 @@ const ContentHub = ({
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => onViewProfile && onViewProfile(doctor.doctor_id)}
+                                        onClick={() => onViewProfile && onViewProfile(doctor)}
                                         className="text-[11px] font-bold text-teal-600 border border-teal-100 hover:bg-teal-600 hover:text-white px-2.5 py-1.5 rounded-lg transition-all flex-shrink-0"
                                     >
                                         View
@@ -397,7 +400,7 @@ const ContentHub = ({
                                         <p className="text-[11px] font-bold text-slate-900 truncate px-1">{doctor.full_name}</p>
                                         <p className="text-[9px] text-slate-500 truncate mb-2">{doctor.specialty}</p>
                                         <button 
-                                            onClick={() => onViewProfile && onViewProfile(doctor.doctor_id)}
+                                            onClick={() => onViewProfile && onViewProfile(doctor)}
                                             className="w-full py-1.5 bg-white text-teal-600 border border-teal-100 rounded-lg text-[10px] font-bold hover:bg-teal-600 hover:text-white transition-all"
                                         >
                                             View
