@@ -118,10 +118,25 @@ const RecordTypeModal = ({ isOpen, onClose, onSelect }) => {
 const ProblemDescriptionModal = ({ isOpen, onClose, onContinue, doctorName }) => {
   const [description, setDescription] = useState('');
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      const nav = document.querySelector('nav');
+      if (nav) nav.style.display = 'none';
+    } else {
+      const nav = document.querySelector('nav');
+      if (nav) nav.style.display = '';
+    }
+    return () => {
+      const nav = document.querySelector('nav');
+      if (nav) nav.style.display = '';
+    };
+  }, [isOpen]);
 
-  return (
-    <div className="fixed inset-0 z-[150] flex items-start justify-center p-2 sm:p-4 pt-28 md:pt-36 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
+  if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
@@ -156,7 +171,8 @@ const ProblemDescriptionModal = ({ isOpen, onClose, onContinue, doctorName }) =>
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -222,7 +238,7 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, itemTitle }) => {
 };
 
 
-const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00', serviceName = 'Second Opinion Request', userId }) => {
+const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 550.00', serviceName = 'Second Opinion Request', userId }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState('payment');
   const [saveCardDetails, setSaveCardDetails] = useState(false);
@@ -232,6 +248,20 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
   const [cvv, setCvv] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardType, setCardType] = useState('Unknown');
+
+  useEffect(() => {
+    if (isOpen) {
+      const nav = document.querySelector('nav');
+      if (nav) nav.style.display = 'none';
+    } else {
+      const nav = document.querySelector('nav');
+      if (nav) nav.style.display = '';
+    }
+    return () => {
+      const nav = document.querySelector('nav');
+      if (nav) nav.style.display = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -501,13 +531,22 @@ const PatientDashboard = ({
   onNavigateContentHub,
   onViewProfile
 }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const initialTab = localStorage.getItem('initialPatientDashboardTab');
+      if (initialTab) {
+        localStorage.removeItem('initialPatientDashboardTab');
+        return initialTab;
+      }
+    }
+    return 'overview';
+  });
   const [expandedReport, setExpandedReport] = useState(null);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editProfileSection, setEditProfileSection] = useState('personal');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isProblemModalOpen, setIsProblemModalOpen] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion', doctorId: null, doctorName: '', problemDescription: '' });
+  const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 550.00', serviceName: 'General Second Opinion', doctorId: null, doctorName: '', problemDescription: '' });
 
   const [reportFilter, setReportFilter] = useState('All');
   const [isRecordTypeModalOpen, setIsRecordTypeModalOpen] = useState(false);
@@ -572,6 +611,9 @@ const PatientDashboard = ({
 
   const [secondOpinionDoctors, setSecondOpinionDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [opinionSubTab, setOpinionSubTab] = useState('specialists');
+  const [patientFeedbacks, setPatientFeedbacks] = useState([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState(false);
 
   const [savedDoctors, setSavedDoctors] = useState([]);
   const [loadingSavedDoctors, setLoadingSavedDoctors] = useState(false);
@@ -982,6 +1024,20 @@ const PatientDashboard = ({
         if (!cancelled && Array.isArray(data)) setReports(data);
       })
       .catch(err => console.error("Error fetching medical records:", err));
+
+    // Fetch Patient Feedbacks for second opinion
+    setLoadingFeedbacks(true);
+    fetch(`/api/second-opinion-requests?patientId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled && Array.isArray(data)) {
+          setPatientFeedbacks(data);
+        }
+      })
+      .catch(err => console.error('Error fetching feedbacks:', err))
+      .finally(() => {
+        if (!cancelled) setLoadingFeedbacks(false);
+      });
 
     return () => {
       console.log('[PatientDashboard] Cleanup — cancelling fetch for userId:', userId);
@@ -1776,7 +1832,24 @@ const PatientDashboard = ({
                 <p className="text-teal-100">Get expert advice from top specialists worldwide.</p>
               </div>
 
-              <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-6">
+              {/* Second Opinion Tabs */}
+              <div className="flex gap-2 p-1.5 bg-slate-100/80 backdrop-blur-sm rounded-2xl w-fit mb-6">
+                <button
+                  onClick={() => setOpinionSubTab('specialists')}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${opinionSubTab === 'specialists' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Available Specialists
+                </button>
+                <button
+                  onClick={() => setOpinionSubTab('feedbacks')}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${opinionSubTab === 'feedbacks' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  My Feedbacks
+                </button>
+              </div>
+
+              {opinionSubTab === 'specialists' ? (
+                <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-6">
                 <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                   <Stethoscope className="text-teal-600" size={24} />
                   Available Specialists & Pricing
@@ -1797,7 +1870,7 @@ const PatientDashboard = ({
                       const specialty = doc.specialty || 'Specialist';
                       // TODO: rating and price are mock values; fetch from doctor_ratings aggregate when available
                       const rating = doc.rating || (Math.random() * (5.0 - 4.5) + 4.5).toFixed(1);
-                      const price = 'Rs. 2500';
+                      const price = 'Rs. 550';
                       const exp = doc.years_of_experience ? `${doc.years_of_experience}+ yrs` : '10+ yrs';
 
                       return (
@@ -1849,7 +1922,81 @@ const PatientDashboard = ({
                     })}
                   </div>
                 )}
-              </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm mb-6">
+                  <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <MessageSquare className="text-teal-600" size={24} />
+                    My Feedbacks
+                  </h3>
+                  {loadingFeedbacks ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-teal-500 border-r-transparent"></div>
+                    </div>
+                  ) : patientFeedbacks.length === 0 ? (
+                    <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                      <MessageSquare size={48} className="mx-auto mb-4 text-slate-300" />
+                      <p className="text-lg font-medium">No feedbacks yet.</p>
+                      <p className="text-sm">Once a doctor responds to your second opinion request, it will appear here.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-6">
+                      {patientFeedbacks.map((fb, idx) => (
+                        <div key={fb.id || idx} className="bg-slate-50 rounded-2xl p-6 border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold shrink-0 overflow-hidden">
+                                {fb.doctor_image ? (
+                                  <img src={fb.doctor_image} alt={fb.doctor_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  fb.doctor_name?.charAt(0) || 'D'
+                                )}
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-slate-800">{fb.doctor_name || 'Doctor'}</h4>
+                                <p className="text-xs text-slate-500">{fb.doctor_specialty || 'Specialist'}</p>
+                              </div>
+                            </div>
+                            <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              fb.status === 'Completed' ? 'bg-green-100 text-green-600' : 
+                              fb.status === 'Pending' ? 'bg-amber-100 text-amber-600' : 'bg-slate-200 text-slate-600'
+                            }`}>
+                              {fb.status}
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                              <p className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">Your Summary</p>
+                              <p className="text-sm text-slate-700 italic">{fb.problem_description || fb.summary || 'No summary provided.'}</p>
+                            </div>
+
+                            {fb.doctor_feedback ? (
+                              <div className="bg-teal-50 p-4 rounded-xl border border-teal-100 shadow-sm">
+                                <p className="text-xs font-bold text-teal-600 uppercase mb-2 tracking-wider flex items-center gap-1">
+                                  <Activity size={14} />
+                                  Doctor's Feedback
+                                </p>
+                                <p className="text-sm text-slate-800 leading-relaxed font-medium">{fb.doctor_feedback}</p>
+                              </div>
+                            ) : (
+                              <div className="bg-amber-50 p-4 rounded-xl border border-amber-100 flex items-center gap-3">
+                                <Clock size={18} className="text-amber-600 shrink-0" />
+                                <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">Waiting for Doctor's Response</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-slate-400">
+                            <span>Request ID: #{fb.id}</span>
+                            <span>{fb.created_at ? new Date(fb.created_at).toLocaleDateString() : 'Recent'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

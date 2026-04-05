@@ -25,12 +25,46 @@ export default async function handler(req, res) {
 
         try {
             if (type === 'doctor') {
-                await sql`DELETE FROM doctor_ratings WHERE doctor_id = ${userId}`;
-                await sql`DELETE FROM profile_views WHERE doctor_id = ${userId}`;
-                await sql`DELETE FROM doctors WHERE doctor_id = ${userId}`;
+                try {
+                    await sql`DELETE FROM doctor_ratings WHERE doctor_id = ${userId} OR user_id = ${userId}`;
+                } catch (e) { console.warn('doctor_ratings delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM profile_views WHERE doctor_id = ${userId}`;
+                } catch (e) { console.warn('profile_views delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM saved_doctors WHERE doctor_id = ${userId}`;
+                } catch (e) { console.warn('saved_doctors delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM manage_doctor_posts WHERE doctor_id = ${userId}`;
+                } catch (e) { console.warn('manage_doctor_posts delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM doctors WHERE doctor_id = ${userId}`;
+                } catch (e) { console.warn('doctors delete skip:', e.message); }
             } else {
-                await sql`DELETE FROM doctor_ratings WHERE user_id = ${userId}`;
-                await sql`DELETE FROM users WHERE id = ${userId}`; 
+                try {
+                    await sql`DELETE FROM doctor_ratings WHERE user_id = ${userId}`;
+                } catch (e) { console.warn('doctor_ratings delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM medical_records WHERE patient_id = ${userId}`;
+                } catch (e) { console.warn('medical_records delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM medical_records WHERE patient_email IN (SELECT email FROM users WHERE id = ${userId})`;
+                } catch (e) { console.warn('medical_records email delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM saved_doctors WHERE patient_id = ${userId}`;
+                } catch (e) { console.warn('saved_doctors delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM second_opinion_requests WHERE patient_id = ${userId}`;
+                } catch (e) { console.warn('second_opinion_requests delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM patients WHERE id = ${userId}`;
+                } catch (e) { console.warn('patients delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM patients WHERE email IN (SELECT email FROM users WHERE id = ${userId})`;
+                } catch (e) { console.warn('patients email delete skip:', e.message); }
+                try {
+                    await sql`DELETE FROM users WHERE id = ${userId}`; 
+                } catch (e) { console.warn('users delete skip:', e.message); }
             }
 
             return res.status(200).json({ message: `${type || 'User'} deleted successfully` });

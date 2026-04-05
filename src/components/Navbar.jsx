@@ -127,11 +127,9 @@ const Navbar = ({
       btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
       mobileToggle: "text-slate-800 hover:bg-slate-100",
       tubelightBg: "#14B8A6",
-      tubelightText: "text-white",
-      profileBtn: "bg-white text-slate-800 border-slate-200 hover:bg-slate-50",
     },
     admin: {
-      wrapper: `${baseWrapper} bg-white/80 backdrop-blur-xl border-slate-200 shadow-sm`,
+      wrapper: `${baseWrapper} bg-transparent border-transparent`,
       text: "text-slate-800",
       btnPrimary: "bg-teal-600 text-white hover:bg-teal-700",
       mobileToggle: "text-slate-800 hover:bg-slate-100",

@@ -79,29 +79,55 @@ const AdminDashboard = ({ onBack }) => {
         }
     };
     const deleteUser = async (userId, type = 'user') => {
-        setPopup({
-            show: true,
-            type: 'confirm',
-            title: 'Authorize Deletion',
-            message: `You are about to permanently remove this ${type} from the database. All associated historical records will be archived and hidden.`,
-            onConfirm: async () => {
-                try {
-                    const res = await fetch(`/api/admin-directory?userId=${userId}&type=${type}`, {
-                        method: 'DELETE'
-                    });
-                    if (!res.ok) throw new Error('Deletion sequence failed');
-                    fetchAllData();
-                } catch (err) {
-                    console.error(err);
-                    setPopup({
-                        show: true,
-                        type: 'error',
-                        title: 'Operation Conflict',
-                        message: 'A system error occurred during deletion. The record remains intact.'
-                    });
+        if (type === 'doctor') {
+            setPopup({
+                show: true,
+                type: 'warning',
+                title: '⚠️ DELETE DOCTOR ACCOUNT',
+                message: 'This will PERMANENTLY remove the doctor and ALL associated data including their profile, ratings, reviews, and medical posts. This action cannot be undone.',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`/api/admin-directory?userId=${userId}&type=${type}`, {
+                            method: 'DELETE'
+                        });
+                        if (!res.ok) throw new Error('Deletion sequence failed');
+                        fetchAllData();
+                    } catch (err) {
+                        console.error(err);
+                        setPopup({
+                            show: true,
+                            type: 'error',
+                            title: 'Operation Conflict',
+                            message: 'A system error occurred during deletion. The record remains intact.'
+                        });
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            setPopup({
+                show: true,
+                type: 'confirm',
+                title: 'Authorize Deletion',
+                message: `You are about to permanently remove this ${type} from the database. All associated historical records will be archived and hidden.`,
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`/api/admin-directory?userId=${userId}&type=${type}`, {
+                            method: 'DELETE'
+                        });
+                        if (!res.ok) throw new Error('Deletion sequence failed');
+                        fetchAllData();
+                    } catch (err) {
+                        console.error(err);
+                        setPopup({
+                            show: true,
+                            type: 'error',
+                            title: 'Operation Conflict',
+                            message: 'A system error occurred during deletion. The record remains intact.'
+                        });
+                    }
+                }
+            });
+        }
     };
 
     const moderateDoctorRequest = async (id, action) => {
@@ -623,14 +649,19 @@ const AdminDashboard = ({ onBack }) => {
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative"
+                            className={`bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-2xl relative ${popup.type === 'warning' ? 'ring-4 ring-red-500 ring-offset-4' : ''}`}
                         >
                             <div className="p-10 text-center">
-                                <div className={`w-20 h-20 rounded-[1.5rem] mx-auto mb-6 flex items-center justify-center ${popup.type === 'confirm' ? 'bg-amber-50 text-amber-500' : 'bg-red-50 text-red-500'
+                                <div className={`w-20 h-20 rounded-[1.5rem] mx-auto mb-6 flex items-center justify-center ${
+                                    popup.type === 'warning' ? 'bg-red-100 text-red-600' : 
+                                    popup.type === 'confirm' ? 'bg-amber-50 text-amber-500' : 'bg-red-50 text-red-500'
                                     }`}>
-                                    {popup.type === 'confirm' ? <AlertTriangle size={36} /> : <XCircle size={36} />}
+                                    {popup.type === 'warning' ? <AlertTriangle size={36} className="animate-pulse" /> : 
+                                     popup.type === 'confirm' ? <AlertTriangle size={36} /> : <XCircle size={36} />}
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900 mb-3 uppercase tracking-tight">{popup.title}</h3>
+                                <h3 className={`text-2xl font-black mb-3 uppercase tracking-tight ${
+                                    popup.type === 'warning' ? 'text-red-600' : 'text-slate-900'
+                                }`}>{popup.title}</h3>
                                 <p className="text-slate-500 font-medium leading-relaxed">{popup.message}</p>
                             </div>
 
@@ -641,13 +672,15 @@ const AdminDashboard = ({ onBack }) => {
                                 >
                                     Cancel
                                 </button>
-                                {popup.type === 'confirm' && (
+                                {(popup.type === 'confirm' || popup.type === 'warning') && (
                                     <button
                                         onClick={() => {
                                             popup.onConfirm?.();
                                             setPopup({ ...popup, show: false });
                                         }}
-                                        className="flex-1 py-6 font-black text-xs uppercase tracking-widest text-red-500 hover:bg-red-50 transition-colors border-l border-slate-50"
+                                        className={`flex-1 py-6 font-black text-xs uppercase tracking-widest hover:bg-red-50 transition-colors border-l border-slate-50 ${
+                                            popup.type === 'warning' ? 'text-red-600' : 'text-red-500'
+                                        }`}
                                     >
                                         Execute Deletion
                                     </button>

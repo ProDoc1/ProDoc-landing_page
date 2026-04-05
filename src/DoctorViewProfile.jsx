@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
     ShieldCheck,
     Star,
@@ -19,7 +20,7 @@ import {
 } from 'lucide-react';
 import DoctorRating from './components/DoctorRating';
 
-const DoctorViewProfile = ({ doctorData, doctorId: propDoctorId, onBack, currentUser, onLogout, onNavigateLogin, onNavigateSignupPage }) => {
+const DoctorViewProfile = ({ doctorData, doctorId: propDoctorId, onBack, currentUser, onLogout, onNavigateLogin, onNavigateSignupPage, onNavigateDashboard }) => {
     // Robustly handle both full objects and just IDs for consistency
     const initialDoctor = (doctorData && typeof doctorData === 'object') ? doctorData : null;
     const doctorId = initialDoctor ? initialDoctor.doctor_id : (doctorData || propDoctorId);
@@ -29,14 +30,28 @@ const DoctorViewProfile = ({ doctorData, doctorId: propDoctorId, onBack, current
     const [reviewsLoading, setReviewsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isSaved, setIsSaved] = useState(false);
-    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const [loginPromptType, setLoginPromptType] = useState(null);
     const [reviews, setReviews] = useState([]);
 
     const totalRatingsCount = reviews.length;
 
+    useEffect(() => {
+        if (loginPromptType) {
+            const nav = document.querySelector('nav');
+            if (nav) nav.style.display = 'none';
+        } else {
+            const nav = document.querySelector('nav');
+            if (nav) nav.style.display = '';
+        }
+        return () => {
+            const nav = document.querySelector('nav');
+            if (nav) nav.style.display = '';
+        }
+    }, [loginPromptType]);
+
     const handleSaveClick = async () => {
         if (!currentUser || !currentUser.id) {
-            setShowLoginPrompt(true);
+            setLoginPromptType('save');
             return;
         }
 
@@ -267,7 +282,17 @@ const DoctorViewProfile = ({ doctorData, doctorId: propDoctorId, onBack, current
                                                     <p className="text-sm text-slate-900 font-bold">{doctor.second_opinion_dates || 'Contact Clinic'}</p>
                                                 </div>
                                             </div>
-                                            <button className="w-full py-3 bg-white hover:bg-slate-200 text-teal-500 font-bold text-sm rounded-xl transition-colors shadow-lg shadow-teal-900/20">
+                                            <button 
+                                                onClick={() => {
+                                                    if (!currentUser || !currentUser.id) {
+                                                        setLoginPromptType('analysis');
+                                                    } else {
+                                                        localStorage.setItem('initialPatientDashboardTab', 'secondOpinion');
+                                                        if(onNavigateDashboard) onNavigateDashboard();
+                                                    }
+                                                }}
+                                                className="w-full py-3 bg-white hover:bg-slate-200 text-teal-500 font-bold text-sm rounded-xl transition-colors shadow-lg shadow-teal-900/20"
+                                            >
                                                 Request Analysis
                                             </button>
                                         </>
@@ -499,41 +524,49 @@ const DoctorViewProfile = ({ doctorData, doctorId: propDoctorId, onBack, current
                 </div>
             </div>
 
-            {showLoginPrompt && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            {loginPromptType && typeof document !== 'undefined' && createPortal(
+                <div className="fixed inset-0 z-[150] flex items-start pt-24 justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl relative animate-in zoom-in-95 duration-200">
                         <button
-                            onClick={() => setShowLoginPrompt(false)}
+                            onClick={() => setLoginPromptType(null)}
                             className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
                         >
                             <X size={18} />
                         </button>
 
                         <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-5">
-                            <Heart size={28} className="text-teal-600 fill-teal-100" />
+                            {loginPromptType === 'save' ? (
+                                <Heart size={28} className="text-teal-600 fill-teal-100" />
+                            ) : (
+                                <ShieldCheck size={28} className="text-teal-600 fill-teal-100" />
+                            )}
                         </div>
 
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">Save this Doctor?</h3>
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">
+                            {loginPromptType === 'save' ? 'Save this Doctor?' : 'Login Required'}
+                        </h3>
                         <p className="text-slate-500 mb-8 text-sm leading-relaxed">
-                            Login to your account to save this profile to your favorites list.
+                            {loginPromptType === 'save' 
+                                ? 'Login to your account to save this profile to your favorites list.'
+                                : 'Please login to your account to request a second opinion analysis.'}
                         </p>
 
                         <div className="space-y-3">
                             <button
-                                onClick={() => { setShowLoginPrompt(false); onNavigateLogin && onNavigateLogin(); }}
+                                onClick={() => { setLoginPromptType(null); onNavigateLogin && onNavigateLogin(); }}
                                 className="w-full bg-slate-900 text-white font-medium py-3 rounded-xl hover:bg-slate-800 transition-colors"
                             >
                                 Login
                             </button>
                             <button
-                                onClick={() => { setShowLoginPrompt(false); onNavigateSignupPage && onNavigateSignupPage(); }}
+                                onClick={() => { setLoginPromptType(null); onNavigateSignupPage && onNavigateSignupPage(); }}
                                 className="w-full bg-white text-slate-700 font-medium py-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
                             >
                                 Create Account
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>, document.body
             )}
         </div>
     );

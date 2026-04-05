@@ -47,84 +47,101 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: err.message });
     }
   } else if (req.method === 'GET') {
-    const { doctorId } = req.query;
+    const { doctorId, patientId } = req.query;
 
-    if (!doctorId) {
-      return res.status(400).json({ error: 'Doctor ID required' });
+    if (!doctorId && !patientId) {
+      return res.status(400).json({ error: 'Doctor ID or Patient ID required' });
     }
 
     try {
-      const result = await sql`
-        SELECT 
-          r.id,
-          r.patient_id,
-          r.status,
-          r.summary,
-          r.problem_description,
-          r.patient_name_fallback,
-          r.documents,
-          r.amount,
-          r.created_at,
-          u.full_name as patient_name,
-          u.email,
-          u.private_key,
-          COALESCE(p.gender, u.gender) as gender,
-          COALESCE(p.phone, u.phone) as contact,
-          p.date_of_birth,
-          p.blood_type,
-          p.allergies,
-          p.chronic_conditions,
-          p.address
-        FROM second_opinion_requests r
-        LEFT JOIN users u ON CAST(r.patient_id AS TEXT) = CAST(u.id AS TEXT)
-        LEFT JOIN patients p ON u.email = p.email
-        WHERE r.doctor_id = ${doctorId}
-        ORDER BY r.created_at DESC;
-      `;
+      if (doctorId) {
+        const result = await sql`
+          SELECT 
+            r.id,
+            r.patient_id,
+            r.status,
+            r.summary,
+            r.problem_description,
+            r.patient_name_fallback,
+            r.doctor_feedback,
+            r.documents,
+            r.amount,
+            r.created_at,
+            u.full_name as patient_name,
+            u.email,
+            u.private_key,
+            COALESCE(p.gender, u.gender) as gender,
+            COALESCE(p.phone, u.phone) as contact,
+            p.date_of_birth,
+            p.blood_type,
+            p.allergies,
+            p.chronic_conditions,
+            p.address
+          FROM second_opinion_requests r
+          LEFT JOIN users u ON CAST(r.patient_id AS TEXT) = CAST(u.id AS TEXT)
+          LEFT JOIN patients p ON u.email = p.email
+          WHERE r.doctor_id = ${doctorId}
+          ORDER BY r.created_at DESC;
+        `;
 
-      const formattedRequests = result.rows.map(row => {
-        let age = 'N/A';
-        if (row.date_of_birth) {
-          const dob = new Date(row.date_of_birth);
-          const ageDifMs = Date.now() - dob.getTime();
-          const ageDate = new Date(ageDifMs);
-          age = Math.abs(ageDate.getUTCFullYear() - 1970);
-        }
+        const formattedRequests = result.rows.map(row => {
+          let age = 'N/A';
+          if (row.date_of_birth) {
+            const dob = new Date(row.date_of_birth);
+            const ageDifMs = Date.now() - dob.getTime();
+            const ageDate = new Date(ageDifMs);
+            age = Math.abs(ageDate.getUTCFullYear() - 1970);
+          }
 
-        let medHistory = 'No medical history provided.';
-        const allergies = Array.isArray(row.allergies) ? row.allergies.join(', ') : '';
-        const conditions = Array.isArray(row.chronic_conditions) ? row.chronic_conditions.join(', ') : '';
+          let medHistory = 'No medical history provided.';
+          const allergies = Array.isArray(row.allergies) ? row.allergies.join(', ') : '';
+          const conditions = Array.isArray(row.chronic_conditions) ? row.chronic_conditions.join(', ') : '';
 
-        if (allergies || conditions) {
-          medHistory = `Allergies: ${allergies || 'None'}\nConditions: ${conditions || 'None'}`;
-        }
+          if (allergies || conditions) {
+            medHistory = `Allergies: ${allergies || 'None'}\nConditions: ${conditions || 'None'}`;
+          }
 
-        return {
-          id: row.id,
-          patientName: row.patient_name || row.patient_name_fallback || 'Unknown Patient',
-          age: age,
-          dateOfBirth: row.date_of_birth ? new Date(row.date_of_birth).toISOString().split('T')[0] : null,
-          gender: row.gender || 'Not specified',
-          dateRequired: new Date(row.created_at).toISOString().split('T')[0],
-          status: row.status,
-          summary: row.summary,
-          problemDescription: row.problem_description,
-          doctorFeedback: row.doctor_feedback,
-          documents: row.documents && row.documents.length > 0 ? row.documents : [],
-          amount: row.amount,
-          contact: row.contact || 'Not provided',
-          email: row.email,
-          privateKey: row.private_key,
-          bloodGroup: row.blood_type || null,
-          allergies: Array.isArray(row.allergies) ? row.allergies : [],
-          chronicConditions: Array.isArray(row.chronic_conditions) ? row.chronic_conditions : [],
-          medicalHistory: medHistory,
-          address: row.address || null,
-          patientId: row.patient_id
-        };
-      });
+          return {
+            id: row.id,
+            patientName: row.patient_name || row.patient_name_fallback || 'Unknown Patient',
+            age: age,
+            dateOfBirth: row.date_of_birth ? new Date(row.date_of_birth).toISOString().split('T')[0] : null,
+            gender: row.gender || 'Not specified',
+            dateRequired: new Date(row.created_at).toISOString().split('T')[0],
+            status: row.status,
+            summary: row.summary,
+            problemDescription: row.problem_description,
+            doctorFeedback: row.doctor_feedback,
+            documents: row.documents && row.documents.length > 0 ? row.documents : [],
+            amount: row.amount,
+            contact: row.contact || 'Not provided',
+            email: row.email,
+            privateKey: row.private_key,
+            bloodGroup: row.blood_type || null,
+            allergies: Array.isArray(row.allergies) ? row.allergies : [],
+            chronicConditions: Array.isArray(row.chronic_conditions) ? row.chronic_conditions : [],
+            medicalHistory: medHistory,
+            address: row.address || null,
+            patientId: row.patient_id
+          };
+        });
 
-      return res.status(200).json(formattedRequests);
+        return res.status(200).json(formattedRequests);
+      } else {
+        // Fetch for patient
+        const result = await sql`
+          SELECT 
+            r.*,
+            d.full_name as doctor_name,
+            d.specialty as doctor_specialty,
+            d.image_url as doctor_image
+          FROM second_opinion_requests r
+          LEFT JOIN doctors d ON CAST(r.doctor_id AS TEXT) = CAST(d.doctor_id AS TEXT)
+          WHERE r.patient_id = ${patientId}
+          ORDER BY r.created_at DESC;
+        `;
+        return res.status(200).json(result.rows);
+      }
     } catch (err) {
       console.error('GET /api/second-opinion-requests error:', err);
       return res.status(500).json({ error: err.message });

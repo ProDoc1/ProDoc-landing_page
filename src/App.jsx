@@ -730,6 +730,7 @@ export default function App() {
                 onLogout={handleLogout}
                 onNavigateLogin={() => navigateTo('login')}
                 onNavigateSignupPage={() => navigateTo('signup')}
+                onNavigateDashboard={() => navigateTo('dashboard')}
              />
              </div>
           )}

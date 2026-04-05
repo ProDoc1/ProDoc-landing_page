@@ -123,5 +123,52 @@ export default async function handler(req, res) {
     }
   }
 
+  if (req.method === 'DELETE') {
+    const { email: queryEmail, password, patientId } = req.query;
+    const body = req.body || {};
+    const targetEmail = body.email || queryEmail;
+    const targetPassword = body.password || password;
+    const targetPatientId = body.patientId || patientId;
+
+    if (!targetEmail || !targetPassword) {
+      return res.status(400).json({ error: 'Email and password are required for account deletion' });
+    }
+
+    try {
+      const userResult = await sql`SELECT * FROM users WHERE email = ${targetEmail}`;
+      const user = userResult.rows[0];
+
+      if (!user) {
+        return res.status(404).json({ error: 'Account not found' });
+      }
+
+      const bcrypt = require('bcryptjs');
+      let isPasswordValid = false;
+      if (user.password && user.password.startsWith('$2')) {
+        isPasswordValid = await bcrypt.compare(targetPassword, user.password);
+      } else {
+        isPasswordValid = (targetPassword === user.password);
+      }
+
+      if (!isPasswordValid) {
+        return res.status(401).json({ error: 'Invalid password' });
+      }
+
+      const userId = user.id;
+
+      await sql`DELETE FROM medical_records WHERE patient_id = ${userId}`;
+      await sql`DELETE FROM medical_records WHERE patient_email = ${targetEmail}`;
+      await sql`DELETE FROM doctor_ratings WHERE user_id = ${userId}`;
+      await sql`DELETE FROM saved_doctors WHERE patient_id = ${userId}`;
+      await sql`DELETE FROM second_opinion_requests WHERE patient_id = ${userId}`;
+      await sql`DELETE FROM profile_views WHERE user_id = ${userId}`;
+      await sql`DELETE FROM users WHERE id = ${userId}`;
+
+      return res.status(200).json({ success: true, message: 'Account and all medical records deleted permanently' });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   return res.status(405).json({ error: 'Method not allowed' });
 }
