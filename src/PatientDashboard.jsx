@@ -115,6 +115,52 @@ const RecordTypeModal = ({ isOpen, onClose, onSelect }) => {
   );
 };
 
+const ProblemDescriptionModal = ({ isOpen, onClose, onContinue, doctorName }) => {
+  const [description, setDescription] = useState('');
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[150] flex items-start justify-center p-2 sm:p-4 pt-28 md:pt-36 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
+      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="text-xl font-bold">Describe Your Problem</h2>
+            <p className="text-teal-100 text-sm mt-1">For {doctorName}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+            <X size={24} />
+          </button>
+        </div>
+        <div className="p-8">
+          <p className="text-sm text-slate-500 mb-4">Please provide a brief description of your symptoms or the reason for seeking a second opinion. This helps the doctor prepare for your consultation.</p>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full p-4 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all h-40 resize-none text-slate-700"
+            placeholder="Describe your symptoms, medical history, or specific questions..."
+            required
+          />
+          <button
+            onClick={() => {
+              if (description.trim()) {
+                onContinue(description);
+              } else {
+                alert('Please describe your problem before proceeding.');
+              }
+            }}
+            className="w-full mt-6 py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200"
+          >
+            Continue to Payment
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const Toast = ({ message, type = 'success', onClose }) => {
   useEffect(() => {
     const timer = setTimeout(onClose, 5000);
@@ -460,7 +506,8 @@ const PatientDashboard = ({
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editProfileSection, setEditProfileSection] = useState('personal');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion' });
+  const [isProblemModalOpen, setIsProblemModalOpen] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({ amount: 'Rs. 2500.00', serviceName: 'General Second Opinion', doctorId: null, doctorName: '', problemDescription: '' });
 
   const [reportFilter, setReportFilter] = useState('All');
   const [isRecordTypeModalOpen, setIsRecordTypeModalOpen] = useState(false);
@@ -1722,8 +1769,13 @@ const PatientDashboard = ({
                             </div>
                             <button
                               onClick={() => {
-                                setPaymentDetails({ amount: price, serviceName: `Second Opinion - ${doctorName}`, doctorId: doc.id || doc.doctor_id });
-                                setIsPaymentModalOpen(true);
+                                setPaymentDetails({ 
+                                  amount: price, 
+                                  serviceName: `Second Opinion - ${doctorName}`, 
+                                  doctorId: doc.id || doc.doctor_id,
+                                  doctorName: doctorName
+                                });
+                                setIsProblemModalOpen(true);
                               }}
                               className="px-6 py-3 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-teal-600 transition-colors shrink-0"
                             >
@@ -1866,6 +1918,17 @@ const PatientDashboard = ({
         }}
       />
 
+      <ProblemDescriptionModal
+        isOpen={isProblemModalOpen}
+        onClose={() => setIsProblemModalOpen(false)}
+        doctorName={paymentDetails.doctorName}
+        onContinue={(description) => {
+          setPaymentDetails(prev => ({ ...prev, problemDescription: description }));
+          setIsProblemModalOpen(false);
+          setIsPaymentModalOpen(true);
+        }}
+      />
+
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
@@ -1878,10 +1941,12 @@ const PatientDashboard = ({
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                patientId: currentUser?.id,
+                patientId: currentUser?.id || user?.id || localStorage.getItem('patientId'),
                 doctorId: paymentDetails.doctorId,
+                patientName: currentUser?.fullName || user?.fullName || 'ProDoc User',
                 summary: paymentDetails.serviceName,
                 amount: paymentDetails.amount,
+                problemDescription: paymentDetails.problemDescription,
                 documents: []
               })
             });

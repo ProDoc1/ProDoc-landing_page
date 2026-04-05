@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+
 import {
   ShieldCheck,
   FileText,
@@ -59,6 +61,15 @@ const DoctorDashboard = ({
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
+  
+  const maskSensitiveInfo = (text, type = 'email') => {
+    if (!text || text === 'Not provided' || text === 'Anonymous') return text;
+    if (type === 'email') {
+      const [user, domain] = text.split('@');
+      return `${user.substring(0, 3)}xxxxxx@${domain}`;
+    }
+    return text.substring(0, 3) + 'xxxxxxx';
+  };
 
   const [isSecondOpinionEnabled, setIsSecondOpinionEnabled] = useState(true);
   const [availability, setAvailability] = useState("Mon, Wed, Fri");
@@ -76,6 +87,11 @@ const DoctorDashboard = ({
 
   const [secondOpinionRequests, setSecondOpinionRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [reviewCaseRequest, setReviewCaseRequest] = useState(null);
+  const [reviewCasePatientData, setReviewCasePatientData] = useState(null);
+  const [reviewCaseLoading, setReviewCaseLoading] = useState(false);
+  const [feedbackForm, setFeedbackForm] = useState('');
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
 
   const [selectedPatientProfile, setSelectedPatientProfile] = useState(null);
   const [patientRecords, setPatientRecords] = useState([]);
@@ -294,6 +310,60 @@ const DoctorDashboard = ({
     } finally {
       setLoadingPosts(false);
 
+    }
+  };
+
+  const handleOpenReviewCase = async (request) => {
+    setReviewCaseRequest(request);
+    setReviewCasePatientData(null);
+    setReviewCaseLoading(true);
+    try {
+      const email = request.email;
+      const patientId = request.patientId;
+      if (!email && !patientId) { setReviewCaseLoading(false); return; }
+      const params = new URLSearchParams();
+      if (patientId) params.append('patientId', patientId);
+      if (email) params.append('email', email);
+      const res = await fetch(`/api/patient/profile?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setReviewCasePatientData(data);
+      }
+    } catch (err) {
+      console.error('Failed to load patient profile:', err);
+    } finally {
+      setReviewCaseLoading(false);
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!reviewCaseRequest || !feedbackForm.trim()) return;
+    setIsSubmittingFeedback(true);
+    try {
+      const res = await fetch('/api/second-opinion-requests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: reviewCaseRequest.id,
+          status: 'Resolved',
+          feedback: feedbackForm
+        })
+      });
+      if (res.ok) {
+        setFeedbackForm('');
+        setReviewCaseRequest(null);
+        // Refresh requests
+        const doctorId = localUser.id;
+        fetch(`/api/second-opinion-requests?doctorId=${doctorId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data)) setSecondOpinionRequests(data);
+          });
+      }
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+    } finally {
+      setIsSubmittingFeedback(false);
     }
   };
 
@@ -1029,14 +1099,21 @@ const DoctorDashboard = ({
                                 <User size={14} /> View Profile
                               </button>
                             </div>
-                            <div className="bg-white p-4 rounded-xl border border-slate-100 mb-4">
-                              <p className="text-sm text-slate-700 leading-relaxed font-medium line-clamp-2">
-                                <span className="font-bold text-slate-800 mr-2">Case Summary:</span>
+                            <div className="bg-white p-4 rounded-xl border border-slate-100 mb-4 flex flex-col gap-3">
+                              <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                                <span className="font-bold text-slate-800 mr-2">Service:</span>
                                 {request.summary}
                               </p>
+                                <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                                  <span className="font-bold text-slate-800 mr-2">Problem:</span>
+                                  {request.problemDescription || 'No description provided.'}
+                                </p>
                             </div>
                             <div className="flex items-center justify-end gap-3">
-                              <button className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 flex items-center gap-2">
+                              <button 
+                                onClick={() => handleOpenReviewCase(request)}
+                                className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors shadow-md shadow-teal-200 flex items-center gap-2"
+                              >
                                 Review Case
                               </button>
                             </div>
@@ -1603,10 +1680,182 @@ const DoctorDashboard = ({
         </div>
       )}
 
-      {selectedPatientProfile && (
-        <div className="fixed inset-0 z-[110] flex items-start justify-center p-1 sm:p-4 pt-24 md:pt-32 pb-32 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
-          <div className="bg-white w-full max-w-5xl rounded-[3rem] shadow-2xl flex flex-col overflow-hidden animate-scaleIn">
-            <div className="p-6 md:p-10 flex items-center justify-between border-b border-slate-50 bg-gradient-to-r from-teal-600 to-teal-500 text-white">
+      {reviewCaseRequest && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 bg-black/50 backdrop-blur-lg animate-fadeIn overflow-y-auto">
+          <div className="bg-white w-full max-w-3xl rounded-[2.5rem] mt-6 mb-10 shadow-2xl flex flex-col overflow-hidden animate-scaleIn">
+            {/* Header */}
+            <div className="p-6 md:p-8 bg-gradient-to-r from-teal-600 to-teal-500 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center border border-white/30">
+                  <User size={28} />
+                </div>
+                <div>
+                  <p className="text-teal-100 text-xs font-bold uppercase tracking-widest mb-1">Review Case</p>
+                  <h2 className="text-2xl font-black text-white">{reviewCaseRequest.patientName}</h2>
+                  <p className="text-teal-100 text-sm mt-0.5">
+                    {reviewCasePatientData?.dateOfBirth ? `${new Date().getFullYear() - new Date(reviewCasePatientData.dateOfBirth).getFullYear()} yrs` : reviewCaseRequest.age !== 'N/A' ? `${reviewCaseRequest.age} yrs` : 'Age unknown'} • {reviewCasePatientData?.gender || reviewCaseRequest.gender || 'Not specified'} • Request #{reviewCaseRequest.id}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setReviewCaseRequest(null)}
+                className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all border border-white/20"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Problem Description Banner */}
+            {reviewCaseRequest.problemDescription && (
+              <div className="mx-6 md:mx-8 mt-6 p-5 bg-amber-50 border border-amber-200 rounded-2xl flex gap-4">
+                <AlertCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-black text-amber-600 uppercase tracking-widest mb-1">Chief Complaint</p>
+                  <p className="text-slate-800 font-semibold leading-relaxed">{reviewCaseRequest.problemDescription}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="p-6 md:p-8 space-y-6">
+              {reviewCaseLoading && (
+                <div className="flex items-center justify-center py-8 gap-3">
+                  <Loader2 className="animate-spin text-teal-500" size={24} />
+                  <p className="text-slate-500 text-sm font-medium">Loading patient data...</p>
+                </div>
+              )}
+              {/* Personal Information */}
+              <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2.5 bg-teal-50 rounded-xl text-teal-600"><User size={18} /></div>
+                  <div>
+                    <h3 className="font-black text-slate-800 text-base">Personal Information</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Patient profile details</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Full Name</p>
+                    <p className="font-bold text-slate-800">{reviewCasePatientData?.fullName || reviewCaseRequest.patientName}</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Date of Birth</p>
+                    <p className="font-bold text-slate-800">{reviewCasePatientData?.dateOfBirth || 'Not provided'}</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Gender</p>
+                    <p className="font-bold text-slate-800 capitalize">{reviewCasePatientData?.gender || reviewCaseRequest.gender || 'Not specified'}</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Blood Type</p>
+                    <p className="font-bold text-slate-800">{reviewCasePatientData?.bloodType || 'Not recorded'}</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 sm:col-span-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Address</p>
+                    <p className="font-bold text-slate-800">{reviewCasePatientData?.address || 'Not provided'}</p>
+                  </div>
+                </div>
+
+                {/* Privacy-masked contact */}
+                <div className="mt-4 p-4 bg-slate-800 rounded-2xl">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Lock size={10} className="text-teal-400" /> Contact Info (Privacy Protected)
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Email</p>
+                      <p className="font-mono text-sm text-teal-300">{maskSensitiveInfo(reviewCasePatientData?.email || reviewCaseRequest.email, 'email')}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Phone</p>
+                      <p className="font-mono text-sm text-teal-300">{maskSensitiveInfo(reviewCasePatientData?.phone || reviewCaseRequest.contact, 'phone')}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Medical Alerts */}
+              <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2.5 bg-rose-50 rounded-xl text-rose-500"><AlertCircle size={18} /></div>
+                  <div>
+                    <h3 className="font-black text-slate-800 text-base">Medical Alerts</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Known conditions & allergies</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3">Known Allergies</p>
+                    {(reviewCasePatientData?.allergies || reviewCaseRequest.allergies || []).length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {(reviewCasePatientData?.allergies || reviewCaseRequest.allergies || []).map((a, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold">{a}</span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
+                        <p className="text-slate-400 text-sm font-medium">No known allergies</p>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3">Chronic Conditions</p>
+                    {(reviewCasePatientData?.chronicConditions || reviewCaseRequest.chronicConditions || []).length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {(reviewCasePatientData?.chronicConditions || reviewCaseRequest.chronicConditions || []).map((c, i) => (
+                          <span key={i} className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-xs font-bold">{c}</span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
+                        <p className="text-slate-400 text-sm font-medium">No chronic conditions recorded</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Request Info */}
+              <div className="bg-teal-600 rounded-[2rem] p-6 text-white relative overflow-hidden">
+                <ShieldCheck size={80} className="absolute -bottom-4 -right-4 text-white/10" />
+                <p className="text-xs font-black text-teal-100 uppercase tracking-widest mb-3 relative z-10">Second Opinion Request</p>
+                <p className="font-bold text-lg relative z-10">{reviewCaseRequest.summary}</p>
+                <p className="text-teal-200 text-sm mt-2 relative z-10">Submitted: {reviewCaseRequest.dateRequired}</p>
+              </div>
+
+              {/* Doctor Feedback Section */}
+              <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-6 shadow-inner">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="p-2.5 bg-teal-100 rounded-xl text-teal-600"><CheckCircle size={18} /></div>
+                  <div>
+                    <h3 className="font-black text-slate-800 text-base">Provide Clinical Advice</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Feedback will be sent to the patient</p>
+                  </div>
+                </div>
+                <textarea
+                  value={feedbackForm}
+                  onChange={(e) => setFeedbackForm(e.target.value)}
+                  placeholder="Summarize your findings and provide professional medical advice..."
+                  className="w-full h-40 p-5 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 resize-none transition-all"
+                />
+                <button
+                  onClick={handleSubmitFeedback}
+                  disabled={isSubmittingFeedback || !feedbackForm.trim()}
+                  className="w-full mt-4 py-4 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2"
+                >
+                  {isSubmittingFeedback ? <Loader2 className="animate-spin" size={18} /> : <><Save size={18} /> Send Feedback & Resolve Case</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      , document.body)}
+
+      {selectedPatientProfile && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
+          <div className="bg-white w-full max-w-6xl rounded-[2.5rem] mt-6 mb-10 shadow-2xl flex flex-col overflow-hidden animate-scaleIn min-h-[500px]">
+
+            <div className="p-6 md:p-10 flex items-center justify-between border-b border-slate-50 bg-gradient-to-r from-teal-600 to-teal-500 text-white shrink-0">
               <div className="flex items-center gap-6">
                 <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-[1.5rem] flex items-center justify-center border border-white/30 shadow-xl overflow-hidden">
                   <User size={40} />
@@ -1641,25 +1890,48 @@ const DoctorDashboard = ({
                 <div className="lg:col-span-1 space-y-8">
                   <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                      <AlertCircle size={14} className="text-amber-500" /> Medical Context
+                      <AlertCircle size={14} className="text-amber-500" /> Clinical & Privacy Info
                     </h4>
                     <div className="space-y-6">
+                      <div className="p-4 bg-slate-100 rounded-2xl border border-slate-200">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Privacy Shield Active</p>
+                        <div className="space-y-2">
+                           <div className="flex justify-between text-xs">
+                             <span className="text-slate-500 font-bold">Email:</span>
+                             <span className="text-slate-700 font-mono">{maskSensitiveInfo(selectedPatientProfile.email, 'email')}</span>
+                           </div>
+                           <div className="flex justify-between text-xs">
+                             <span className="text-slate-500 font-bold">Contact:</span>
+                             <span className="text-slate-700 font-mono">{maskSensitiveInfo(selectedPatientProfile.contact, 'phone')}</span>
+                           </div>
+                        </div>
+                      </div>
                       <div>
                         <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Primary Symptom</p>
-                        <p className="text-slate-800 font-bold bg-slate-50 p-4 rounded-2xl border border-slate-100">{selectedPatientProfile.symptoms || "Recurrent Pain/Discomfort"}</p>
+                        <p className="text-slate-800 font-bold bg-slate-50 p-4 rounded-2xl border border-slate-100">{selectedPatientProfile.symptoms || "None specified"}</p>
                       </div>
                       <div>
                         <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Current Condition</p>
-                        <p className="text-slate-800 font-bold bg-slate-50 p-4 rounded-2xl border border-slate-100">{selectedPatientProfile.condition || "Undergoing Initial Diagnosis"}</p>
+                        <p className="text-slate-800 font-bold bg-slate-50 p-4 rounded-2xl border border-slate-100">{selectedPatientProfile.condition || "Not provided"}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-teal-600 p-8 rounded-[2.5rem] shadow-xl shadow-teal-900/10 text-white relative overflow-hidden group">
                     <h4 className="text-xs font-black text-teal-100 uppercase tracking-widest mb-4 relative z-10">Patient Request</h4>
-                    <p className="text-lg font-medium leading-relaxed italic relative z-10">
-                      "{selectedPatientProfile.summary}"
-                    </p>
+                    <div className="space-y-4 relative z-10">
+                      <p className="text-lg font-medium leading-relaxed italic">
+                        "{selectedPatientProfile.summary}"
+                      </p>
+                      {selectedPatientProfile.problemDescription && (
+                        <div className="p-4 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
+                          <p className="text-xs font-black text-teal-100 uppercase tracking-widest mb-2">Problem Description</p>
+                          <p className="text-sm text-teal-50 leading-relaxed font-medium">
+                            {selectedPatientProfile.problemDescription}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                     <ShieldCheck size={100} className="absolute -bottom-4 -right-4 text-white/10 rotate-12 group-hover:scale-110 transition-transform" />
                   </div>
                 </div>
@@ -1779,7 +2051,7 @@ const DoctorDashboard = ({
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
       {keyRequest && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fadeIn">
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-scaleIn border border-slate-100">
