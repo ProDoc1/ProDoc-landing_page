@@ -884,7 +884,7 @@ const PatientDashboard = ({
         fetchUserData(storedPatientId, storedEmail);
       }
     }
-  }, [user]);
+  }, [user?.id ?? user?.uid ?? user?.email]); // stable primitives — avoids re-firing on every parent render
 
   // Sync keys to DB AND restore from DB on every login
   useEffect(() => {
@@ -921,40 +921,58 @@ const PatientDashboard = ({
   }, [currentUser?.email, user?.email]);
 
   useEffect(() => {
-    if (currentUser && currentUser.id) {
-      setReviewsLoading(true);
-      const userId = currentUser.id;
-      fetch(`/api/reviews?userId=${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) {
-            setRawReviews(data);
-          }
-        })
-        .catch(err => console.error("Error fetching patient reviews:", err))
-        .finally(() => setReviewsLoading(false));
+    // Prefer user?.id (users-table id from login prop) over currentUser.id
+    // because fetchUserData may temporarily set currentUser.id to the patients-table id
+    const userId = user?.id || currentUser?.id;
+    const email = currentUser?.email || localStorage.getItem('patientEmail');
+    if (!userId) return;
 
-      setLoadingSavedDoctors(true);
-      fetch(`/api/saved-doctors?patientId=${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) {
-            setSavedDoctors(data);
-          }
-        })
-        .catch(err => console.error("Error fetching saved doctors:", err))
-        .finally(() => setLoadingSavedDoctors(false));
+    // cancelled flag prevents stale in-flight responses from overwriting newer data
+    let cancelled = false;
 
-      fetch(`/api/medical-records?patientId=${userId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) {
-            setReports(data);
-          }
-        })
-        .catch(err => console.error("Error fetching medical records:", err));
-    }
-  }, [currentUser?.id]);
+    console.log('[PatientDashboard] Fetching data for userId:', userId, 'email:', email);
+
+    setReviewsLoading(true);
+    fetch(`/api/reviews?userId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled && Array.isArray(data)) setRawReviews(data);
+      })
+      .catch(err => console.error("Error fetching patient reviews:", err))
+      .finally(() => { if (!cancelled) setReviewsLoading(false); });
+
+    setLoadingSavedDoctors(true);
+    fetch(`/api/saved-doctors?patientId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!cancelled && Array.isArray(data)) setSavedDoctors(data);
+      })
+      .catch(err => console.error("Error fetching saved doctors:", err))
+      .finally(() => { if (!cancelled) setLoadingSavedDoctors(false); });
+
+    // Pass both patientId and email — API uses OR so records are found regardless of
+    // which id they were stored under
+    const recordsParams = new URLSearchParams();
+    recordsParams.append('patientId', userId);
+    if (email) recordsParams.append('email', email);
+    const recordsUrl = `/api/medical-records?${recordsParams.toString()}`;
+    console.log('[PatientDashboard] Medical records URL:', recordsUrl);
+    fetch(recordsUrl)
+      .then(res => res.json())
+      .then(data => {
+        console.log('[PatientDashboard] Medical records response:', data, 'cancelled:', cancelled);
+        if (!cancelled && Array.isArray(data)) setReports(data);
+      })
+      .catch(err => console.error("Error fetching medical records:", err));
+
+    return () => {
+      console.log('[PatientDashboard] Cleanup — cancelling fetch for userId:', userId);
+      cancelled = true;
+    };
+  }, [user?.id, currentUser?.id, user?.email, currentUser?.email]); // re-run when identity OR email changes to ensure fallback works
+
+
+
 
   const fetchUserData = async (patientId, email) => {
     try {
