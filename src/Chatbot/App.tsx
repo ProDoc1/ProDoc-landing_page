@@ -69,6 +69,58 @@ const extractPayloadWithPrefix = <T extends object = RecommendationPayload>(
   }
 };
 
+type AuthenticatedRole = 'patient' | 'doctor';
+
+const PROFILE_REQUEST_REGEX =
+  /\b(my profile|view my profile|show my profile|open my profile|my dashboard|view dashboard|open dashboard|redirect me to dashboard|my account)\b/i;
+
+const DASHBOARD_REFERENCE_REGEX =
+  /(https?:\/\/www\.prodocweb\.com\/dashboard\b|https?:\/\/www\.prodocweb\.com\/doctor-dashboard\b|\/dashboard\b|\/doctor-dashboard\b|my dashboard|profile dashboard)/i;
+
+const getAuthenticatedRole = (): AuthenticatedRole | null => {
+  const authToken = localStorage.getItem('authToken');
+  const userRole = localStorage.getItem('userRole');
+  const storedUser = localStorage.getItem('prodoc_user');
+
+  if (!authToken || !storedUser) return null;
+
+  try {
+    JSON.parse(storedUser);
+  } catch {
+    return null;
+  }
+
+  if (userRole === 'patient' || userRole === 'doctor') {
+    return userRole;
+  }
+
+  return null;
+};
+
+const isProfileAccessRequest = (inputText: string): boolean =>
+  PROFILE_REQUEST_REGEX.test(inputText.trim());
+
+const buildProfileAccessMessage = (role: AuthenticatedRole | null): string => {
+  if (!role) {
+    return 'Please log in first to access your profile dashboard. Go to /login, sign in, and then ask me to view your profile.';
+  }
+
+  return role === 'doctor'
+    ? 'You are logged in. Open your doctor dashboard here: /doctor-dashboard'
+    : 'You are logged in. Open your patient dashboard here: /dashboard';
+};
+
+const enforceGuestProfileRestriction = (
+  responseText: string,
+  isAuthenticated: boolean
+): string => {
+  if (isAuthenticated || !DASHBOARD_REFERENCE_REGEX.test(responseText)) {
+    return responseText;
+  }
+
+  return 'Please log in first to access your profile dashboard. Go to /login, sign in, and then ask me to view your profile.';
+};
+
 const App: React.FC<AppProps> = ({ onViewProfile }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -99,7 +151,8 @@ const doctorsList = DOCTORS.map(d => ({
         experience: d.years_of_experience
       }));
       const systemInstruction = SYSTEM_PROMPT_TEMPLATE
-        .replace('{doctors}', JSON.stringify(doctorsList));
+        .replace('{doctors}', JSON.stringify(doctorsList))
+        .replace('{profile_access}', getAuthenticatedRole() ? 'ALLOWED' : 'BLOCKED');
       
       const newChat = ai.chats.create({
         model: 'gemini-2.5-flash',
@@ -140,6 +193,18 @@ const doctorsList = DOCTORS.map(d => ({
     
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
+
+    if (!file && isProfileAccessRequest(inputText)) {
+      const role = getAuthenticatedRole();
+      const profileAccessReply: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'bot',
+        text: buildProfileAccessMessage(role)
+      };
+      setMessages((prevMessages) => [...prevMessages, profileAccessReply]);
+      return;
+    }
+
     setIsLoading(true);
 
     let fullResponseText = '';
@@ -239,6 +304,8 @@ const doctorsList = DOCTORS.map(d => ({
           finalText = fullResponseText;
         }
       }
+
+      finalText = enforceGuestProfileRestriction(finalText, Boolean(getAuthenticatedRole()));
 
       setMessages((prev) =>
         prev.map((msg) =>
