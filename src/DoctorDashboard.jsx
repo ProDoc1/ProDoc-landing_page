@@ -569,6 +569,13 @@ const DoctorDashboard = ({
     }
   };
 
+  const handleAiReset = () => {
+    setAiResult(null);
+    setAiFile(null);
+    setAiReport(null);
+    setAiError('');
+  };
+
   const publishArticle = async (e) => {
     e.preventDefault();
     if (!articleForm.content || !articleForm.image) {
@@ -1350,6 +1357,7 @@ const DoctorDashboard = ({
                 aiReport={aiReport}
                 onFileChange={setAiFile}
                 onReportChange={setAiReport}
+                onReset={handleAiReset}
               />
             ) : null}
         </main>
@@ -1984,9 +1992,9 @@ const TrafficLight = ({ level }) => {
   return (
     <div className="flex items-center gap-5 p-5 bg-slate-50 rounded-2xl border border-slate-100">
       <div className="flex flex-col items-center gap-2 bg-slate-800 rounded-2xl px-3 py-4 shadow-inner shrink-0">
-        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isHigh ? 'bg-red-500 shadow-lg shadow-red-400/70' : 'bg-red-950/30'}`} />
-        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isMod ? 'bg-amber-400 shadow-lg shadow-amber-300/70' : 'bg-amber-950/30'}`} />
-        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isLow ? 'bg-emerald-400 shadow-lg shadow-emerald-300/70' : 'bg-emerald-950/30'}`} />
+        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isHigh ? 'bg-red-500 shadow-lg shadow-red-400/70 animate-pulse' : 'bg-red-950/30'}`} />
+        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isMod ? 'bg-amber-400 shadow-lg shadow-amber-300/70 animate-pulse' : 'bg-amber-950/30'}`} />
+        <div className={`w-8 h-8 rounded-full transition-all duration-300 ${isLow ? 'bg-emerald-400 shadow-lg shadow-emerald-300/70 animate-pulse' : 'bg-emerald-950/30'}`} />
       </div>
       <div>
         <p className={`font-extrabold text-2xl tracking-wide ${info.textColor}`}>{info.label}</p>
@@ -2034,54 +2042,156 @@ const ResultSection = ({ title, items }) => {
   );
 };
 
-const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, onFileChange, onReportChange }) => (
-  <div className="max-w-3xl mx-auto animate-fadeIn space-y-6 p-4 md:p-0">
-    <div className="flex items-center gap-4">
-      <div className="p-4 bg-teal-100 rounded-2xl text-teal-600"><Brain size={32} /></div>
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">AI Medical Assistant</h2>
-        <p className="text-slate-500 text-sm">Upload a medical image or report for AI-powered analysis</p>
+const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, onFileChange, onReportChange, onReset }) => {
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const handleImageChange = (file) => {
+    onFileChange(file);
+    if (file && file.type.startsWith('image/')) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(null);
+    }
+  };
+
+  const handleClearImage = (e) => {
+    e.preventDefault();
+    onFileChange(null);
+    setImagePreview(null);
+  };
+
+  const formatFileSize = (bytes) => {
+    if (!bytes) return '';
+    return bytes < 1024 * 1024
+      ? `${(bytes / 1024).toFixed(0)} KB`
+      : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const handleDownload = () => {
+    const text = result.final_report || result.analysis || JSON.stringify(result, null, 2);
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `prodoc-analysis-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const riskLevel = result
+    ? (result._source === 'backend' ? result.ai_result?.risk_level : extractRiskLevel(result.analysis))
+    : null;
+
+  return (
+    <div className="max-w-3xl mx-auto animate-fadeIn space-y-6 p-4 md:p-0">
+      <div className="flex items-center gap-4">
+        <div className="p-4 bg-teal-100 rounded-2xl text-teal-600"><Brain size={32} /></div>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">AI Medical Assistant</h2>
+          <p className="text-slate-500 text-sm">Upload a medical image or report for AI-powered analysis</p>
+        </div>
       </div>
-    </div>
 
-    <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
-      <form onSubmit={onSubmit} className="space-y-6">
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Medical Image <span className="text-slate-400 font-normal">(optional if report uploaded)</span></label>
-          <label className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${aiFile ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'}`}>
-            <Upload size={28} className={aiFile ? 'text-teal-500' : 'text-slate-300'} />
-            <p className="mt-2 text-sm font-medium text-slate-500">{aiFile ? aiFile.name : 'Click to upload'}</p>
-            <p className="text-xs text-slate-400">DICOM, JPG, PNG, TIFF supported</p>
-            <input type="file" className="hidden" accept=".dcm,.dicom,.jpg,.jpeg,.png,.tiff,.tif,.bmp" onChange={e => onFileChange(e.target.files[0])} />
-          </label>
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Medical Report <span className="text-slate-400 font-normal">(optional)</span></label>
-          <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${aiReport ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'}`}>
-            <FileText size={22} className={aiReport ? 'text-teal-500' : 'text-slate-300'} />
-            <p className="mt-1 text-sm text-slate-500">{aiReport ? aiReport.name : 'Upload PDF or image report'}</p>
-            <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.txt" onChange={e => onReportChange(e.target.files[0])} />
-          </label>
-        </div>
-        {error && <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700"><AlertCircle size={18} /> {error}</div>}
-        <button type="submit" disabled={loading || (!aiFile && !aiReport)} className="w-full py-4 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-100 flex items-center justify-center gap-2">
-          {loading ? <><svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Analyzing...</> : <><Brain size={18} /> Run AI Analysis</>}
-        </button>
-      </form>
-    </div>
+      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+        <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-700 font-medium leading-relaxed">
+          <span className="font-bold">Clinical Decision Support Only.</span> This tool assists licensed medical professionals and does not replace clinical judgement or professional diagnosis.
+        </p>
+      </div>
 
-    {result && (() => {
-      const riskLevel = result._source === 'backend'
-        ? result.ai_result?.risk_level
-        : extractRiskLevel(result.analysis);
-      return (
+      <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100">
+        <form onSubmit={onSubmit} className="space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Medical Image <span className="text-slate-400 font-normal">(optional if report uploaded)</span>
+              </label>
+              {aiFile && (
+                <button onClick={handleClearImage} className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-400 transition-colors">
+                  <X size={12} /> Remove
+                </button>
+              )}
+            </div>
+            {imagePreview ? (
+              <div className="relative w-full rounded-2xl overflow-hidden border-2 border-teal-400 bg-teal-50">
+                <img src={imagePreview} alt="Preview" className="w-full max-h-52 object-contain" />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-900/60 to-transparent px-4 py-3">
+                  <p className="text-white text-xs font-semibold truncate">{aiFile.name}</p>
+                  <p className="text-white/70 text-[10px]">{formatFileSize(aiFile.size)}</p>
+                </div>
+              </div>
+            ) : (
+              <label className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${aiFile ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'}`}>
+                <Upload size={28} className={aiFile ? 'text-teal-500' : 'text-slate-300'} />
+                <p className="mt-2 text-sm font-medium text-slate-500">
+                  {aiFile ? `${aiFile.name} · ${formatFileSize(aiFile.size)}` : 'Click to upload'}
+                </p>
+                <p className="text-xs text-slate-400">DICOM, JPG, PNG, TIFF supported</p>
+                <input type="file" className="hidden" accept=".dcm,.dicom,.jpg,.jpeg,.png,.tiff,.tif,.bmp" onChange={e => handleImageChange(e.target.files[0])} />
+              </label>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Medical Report <span className="text-slate-400 font-normal">(optional)</span>
+              </label>
+              {aiReport && (
+                <button onClick={e => { e.preventDefault(); onReportChange(null); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-400 transition-colors">
+                  <X size={12} /> Remove
+                </button>
+              )}
+            </div>
+            <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-2xl cursor-pointer transition-colors ${aiReport ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'}`}>
+              <FileText size={22} className={aiReport ? 'text-teal-500' : 'text-slate-300'} />
+              <p className="mt-1 text-sm text-slate-500">
+                {aiReport ? `${aiReport.name} · ${formatFileSize(aiReport.size)}` : 'Upload PDF or image report'}
+              </p>
+              <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.txt" onChange={e => onReportChange(e.target.files[0])} />
+            </label>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+              <AlertCircle size={18} /> {error}
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={loading || (!aiFile && !aiReport)}
+            className="w-full py-4 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-100 flex items-center justify-center gap-2"
+          >
+            {loading
+              ? <><svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>Analyzing...</>
+              : <><Brain size={18} /> Run AI Analysis</>
+            }
+          </button>
+        </form>
+      </div>
+
+      {result && (
         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 space-y-5 animate-fadeIn">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
             <div className="p-2 bg-teal-50 rounded-xl"><Brain size={18} className="text-teal-600" /></div>
             <h3 className="text-xl font-bold text-slate-800">Analysis Results</h3>
-            <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+            <span className="text-xs text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
               {result._source === 'backend' ? 'ProDoc AI' : 'Gemini'}
             </span>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors border border-slate-200"
+              >
+                <Download size={13} /> Export
+              </button>
+              <button
+                onClick={onReset}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors border border-slate-200"
+              >
+                <X size={13} /> New Analysis
+              </button>
+            </div>
           </div>
 
           <TrafficLight level={riskLevel} />
@@ -2127,18 +2237,18 @@ const AiAssistantPanel = ({ onSubmit, loading, result, error, aiFile, aiReport, 
               {result.final_report && (
                 <div className="border border-slate-100 rounded-2xl overflow-hidden">
                   <div className="px-5 py-4 bg-slate-50"><span className="font-bold text-slate-700">Full Report</span></div>
-                  <pre className="px-5 py-4 text-xs text-slate-600 whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto">{result.final_report}</pre>
+                  <div className="px-5 py-4 prose prose-slate prose-sm max-w-none text-slate-600 leading-relaxed [&_strong]:font-semibold [&_strong]:text-slate-800 [&_ul]:space-y-1 [&_li]:text-slate-600 max-h-64 overflow-y-auto">
+                    <ReactMarkdown>{result.final_report}</ReactMarkdown>
+                  </div>
                 </div>
               )}
             </>
           )}
-
-          <p className="text-xs text-slate-400 text-center pt-2 border-t border-slate-50">For clinical decision support only. Always apply professional judgement.</p>
-          </div>
-        );
-      })()}
+        </div>
+      )}
     </div>
   );
+};
 
 export default DoctorDashboard;
 
