@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   User,
   Settings,
@@ -122,11 +123,10 @@ const Toast = ({ message, type = 'success', onClose }) => {
 
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] animate-in fade-in slide-in-from-bottom-8 duration-300">
-      <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border ${
-        type === 'success' 
-          ? 'bg-teal-600 border-teal-500 text-white' 
+      <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border ${type === 'success'
+          ? 'bg-teal-600 border-teal-500 text-white'
           : 'bg-rose-600 border-rose-500 text-white'
-      }`}>
+        }`}>
         {type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
         <p className="font-bold whitespace-nowrap">{message}</p>
         <button onClick={onClose} className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors">
@@ -284,10 +284,12 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
     setStep('success');
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center p-2 sm:p-4 pt-28 md:pt-36 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-lg animate-fadeIn">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-8 py-6 text-white flex items-center justify-between shrink-0">
           <div>
             <h2 className="text-xl font-bold">Secure Payment</h2>
@@ -298,7 +300,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
           </button>
         </div>
 
-        <div className="p-8">
+        <div className="p-8 overflow-y-auto">
           {step === 'payment' ? (
             <form onSubmit={handlePayment} className="space-y-6">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex justify-between items-center">
@@ -436,7 +438,8 @@ const PaymentModal = ({ isOpen, onClose, onPaymentSuccess, amount = 'Rs. 2500.00
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
@@ -462,7 +465,7 @@ const PatientDashboard = ({
   const [reportFilter, setReportFilter] = useState('All');
   const [isRecordTypeModalOpen, setIsRecordTypeModalOpen] = useState(false);
   const [selectedUploadType, setSelectedUploadType] = useState('lab');
-  
+
   const [reportToDelete, setReportToDelete] = useState(null);
   const [isDeletingBlob, setIsDeletingBlob] = useState(false);
   const [openReportMenu, setOpenReportMenu] = useState(null);
@@ -533,8 +536,8 @@ const PatientDashboard = ({
     if (!file) return;
 
     if (file.size > 25 * 1024 * 1024) {
-        alert("File is too large. Maximum limit is 25 MB per file.");
-        return;
+      alert("File is too large. Maximum limit is 25 MB per file.");
+      return;
     }
 
     setUploading(true);
@@ -542,7 +545,7 @@ const PatientDashboard = ({
       let publicKey = currentUser?.public_key || user?.public_key;
       let bodyData;
       let filename = file.name;
-      
+
       if (!publicKey) {
         const email = currentUser?.email || user?.email || 'test@example.com';
         const name = currentUser?.fullName || user?.fullName || 'ProDoc User';
@@ -565,7 +568,7 @@ const PatientDashboard = ({
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email, publicKey, privateKey: existingPrivKey })
-            }).catch(() => {});
+            }).catch(() => { });
           } catch (e) {
             console.warn('Could not extract public key from existing private key, generating new pair:', e);
           }
@@ -578,13 +581,13 @@ const PatientDashboard = ({
             curve: 'curve25519',
             userIDs: [{ name, email }]
           }));
-          
+
           publicKey = tempPub;
           // Only write to localStorage if nothing was there before
           if (!existingPrivKey) {
             localStorage.setItem(`private_key_${email}`, tempPriv);
           }
-          
+
           // Persist to DB
           try {
             await fetch('/api/patient/sync-keys', {
@@ -597,13 +600,13 @@ const PatientDashboard = ({
           }
         }
       }
-      
+
       const encryptedBlob = await encryptFile(file, publicKey);
-      
+
       bodyData = await encryptedBlob.arrayBuffer();
       filename = `${file.name}.gpg`;
 
-      
+
       const response = await fetch(`/api/upload?filename=${encodeURIComponent(filename)}`, {
         method: 'POST',
         headers: {
@@ -624,7 +627,7 @@ const PatientDashboard = ({
         }
         throw new Error(errorMessage);
       }
-      
+
       const newBlob = await response.json();
 
       if (currentUser.id || currentUser.email) {
@@ -666,7 +669,7 @@ const PatientDashboard = ({
         };
         setReports(prev => [newReport, ...prev]);
       }
-      
+
       setNotification({ message: 'File uploaded and encrypted successfully!', type: 'success' });
     } catch (error) {
       console.error('Upload failed:', error);
@@ -685,7 +688,7 @@ const PatientDashboard = ({
         const response = await fetch(`/api/delete-blob?url=${encodeURIComponent(reportToDelete.url)}`, {
           method: 'DELETE',
         });
-        
+
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.message || 'Deletion from storage failed');
@@ -695,7 +698,7 @@ const PatientDashboard = ({
       const dbDeleteResponse = await fetch(`/api/medical-records?id=${reportToDelete.id}`, {
         method: 'DELETE'
       });
-      
+
       if (!dbDeleteResponse.ok) console.error('Failed to delete metadata from DB');
 
       setReports(prev => prev.filter(r => r.id !== reportToDelete.id));
@@ -729,9 +732,9 @@ const PatientDashboard = ({
           const elapsed = (performance.now() - startTime) / 1000;
           const speed = elapsed > 0 ? (loaded / elapsed) : 0;
           const percent = Math.round((loaded / total) * 80) + 5;
-          setDocAccessState({ 
-            active: true, 
-            progress: percent, 
+          setDocAccessState({
+            active: true,
+            progress: percent,
             status: 'Transferring Secure Health Data...',
             speed,
             downloaded: loaded,
@@ -747,11 +750,11 @@ const PatientDashboard = ({
             const encryptedBlob = xhr.response;
             const mimeType = getMimeTypeFromUrl(originalTitle || reportUrl);
             const decryptedBlob = await decryptFile(encryptedBlob, pKey, '', mimeType);
-            
+
             setDocAccessState({ active: true, progress: 100, status: 'Verified. Opening...' });
             const localUrl = URL.createObjectURL(decryptedBlob);
             window.open(localUrl);
-            
+
             setTimeout(() => setDocAccessState({ active: false, progress: 0, status: '' }), 800);
           } catch (error) {
             setDocAccessState({ active: false, progress: 0, status: '' });
@@ -844,14 +847,14 @@ const PatientDashboard = ({
     const syncKeys = async () => {
       const storedPriv = localStorage.getItem(`private_key_${email}`);
       const storedPub = currentUser.public_key || user?.public_key;
-      
+
       // If DB returned a private key (from login), restore it to localStorage
       const dbPrivKey = currentUser.private_key || user?.private_key;
       if (dbPrivKey && !storedPriv) {
         localStorage.setItem(`private_key_${email}`, dbPrivKey);
         console.log("Private key restored from DB to localStorage.");
       }
-      
+
       const keyToSync = storedPriv || dbPrivKey;
       if (keyToSync) {
         try {
@@ -866,7 +869,7 @@ const PatientDashboard = ({
         }
       }
     };
-    
+
     syncKeys();
   }, [currentUser?.email, user?.email]);
 
@@ -1234,10 +1237,10 @@ const PatientDashboard = ({
                       onClick={() => openEditProfile('contact')}
                     />
                   </div>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setActiveTab('reviews')}
                   className={`w-full rounded-2xl transition-all ${activeTab === 'reviews' ? 'ring-2 ring-teal-200' : ''}`}
@@ -1575,84 +1578,84 @@ const PatientDashboard = ({
                     return true;
                   })
                   .map(report => (
-                  <div key={report.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all">
-                    <div className="p-6 flex items-center justify-between cursor-pointer" onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}>
-                      <div className="flex items-center gap-4">
-                        {getReportIcon(report.type)}
-                        <div>
-                          <h4 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
-                            {report.title}
-                            {report.isConfidential && <Lock size={16} className="text-teal-500" />}
-                          </h4>
-                          <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                            <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">{getReportTypeLabel(report.type)}</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1 text-teal-600 font-medium">
-                              <ShieldCheck size={12} /> {report.status || 'Encrypted'}
-                            </span>
-                            <span>•</span>
-                            <span>{report.reportDate}</span>
-                            {report.doctorName && (
-                              <><span>•</span><span>{report.doctorName}</span></>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm text-slate-400 hidden md:block">{report.fileSize}</span>
-                        <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                          {expandedReport === report.id ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {expandedReport === report.id && (
-                      <div className="px-6 pb-6 pt-0 bg-slate-50 border-t border-slate-100">
-                        <div className="pt-4">
-                          <div className="bg-white rounded-2xl p-4 mb-4 border border-slate-200">
-                            <h5 className="font-bold text-slate-700 mb-2">Description</h5>
-                            <p className="text-slate-600">{report.description}</p>
-                          </div>
-                          <div className="flex flex-wrap gap-3">
-                            <button 
-                              onClick={() => handleViewReport(report.url, report.title)}
-                              className="flex items-center gap-2 px-8 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98]"
-                            >
-                              <FileText size={18} /> View Online
-                            </button>
-                            <div className="relative ml-auto text-right">
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenReportMenu(openReportMenu === report.id ? null : report.id);
-                                }}
-                                className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
-                              >
-                                <MoreVertical size={20} />
-                              </button>
-                              
-                              {openReportMenu === report.id && (
-                                <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setReportToDelete(report);
-                                      setOpenReportMenu(null);
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-4 text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
-                                  >
-                                    <Trash2 size={18} />
-                                    Remove Record
-                                  </button>
-                                </div>
+                    <div key={report.id} className="bg-white border border-slate-200 rounded-[2rem] overflow-hidden hover:shadow-lg transition-all">
+                      <div className="p-6 flex items-center justify-between cursor-pointer" onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}>
+                        <div className="flex items-center gap-4">
+                          {getReportIcon(report.type)}
+                          <div>
+                            <h4 className="font-bold text-slate-800 flex items-center gap-2 text-lg">
+                              {report.title}
+                              {report.isConfidential && <Lock size={16} className="text-teal-500" />}
+                            </h4>
+                            <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
+                              <span className="px-2 py-0.5 bg-slate-100 rounded-md text-xs font-medium">{getReportTypeLabel(report.type)}</span>
+                              <span>•</span>
+                              <span className="flex items-center gap-1 text-teal-600 font-medium">
+                                <ShieldCheck size={12} /> {report.status || 'Encrypted'}
+                              </span>
+                              <span>•</span>
+                              <span>{report.reportDate}</span>
+                              {report.doctorName && (
+                                <><span>•</span><span>{report.doctorName}</span></>
                               )}
                             </div>
                           </div>
                         </div>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm text-slate-400 hidden md:block">{report.fileSize}</span>
+                          <button className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            {expandedReport === report.id ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+                          </button>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {expandedReport === report.id && (
+                        <div className="px-6 pb-6 pt-0 bg-slate-50 border-t border-slate-100">
+                          <div className="pt-4">
+                            <div className="bg-white rounded-2xl p-4 mb-4 border border-slate-200">
+                              <h5 className="font-bold text-slate-700 mb-2">Description</h5>
+                              <p className="text-slate-600">{report.description}</p>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                              <button
+                                onClick={() => handleViewReport(report.url, report.title)}
+                                className="flex items-center gap-2 px-8 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98]"
+                              >
+                                <FileText size={18} /> View Online
+                              </button>
+                              <div className="relative ml-auto text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenReportMenu(openReportMenu === report.id ? null : report.id);
+                                  }}
+                                  className="p-3 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+                                >
+                                  <MoreVertical size={20} />
+                                </button>
+
+                                {openReportMenu === report.id && (
+                                  <div className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setReportToDelete(report);
+                                        setOpenReportMenu(null);
+                                      }}
+                                      className="w-full flex items-center gap-3 px-4 py-4 text-rose-600 hover:bg-rose-50 transition-colors font-bold text-sm"
+                                    >
+                                      <Trash2 size={18} />
+                                      Remove Record
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
           )}
@@ -1847,7 +1850,7 @@ const PatientDashboard = ({
         initialSection={editProfileSection}
       />
 
-      <DeleteConfirmModal 
+      <DeleteConfirmModal
         isOpen={!!reportToDelete}
         onClose={() => setReportToDelete(null)}
         onConfirm={handleDeleteReport}
@@ -1890,10 +1893,10 @@ const PatientDashboard = ({
 
 
       {notification && (
-        <Toast 
-          message={notification.message} 
-          type={notification.type} 
-          onClose={() => setNotification(null)} 
+        <Toast
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
         />
       )}
 
@@ -1920,23 +1923,23 @@ const DocumentAccessProgress = ({ progress, status, speed, downloaded, total }) 
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
       <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 text-center animate-scaleIn border border-slate-100 overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
-          <div 
-            className="h-full bg-teal-500 transition-all duration-500" 
+          <div
+            className="h-full bg-teal-500 transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
-        
+
         <div className="w-24 h-24 bg-teal-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 relative rotate-3 group">
-           <div className="absolute inset-0 bg-teal-100/30 rounded-[2.5rem] animate-pulse" />
-           <Loader2 className="animate-spin text-teal-600 group-hover:text-teal-400 transition-colors" size={48} />
-           <div className="absolute inset-0 flex items-center justify-center">
-              <Lock size={20} className="text-teal-600/20" />
-           </div>
+          <div className="absolute inset-0 bg-teal-100/30 rounded-[2.5rem] animate-pulse" />
+          <Loader2 className="animate-spin text-teal-600 group-hover:text-teal-400 transition-colors" size={48} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Lock size={20} className="text-teal-600/20" />
+          </div>
         </div>
-        
+
         <h3 className="text-2xl font-black text-slate-800 mb-2 tracking-tight">Digital Handshake</h3>
         <p className="text-teal-600 text-[10px] font-black uppercase tracking-[0.2em] mb-4 animate-pulse">{status}</p>
-        
+
         {total > 0 && (
           <div className="flex justify-center gap-10 mb-8 py-4 bg-slate-50 rounded-2xl border border-slate-100">
             <div className="text-center">
@@ -1955,20 +1958,20 @@ const DocumentAccessProgress = ({ progress, status, speed, downloaded, total }) 
             )}
           </div>
         )}
-        
+
         <div className="space-y-4">
           <div className="w-full bg-slate-100 h-5 rounded-2xl overflow-hidden p-1 border border-slate-200">
-             <div 
-               className="bg-gradient-to-r from-teal-600 to-teal-400 h-full rounded-xl transition-all duration-300 ease-out shadow-sm"
-               style={{ width: `${progress}%` }}
-             />
+            <div
+              className="bg-gradient-to-r from-teal-600 to-teal-400 h-full rounded-xl transition-all duration-300 ease-out shadow-sm"
+              style={{ width: `${progress}%` }}
+            />
           </div>
           <div className="flex justify-between items-center px-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase">Synchronizing Stream</span>
             <span className="text-[10px] font-black text-teal-600 uppercase">{progress}%</span>
           </div>
         </div>
-        
+
         <div className="mt-10 pt-6 border-t border-slate-50">
           <div className="flex items-center justify-center gap-2 text-slate-400">
             <ShieldCheck size={14} />

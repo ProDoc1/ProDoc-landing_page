@@ -30,28 +30,31 @@ export default async function handler(req, res) {
             } else if (doctorId) {
                 const { rows } = await sql`
                     SELECT 
-                        id,
-                        user_name,
-                        communication,
-                        punctuality,
-                        treatment_plan,
-                        overall,
-                        comment,
-                        proof_url,
-                        created_at
-                    FROM doctor_ratings
-                    WHERE doctor_id = ${doctorId} AND status = 'approved'
-                    ORDER BY created_at DESC;
+                        r.id,
+                        COALESCE(u.full_name, r.user_name) as user_name,
+                        r.communication,
+                        r.punctuality,
+                        r.treatment_plan,
+                        r.overall,
+                        r.comment,
+                        r.proof_url,
+                        r.created_at
+                    FROM doctor_ratings r
+                    LEFT JOIN users u ON r.user_id = u.id
+                    WHERE r.doctor_id = ${doctorId} AND r.status = 'approved'
+                    ORDER BY r.created_at DESC;
                 `;
                 return res.status(200).json(rows);
             } else {
                 const { rows } = await sql`
                     SELECT 
                         r.*,
+                        COALESCE(u.full_name, r.user_name) as user_name,
                         d.full_name as doctor_name,
                         d.image_url as doctor_image
                     FROM doctor_ratings r
                     JOIN doctors d ON r.doctor_id::text = d.doctor_id::text
+                    LEFT JOIN users u ON r.user_id = u.id
                     WHERE (r.comment IS NOT NULL AND r.comment != '')
                     ORDER BY r.created_at DESC;
                 `;
@@ -73,6 +76,16 @@ export default async function handler(req, res) {
         // Proof is required ONLY if a written review (comment) is provided
         if (comment && comment.trim().length > 0 && !proof) {
             return res.status(400).json({ error: 'Proof of visit is required to submit a written review.' });
+        }
+
+        let finalUserName = userName || 'Verified User';
+        try {
+            const userLookup = await sql`SELECT full_name FROM users WHERE id = ${userId} OR id::text = ${userId?.toString()}`;
+            if (userLookup.rows.length > 0 && userLookup.rows[0].full_name) {
+                finalUserName = userLookup.rows[0].full_name;
+            }
+        } catch (e) {
+            console.error("User lookup failed, falling back to provided name:", e.message);
         }
 
         try {
@@ -136,7 +149,7 @@ export default async function handler(req, res) {
         ) VALUES (
           ${doctorId},
           ${userId},
-          ${userName},
+          ${finalUserName},
           ${ratings.communication},
           ${ratings.punctuality},
           ${ratings.treatmentPlan},
@@ -146,7 +159,7 @@ export default async function handler(req, res) {
           ${req.body.proof}, 
           ${status},
           ${toxicityScore},
-          NOW()
+          ${new Date().toISOString()}
         );
       `;
 

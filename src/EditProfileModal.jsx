@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, User, Mail, Phone, MapPin, Calendar, Camera, Save, AlertCircle
 } from 'lucide-react';
@@ -116,11 +117,13 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
     { id: 'medical', label: 'Medical Info', icon: AlertCircle }
   ];
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center p-1 sm:p-4 pt-24 md:pt-36 pb-32 bg-black/40 backdrop-blur-lg animate-fadeIn overflow-y-auto">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-lg animate-fadeIn">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
       
-      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
           <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-6 sm:px-8 py-5 sm:py-6 text-white flex items-center justify-between shrink-0">
           <div>
@@ -352,7 +355,8 @@ const EditProfileModal = ({ isOpen, onClose, user, onSave, initialSection = 'per
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

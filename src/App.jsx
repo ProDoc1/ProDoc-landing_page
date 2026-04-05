@@ -32,7 +32,7 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
 
    return (
       <div className="min-h-screen bg-[#F0F8F8] font-sans text-slate-900 pb-8 pt-4 cursor-default selection:bg-teal-100 selection:text-teal-900 overflow-x-hidden">
-         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 space-y-6">
+         <div className="mx-px space-y-6">
             <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-12 overflow-hidden shadow-sm bg-teal-900/5">
                <WarpBackground />
                <div className="absolute inset-0 bg-gradient-to-r from-teal-950/70 via-teal-900/30 to-teal-900/5 z-0 pointer-events-none mix-blend-multiply"></div>
@@ -216,8 +216,9 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                   </div>
                </div>
             </div>
+         </div>
 
-            <footer className="bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
+         <footer className="mx-px bg-white rounded-[3rem] p-10 md:p-16 text-slate-600 relative overflow-hidden shadow-2xl shadow-slate-200/50 border border-slate-100">
                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-teal-400"></div>
 
                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
@@ -314,7 +315,6 @@ const LandingPage = ({ onNavigateHowitWorks, onFindSpecialist, onNavigateAbout, 
                   <p>©️ {new Date().getFullYear()} ProDoc Group Project (SE-06). All rights reserved.</p>
                </div>
             </footer>
-         </div>
       </div>
    );
 };
