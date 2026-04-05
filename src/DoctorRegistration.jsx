@@ -443,7 +443,7 @@ const DoctorRegistration = ({ onBack, onNavigateLogin, onNavigateTerms }) => {
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-black text-teal-600 uppercase tracking-widest ml-1">Profile Photo*</label>
+                                            <label className="text-xs font-black text-teal-600 uppercase tracking-widest ml-1">Profile Photo</label>
                                             <div 
                                                 onDrop={handleDrop}
                                                 onDragOver={handleDragOver}

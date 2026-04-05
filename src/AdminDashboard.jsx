@@ -296,15 +296,44 @@ const AdminDashboard = ({ onBack }) => {
                                         <div className="lg:w-80 space-y-4">
                                             <div className="bg-slate-50 rounded-[2rem] h-48 flex items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden group/proof relative">
                                                 {review.proof_url ? (
-                                                    <img src={review.proof_url} alt="Proof" className="w-full h-full object-cover group-hover/proof:scale-110 transition-transform duration-700" />
+                                                    review.proof_url.startsWith('data:application/pdf') || review.proof_url.toLowerCase().endsWith('.pdf') ? (
+                                                        <div className="flex flex-col items-center gap-3 text-teal-600">
+                                                            <FileText size={48} />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest">PDF Document</span>
+                                                        </div>
+                                                    ) : (
+                                                        <img 
+                                                            src={review.proof_url} 
+                                                            alt="Proof" 
+                                                            className="w-full h-full object-cover group-hover/proof:scale-110 transition-transform duration-700" 
+                                                            onError={(e) => {
+                                                                // Fallback if image fails to load (e.g. invalid format)
+                                                                e.target.parentElement.innerHTML = '<div class="text-slate-400"><FileText size={48} /></div>';
+                                                            }}
+                                                        />
+                                                    )
                                                 ) : (
                                                     <div className="text-center space-y-2 opacity-30">
                                                         <FileText size={32} className="mx-auto" />
                                                         <span className="text-[10px] font-black uppercase tracking-widest">No Proof Uploaded</span>
                                                     </div>
                                                 )}
-                                                <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover/proof:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
-                                                    <span className="text-white text-[10px] font-black uppercase tracking-widest">Inspect Archive</span>
+                                                <div 
+                                                    className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover/proof:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                                                    onClick={() => {
+                                                        if (review.proof_url) {
+                                                            const newWindow = window.open();
+                                                            if (newWindow) {
+                                                                newWindow.document.write(`<iframe src="${review.proof_url}" width="100%" height="100%" style="border:none;"></iframe>`);
+                                                            } else {
+                                                                window.open(review.proof_url, '_blank');
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    <span className="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                                        <Search size={14} /> Full View
+                                                    </span>
                                                 </div>
                                             </div>
 

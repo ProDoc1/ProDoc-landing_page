@@ -936,7 +936,25 @@ const PatientDashboard = ({
     fetch(`/api/reviews?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
-        if (!cancelled && Array.isArray(data)) setRawReviews(data);
+        if (!cancelled && Array.isArray(data)) {
+          setRawReviews(data);
+          
+          // Notify user if any review was recently rejected or is still pending
+          const hasRejected = data.some(r => r.status === 'rejected' && r.text);
+          const hasPending = data.some(r => r.status === 'pending' && r.text);
+          
+          if (hasRejected) {
+            setNotification({
+              message: "One or more of your reviews were hidden due to policy violations.",
+              type: "error"
+            });
+          } else if (hasPending) {
+            setNotification({
+              message: "Your recent written review is currently pending admin verification.",
+              type: "info"
+            });
+          }
+        }
       })
       .catch(err => console.error("Error fetching patient reviews:", err))
       .finally(() => { if (!cancelled) setReviewsLoading(false); });
@@ -987,6 +1005,7 @@ const PatientDashboard = ({
         setCurrentUser(prev => ({
           ...prev,
           ...data,
+          id: prev.id || data.id,
           fullName: data.fullName || prev.fullName || prev.name || ''
         }));
 
@@ -1538,8 +1557,28 @@ const PatientDashboard = ({
                           <div className="space-y-4">
                             <h4 className="text-xl font-semibold text-slate-800">Written Reviews</h4>
                             {textReviews.map(review => (
-                              <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50' : 'border-slate-200'}`}>
-                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+                              <div key={review.id} className={`bg-white border rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all relative ${review.status === 'rejected' ? 'border-red-400 bg-red-50/30' : 
+                                review.status === 'pending' ? 'border-amber-200 bg-amber-50/20' : 'border-slate-200'}`}>
+                                
+                                <div className="absolute top-6 right-6 flex items-center gap-2">
+                                  {review.status === 'approved' && (
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-200">
+                                      <CheckCircle size={10} /> Verified
+                                    </span>
+                                  )}
+                                  {review.status === 'pending' && (
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-200 animate-pulse">
+                                      <Clock size={10} /> Pending Verification
+                                    </span>
+                                  )}
+                                  {review.status === 'rejected' && (
+                                    <span className="flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200">
+                                      <AlertTriangle size={10} /> Rejected
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6 pr-24">
                                   <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xl">
                                       {review.doctor.name.charAt(0)}
@@ -1561,12 +1600,17 @@ const PatientDashboard = ({
                                     </div>
                                   </div>
                                 </div>
-                                <div className="bg-slate-50 rounded-2xl p-6 mb-4">
-                                  <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-3 bg-white p-3 rounded-lg border-l-4 border-teal-400">{review.text}</p>
+                                <div className="bg-slate-50/50 rounded-2xl p-6 mb-4">
+                                  <p className="text-slate-800 leading-relaxed text-sm font-semibold mb-1 bg-white p-4 rounded-xl border-l-[6px] border-teal-400 shadow-sm transition-all italic">"{review.text}"</p>
+                                  {review.status === 'rejected' && (
+                                    <p className="text-red-500 text-[11px] font-bold mt-3 px-1 flex items-center gap-2">
+                                      <AlertTriangle size={12} /> This review was hidden for violating community guidelines or lacking adequate proof.
+                                    </p>
+                                  )}
                                 </div>
                                 {review.proof && (
-                                  <div className="mb-4 text-sm">
-                                    Proof of visit: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">View</a>
+                                  <div className="mb-4 text-xs font-bold text-teal-600 bg-teal-50/50 w-fit px-3 py-1.5 rounded-lg border border-teal-100">
+                                    Proof of visit Attachment: <a href={review.proof} target="_blank" rel="noopener noreferrer" className="underline hover:text-teal-800 ml-1">View Document</a>
                                   </div>
                                 )}
                                 <div className="flex justify-end mt-2">

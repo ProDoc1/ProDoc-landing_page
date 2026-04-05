@@ -210,7 +210,26 @@ const DoctorViewProfile = ({ doctorData, doctorId: propDoctorId, onBack, current
                                     >
                                         <Heart size={16} className={`inline mr-1.5 ${isSaved ? 'fill-current' : ''}`} /> Save
                                     </button>
-                                    <button className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all text-sm font-medium">
+                                    <button 
+                                        onClick={async () => {
+                                            const shareData = {
+                                                title: `ProDoc - ${doctor.full_name || doctor.name}`,
+                                                text: `Check out ${doctor.full_name || doctor.name}, ${doctor.specialty} on ProDoc.`,
+                                                url: window.location.href
+                                            };
+                                            try {
+                                                if (navigator.share) {
+                                                    await navigator.share(shareData);
+                                                } else {
+                                                    await navigator.clipboard.writeText(window.location.href);
+                                                    alert('Profile link copied to clipboard!');
+                                                }
+                                            } catch (err) {
+                                                console.error('Share failed:', err);
+                                            }
+                                        }}
+                                        className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all text-sm font-medium"
+                                    >
                                         <Share2 size={16} className="inline mr-1.5" /> Share
                                     </button>
                                 </div>
